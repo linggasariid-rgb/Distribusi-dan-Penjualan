@@ -327,6 +327,272 @@ function savePastedData(data, type, branch, subType) {
   }
 }
 
+function savePastedDataWHO(data) {
+    try {
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const targetSheet = ss.getSheetByName("Update-Penjualan WHO");
+        if (!targetSheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
+
+        const lastCol = targetSheet.getLastColumn();
+        if (lastCol === 0) throw new Error("Sheet target kosong (tidak ada kolom).");
+
+        const targetRaw = targetSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+        const targetHeader = targetRaw.map(h => String(h).trim().toUpperCase());
+
+        // Deteksi apakah baris pertama adalah header (mengandung keyword header)
+        const headerKeywords = ['BULAN', 'CABANG', 'TANGGAL', 'NO.', 'FAKTUR', 'CUSTOMER'];
+        const firstRow = data[0].map(v => String(v).trim().toUpperCase());
+        const hasHeader = headerKeywords.some(kw => firstRow.some(v => v.startsWith(kw)));
+
+        let sourceDataRows;
+        if (hasHeader) {
+            sourceDataRows = data.slice(1);
+        } else {
+            sourceDataRows = data;
+        }
+
+        const srcColCount = sourceDataRows[0].length;
+
+        // Source columns match target columns positionally (kolom A = BULAN, ..., AH = JUMLAH)
+        const colMapping = targetHeader.map((tCol, tIdx) => {
+            if (tIdx < srcColCount) return tIdx;
+            return -1;
+        });
+
+        const dataToAppend = sourceDataRows.map(sourceRow => {
+            const newRow = Array(targetHeader.length).fill('');
+            colMapping.forEach((sourceIdx, targetIdx) => {
+                if (sourceIdx >= 0 && sourceIdx < sourceRow.length && sourceRow[sourceIdx] !== undefined) {
+                    newRow[targetIdx] = sourceRow[sourceIdx];
+                }
+            });
+            return newRow;
+        });
+
+        if (dataToAppend.length === 0) {
+            throw new Error("Tidak ada baris data untuk disimpan.");
+        }
+
+        targetSheet.getRange(targetSheet.getLastRow() + 1, 1, dataToAppend.length, dataToAppend[0].length).setValues(dataToAppend);
+
+        return { status: "success", message: `Data berhasil disimpan (${dataToAppend.length} baris).` };
+
+    } catch (e) {
+        Logger.log(e);
+    return { status: "error", message: e.toString() };
+  }
+}
+
+function getBestProductsData(filterMonth) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Update-Penjualan WHO");
+    if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
+
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0].map(h => String(h).trim().toUpperCase());
+    const rows = data.slice(1);
+
+    if (rows.length === 0) {
+      return { status: "success", data: [] };
+    }
+
+    const productKeys = Object.keys(CONFIG.PRODUCT_INFO);
+    const productCols = {};
+
+    headers.forEach((h, idx) => {
+      const clean = h.replace(/\s+/g, '');
+      for (const p of productKeys) {
+        if (p === 'HU') continue;
+        const pClean = p.replace(/\s+/g, '').toUpperCase();
+        const alias = CONFIG.PRODUCT_INFO[p].alias;
+        const aliasClean = alias ? alias.replace(/\s+/g, '').toUpperCase() : '';
+        if (clean === pClean || (alias && clean === aliasClean)) {
+          productCols[p] = idx;
+          break;
+        }
+      }
+    });
+
+    const tglIdx = headers.findIndex(h => h.replace(/\s+/g, '') === 'TANGGAL');
+
+    // Parse filter month
+    let filterDate;
+    if (filterMonth) {
+      const parts = filterMonth.split('-');
+      filterDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+    } else {
+      filterDate = new Date();
+    }
+
+    const totals = {};
+    Object.keys(productCols).forEach(p => totals[p] = 0);
+
+    rows.forEach(row => {
+      if (tglIdx === -1 || !isSameMonth(row[tglIdx], filterDate)) return;
+      Object.keys(productCols).forEach(p => {
+        totals[p] += cleanNum(row[productCols[p]]);
+      });
+    });
+
+    const ranking = Object.keys(totals)
+      .map(p => ({ product: p, total: totals[p] }))
+      .sort((a, b) => b.total - a.total);
+
+    return { status: "success", data: ranking };
+
+  } catch (e) {
+    return { status: "error", message: e.toString() };
+  }
+}
+
+function getBestProductsMonths() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Update-Penjualan WHO");
+    if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
+
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0].map(h => String(h).trim().toUpperCase());
+    const tglIdx = headers.findIndex(h => h.replace(/\s+/g, '') === 'TANGGAL');
+    if (tglIdx === -1) return { status: "success", data: [] };
+
+    const rows = data.slice(1);
+    const monthSet = {};
+
+    rows.forEach(row => {
+      const raw = row[tglIdx];
+      if (!raw) return;
+      let d;
+      if (raw instanceof Date) {
+        d = raw;
+      } else {
+        const s = String(raw).trim();
+        if (s.includes('/')) {
+          const p = s.split('/');
+          d = new Date(p[2], p[1] - 1, 1);
+        } else {
+          d = new Date(s);
+        }
+      }
+      if (d instanceof Date && !isNaN(d)) {
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        monthSet[key] = true;
+      }
+    });
+
+    const months = Object.keys(monthSet).sort();
+    return { status: "success", data: months };
+
+  } catch (e) {
+    return { status: "error", message: e.toString() };
+  }
+}
+
+function parseTglCell(raw) {
+  if (!raw) return null;
+  if (raw instanceof Date && !isNaN(raw.getTime())) return raw;
+  const s = String(raw).trim();
+  if (s.includes('/')) {
+    const p = s.split('/');
+    return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function getSalesDailyReport(dayFilter, filterMonth, startMonth) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Update-Penjualan WHO");
+    if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
+
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0].map(h => String(h).trim().toUpperCase());
+    const rows = data.slice(1);
+
+    if (rows.length === 0) return { status: "success", branches: [], rows: [] };
+
+    const tglIdx = headers.findIndex(h => h.replace(/\s+/g, '') === 'TANGGAL');
+    const cabangIdx = headers.findIndex(h => h.replace(/\s+/g, '') === 'CABANG');
+    const jumlahIdx = headers.findIndex(h => h.replace(/\s+/g, '') === 'JUMLAH');
+    if (tglIdx === -1 || cabangIdx === -1 || jumlahIdx === -1) {
+      throw new Error("Kolom TANGGAL/CABANG/JUMLAH tidak ditemukan.");
+    }
+
+    let filterDate = null;
+    if (filterMonth) {
+      const parts = filterMonth.split('-');
+      filterDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+    }
+
+    let startDate = null;
+    if (startMonth) {
+      const parts = startMonth.split('-');
+      startDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+    }
+
+    const now = new Date();
+
+    // Collect: { dateKey: { branchName: total } }
+    const dateBranchMap = {};
+    const branchSet = {};
+
+    rows.forEach(row => {
+      const tgl = parseTglCell(row[tglIdx]);
+      if (!tgl) return;
+
+      // Filter: start month (Laporan Harian from Jan 2026)
+      if (startDate && tgl < startDate) return;
+      // Filter: specific month (Penjualan Pertanggal)
+      if (filterDate && !isSameMonth(tgl, filterDate)) return;
+      // Filter: not beyond current month
+      if (tgl > now) return;
+      // Filter: day of week
+      if (dayFilter !== -1 && tgl.getDay() !== dayFilter) return;
+
+      const cabang = String(row[cabangIdx] || '').toUpperCase().trim();
+      if (!cabang) return;
+
+      const qty = cleanNum(row[jumlahIdx]);
+      const dateKey = Utilities.formatDate(tgl, "GMT+7", "dd/MM/yyyy");
+
+      if (!dateBranchMap[dateKey]) dateBranchMap[dateKey] = {};
+      if (!dateBranchMap[dateKey][cabang]) dateBranchMap[dateKey][cabang] = 0;
+      dateBranchMap[dateKey][cabang] += qty;
+
+      branchSet[cabang] = true;
+    });
+
+    // Build branch list (sorted, exclude IGNORE_BRANCHES-like patterns)
+    const ignorePatterns = ["WHP", "TOTAL", "GRAND TOTAL", "TOTAL KESELURUHAN"];
+    let allBranches = Object.keys(branchSet)
+      .filter(b => !ignorePatterns.some(p => b.includes(p)))
+      .sort();
+
+    // Build pivot rows
+    const pivotRows = Object.keys(dateBranchMap).sort((a, b) => {
+      const [d1, m1, y1] = a.split('/');
+      const [d2, m2, y2] = b.split('/');
+      return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
+    }).map(dateKey => {
+      const branchData = dateBranchMap[dateKey];
+      const row = { date: dateKey, grandTotal: 0 };
+      allBranches.forEach(b => {
+        const val = branchData[b] || 0;
+        row[b] = val;
+        row.grandTotal += val;
+      });
+      return row;
+    });
+
+    return { status: "success", branches: allBranches, rows: pivotRows };
+
+  } catch (e) {
+    return { status: "error", message: e.toString() };
+  }
+}
+
 function updateStockSheet(transactionData, type, branch) {
     try {
         const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -361,8 +627,10 @@ function updateStockSheet(transactionData, type, branch) {
                 const officialProductName = productList.find(p => {
                     const pInfo = CONFIG.PRODUCT_INFO[p];
                     const cleanP = p.replace(/\s+/g, '').toUpperCase();
+                    const pastedClean = pastedColName.replace(/\s+/g, '');
                     const alias = pInfo.alias ? pInfo.alias.toUpperCase() : null;
-                    return pastedColName === cleanP || (alias && pastedColName === alias);
+                    const aliasClean = alias ? alias.replace(/\s+/g, '') : null;
+                    return pastedColName === cleanP || pastedClean === cleanP || (alias && (pastedColName === alias || pastedClean === aliasClean));
                 });
 
                 if (officialProductName) {
@@ -437,11 +705,11 @@ function isSameMonth(input, targetDate) {
 function getSalesDashboardData(filterWHO, filterBranch) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const salesSheet = ss.getSheetByName("PenjualanWHO");
+    const salesSheet = ss.getSheetByName("Update-Penjualan WHO");
     const distSheet = ss.getSheetByName("Distribusi");
     const recSheet = ss.getSheetByName("Penerimaan");
 
-    if (!salesSheet || !distSheet || !recSheet) throw new Error("Salah satu sheet (PenjualanWHO/Distribusi/Penerimaan) tidak ditemukan.");
+    if (!salesSheet || !distSheet || !recSheet) throw new Error("Salah satu sheet (Update-Penjualan WHO/Distribusi/Penerimaan) tidak ditemukan.");
 
     const now = new Date();
     const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -456,11 +724,10 @@ function getSalesDashboardData(filterWHO, filterBranch) {
     const salesData = salesSheet.getDataRange().getValues();
     const salesHeader = salesData.shift();
 
-    // Indeks Kolom sesuai permintaan user (A=0, B=1, D=3, AD=29)
-    const colBulanText = 0;  // Kolom A (BULAN)
-    const colBranch = 1;     // Kolom B (WHO / Cabang untuk ranking)
+    // Indeks Kolom (A=0, B=1, D=3, AH=33)
+    const colBranch = 1;     // Kolom B (CABANG)
     const colTanggal = 3;    // Kolom D (TANGGAL)
-    const colJumlah = 29;    // Kolom AD (JUMLAH)
+    const colJumlah = 33;    // Kolom AH (JUMLAH)
 
     let totalLastMonth = 0;
     let totalMonthly = 0;
@@ -582,4 +849,26 @@ function getSalesDashboardData(filterWHO, filterBranch) {
   } catch (e) {
     return { status: "error", message: e.toString() };
   }
+}
+
+// ──── LOGIN ─────────────────────────────────────────────────────────────────
+var USERS = {
+  'superadmin': { passwordHash: _hashPw('admin123'), role: 'super_admin', name: 'Super Admin' },
+  'admin':      { passwordHash: _hashPw('admin456'), role: 'admin',      name: 'Admin' }
+};
+
+function _hashPw(pw) {
+  var digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, pw);
+  var hex = '';
+  for (var i = 0; i < digest.length; i++) {
+    hex += ('0' + (digest[i] & 0xFF).toString(16)).slice(-2);
+  }
+  return hex;
+}
+
+function loginUser(username, password) {
+  var user = USERS[username.toLowerCase().trim()];
+  if (!user) return { status: 'error', message: 'Username tidak ditemukan' };
+  if (_hashPw(password) !== user.passwordHash) return { status: 'error', message: 'Password salah' };
+  return { status: 'success', role: user.role, name: user.name };
 }

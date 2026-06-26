@@ -149,6 +149,110 @@
       <div id="stock-summary-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
     </div>
 
+    <!-- Penjualan WHO View -->
+    <div id="penjualan-who-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Penjualan WHO</h2>
+        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel Laporan Penjualan WHO Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-xs text-blue-800">
+          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Panduan Input Data:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Copy (Salin) baris data dari Excel Laporan Penjualan WHO (header sudah termasuk).</li>
+            <li>Paste (Tempel) ke dalam kotak di bawah ini.</li>
+            <li>Klik tombol <b>Proses & Preview Data</b> untuk melihat pratinjau.</li>
+          </ol>
+        </div>
+
+        <textarea id="penjualan-who-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data Excel di sini..."></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPasteWHO()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('penjualan-who-paste-area').value=''; document.getElementById('penjualan-who-preview').innerHTML=''; document.getElementById('penjualan-who-submit-container').classList.add('hidden'); pastedDataCache['penjualan_who'] = null;" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="penjualan-who-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="penjualan-who-submit-container">
+           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitDataWHO()"><i class="fas fa-save mr-2"></i> Simpan Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best Products View -->
+    <div id="best-products-view" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex items-center gap-3">
+          <label class="text-sm font-semibold text-slate-600">Bulan:</label>
+          <select id="best-products-month" class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm" onchange="loadBestProductsData()">
+          </select>
+        </div>
+        <button onclick="captureBestProducts()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+          <i class="fas fa-camera"></i> Screenshot
+        </button>
+      </div>
+      <div id="best-products-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-amber-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Menghitung best produk...</p>
+      </div>
+      <div id="best-products-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+    </div>
+
+    <!-- Laporan Harian View -->
+    <div id="daily-report-view" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <label class="text-sm font-semibold text-slate-600">Hari:</label>
+          <select id="daily-report-day" class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" onchange="loadDailyReport()">
+            <option value="-1">Semua Hari</option>
+            <option value="0">Minggu</option>
+            <option value="1" selected>Senin</option>
+            <option value="2">Selasa</option>
+            <option value="3">Rabu</option>
+            <option value="4">Kamis</option>
+            <option value="5">Jumat</option>
+            <option value="6">Sabtu</option>
+          </select>
+          <span class="text-sm font-semibold text-slate-500 ml-2">Januari 2026 - Sekarang</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="captureDailyReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+            <i class="fas fa-camera"></i> Screenshot
+          </button>
+          <button onclick="exportDailyReportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+            <i class="fas fa-file-pdf"></i> Export PDF
+          </button>
+        </div>
+      </div>
+      <div id="daily-report-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Memuat laporan...</p>
+      </div>
+      <div id="daily-report-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+    </div>
+
+    <!-- Penjualan Pertanggal View -->
+    <div id="sales-per-date-view" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex items-center gap-3">
+          <label class="text-sm font-semibold text-slate-600">Bulan:</label>
+          <select id="sales-per-date-month" class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm" onchange="loadSalesPerDate()">
+          </select>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="captureSalesPerDate()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+            <i class="fas fa-camera"></i> Screenshot
+          </button>
+          <button onclick="exportSalesPerDatePDF()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+            <i class="fas fa-file-pdf"></i> Export PDF
+          </button>
+        </div>
+      </div>
+      <div id="sales-per-date-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Memuat laporan...</p>
+      </div>
+      <div id="sales-per-date-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+    </div>
+
     <!-- Penjualan View -->
     <div id="penjualan-view" class="hidden">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -368,17 +472,44 @@
     }
     
     function switchMenu(menuName) {
+      var role = sessionStorage.getItem('user_role') || 'admin';
+      var restricted = { super_admin: 0, admin: 1 };
+      var menuAccess = {
+        'distribusi': 'admin',
+        'stok': 'admin',
+        'sales-dashboard': 'super_admin',
+        'penjualan': 'super_admin',
+        'penjualan-who': 'super_admin',
+        'penerimaan': 'super_admin',
+        'best-products': 'super_admin',
+        'daily-report': 'super_admin',
+        'sales-per-date': 'super_admin'
+      };
+      if (restricted[role] < restricted[menuAccess[menuName] || 'admin']) {
+        var roleLabels = { admin: 'Admin', super_admin: 'Super Admin' };
+        alert('Menu "' + menuName + '" hanya bisa diakses oleh ' + roleLabels[menuAccess[menuName]]);
+        return;
+      }
+
       const distView = document.getElementById('distribution-view');
       const stockView = document.getElementById('stock-summary-view');
       const penjualanView = document.getElementById('penjualan-view');
+      const penjualanWhoView = document.getElementById('penjualan-who-view');
       const penerimaanView = document.getElementById('penerimaan-view');
       const salesDashboardView = document.getElementById('sales-dashboard-view');
+      const bestProductsView = document.getElementById('best-products-view');
+      const dailyReportView = document.getElementById('daily-report-view');
+      const salesPerDateView = document.getElementById('sales-per-date-view');
       
       const menuDist = document.getElementById('menu-distribusi');
       const menuStok = document.getElementById('menu-stok');
       const menuPenjualan = document.getElementById('menu-penjualan');
+      const menuPenjualanWHO = document.getElementById('menu-penjualan-who');
       const menuPenerimaan = document.getElementById('menu-penerimaan');
       const menuSalesDash = document.getElementById('menu-sales-dashboard');
+      const menuBestProducts = document.getElementById('menu-best-products');
+      const menuDailyReport = document.getElementById('menu-daily-report');
+      const menuSalesPerDate = document.getElementById('menu-sales-per-date');
       
       const pageTitle = document.getElementById('page-title');
       const pageIcon = document.getElementById('page-icon');
@@ -390,8 +521,12 @@
       distView.style.display = 'none';
       stockView.classList.add('hidden');
       penjualanView.classList.add('hidden');
+      penjualanWhoView.classList.add('hidden');
       penerimaanView.classList.add('hidden');
       salesDashboardView.classList.add('hidden');
+      bestProductsView.classList.add('hidden');
+      dailyReportView.classList.add('hidden');
+      salesPerDateView.classList.add('hidden');
       branchFilter.classList.add('hidden');
       if (summarySection) {
         summarySection.classList.add('hidden');
@@ -404,8 +539,12 @@
       if(menuDist) menuDist.className = defaultMenuClass;
       if(menuStok) menuStok.className = defaultMenuClass;
       if(menuPenjualan) menuPenjualan.className = defaultMenuClass;
+      if(menuPenjualanWHO) menuPenjualanWHO.className = defaultMenuClass;
       if(menuPenerimaan) menuPenerimaan.className = defaultMenuClass;
       if(menuSalesDash) menuSalesDash.className = defaultMenuClass;
+      if(menuBestProducts) menuBestProducts.className = defaultMenuClass;
+      if(menuDailyReport) menuDailyReport.className = defaultMenuClass;
+      if(menuSalesPerDate) menuSalesPerDate.className = defaultMenuClass;
 
       // Tampilkan View & Aktifkan Menu sesuai Pilihan
       if (menuName === 'stok') {
@@ -414,6 +553,8 @@
         pageIcon.className = "fas fa-boxes";
         branchFilter.classList.remove('hidden');
         if (menuStok) menuStok.className = activeMenuClass;
+        if (!gData) loadData();
+        else renderStockSummaryTable();
       } 
       else if (menuName === 'penjualan') {
         penjualanView.classList.remove('hidden');
@@ -421,11 +562,43 @@
         pageIcon.className = "fas fa-file-invoice-dollar";
         if (menuPenjualan) menuPenjualan.className = activeMenuClass;
       }
+      else if (menuName === 'penjualan-who') {
+        penjualanWhoView.classList.remove('hidden');
+        pageTitle.innerText = "Penjualan WHO";
+        pageIcon.className = "fas fa-file-invoice";
+        if (menuPenjualanWHO) menuPenjualanWHO.className = activeMenuClass;
+      }
       else if (menuName === 'penerimaan') {
         penerimaanView.classList.remove('hidden');
         pageTitle.innerText = "Input Penerimaan (WH)";
         pageIcon.className = "fas fa-box-open";
         if (menuPenerimaan) menuPenerimaan.className = activeMenuClass;
+      }
+      else if (menuName === 'best-products') {
+        bestProductsView.classList.remove('hidden');
+        pageTitle.innerText = "Best Produk";
+        pageIcon.className = "fas fa-trophy";
+        if (menuBestProducts) menuBestProducts.className = activeMenuClass;
+        const bpContent = document.getElementById('best-products-content');
+        const bpMonth = document.getElementById('best-products-month');
+        if (bpMonth && bpMonth.options.length === 0) initBestProductsMonths();
+        else if (bpContent && bpContent.innerHTML.trim() === '') loadBestProductsData();
+      }
+      else if (menuName === 'daily-report') {
+        dailyReportView.classList.remove('hidden');
+        pageTitle.innerText = "Laporan Harian";
+        pageIcon.className = "fas fa-calendar-week";
+        if (menuDailyReport) menuDailyReport.className = activeMenuClass;
+        const drContent = document.getElementById('daily-report-content');
+        if (!drContent || drContent.innerHTML.trim() === '') initDailyReport();
+      }
+      else if (menuName === 'sales-per-date') {
+        salesPerDateView.classList.remove('hidden');
+        pageTitle.innerText = "Penjualan Pertanggal";
+        pageIcon.className = "fas fa-calendar-day";
+        if (menuSalesPerDate) menuSalesPerDate.className = activeMenuClass;
+        const spContent = document.getElementById('sales-per-date-content');
+        if (!spContent || spContent.innerHTML.trim() === '') initSalesPerDate();
       }
       else if (menuName === 'sales-dashboard') {
         salesDashboardView.classList.remove('hidden');
@@ -433,14 +606,16 @@
         pageIcon.className = "fas fa-chart-line";
         branchFilter.classList.remove('hidden');
         if (menuSalesDash) menuSalesDash.className = activeMenuClass;
-        loadSalesData(); // Pastikan fungsi ini dipanggil
+        const sdContent = document.getElementById('sales-dashboard-content');
+        if (!sdContent || sdContent.innerHTML.trim() === '' || sdContent.querySelector('.text-red-500')) loadSalesData();
       }
       else { // 'distribusi'
         distView.style.display = 'block';
         pageTitle.innerText = "Dashboard Distribusi";
         pageIcon.className = "fas fa-truck-loading";
         branchFilter.classList.remove('hidden');
-        if (summarySection && gData) { // Hanya munculkan jika data sudah beres di-load
+        if (!gData) loadData();
+        else if (summarySection) {
           summarySection.classList.remove('hidden');
           summarySection.classList.add('grid');
         }
@@ -611,6 +786,451 @@
           alert("Gagal mengambil data dari spreadsheet: " + err.message);
         })
         .getSalesDashboardData(selectedWHO, selectedBranch);
+    }
+
+    function loadBestProductsData() {
+      const loader = document.getElementById('best-products-loader');
+      const content = document.getElementById('best-products-content');
+      const monthSelect = document.getElementById('best-products-month');
+
+      if (loader && content) {
+        loader.classList.remove('hidden');
+        loader.classList.add('flex');
+        content.innerHTML = '';
+      }
+
+      const selectedMonth = monthSelect ? monthSelect.value : '';
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (loader) {
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+          }
+          if (resp.status === "success") {
+            const data = resp.data;
+            let html = '<div id="best-products-report-area" class="p-6"><h3 class="text-lg font-bold text-slate-800 mb-4">Ranking Produk Terlaris</h3>';
+            html += '<div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-amber-50 text-amber-700 uppercase text-[10px] font-bold"><tr><th class="px-4 py-3 border-b">Peringkat</th><th class="px-4 py-3 border-b">Nama Produk</th><th class="px-4 py-3 border-b text-right">Total Terjual</th></tr></thead><tbody class="divide-y divide-slate-100">';
+            let rank = 1;
+            data.forEach(item => {
+              const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+              html += `<tr class="hover:bg-amber-50/50 transition-colors ${rank <= 3 ? 'bg-amber-50/30' : ''}"><td class="px-4 py-3 font-black text-lg text-center">${medal}</td><td class="px-4 py-3 font-bold text-slate-700">${item.product}</td><td class="px-4 py-3 text-right font-black text-amber-700">${item.total.toLocaleString('id-ID')}</td></tr>`;
+              rank++;
+            });
+            html += '</tbody></table></div></div>';
+            if (content) content.innerHTML = html;
+          } else {
+            if (content) content.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">${resp.message}</div>`;
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (loader) {
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+          }
+          console.error("Gagal memuat best products:", err);
+          alert("Gagal mengambil data: " + err.message);
+        })
+        .getBestProductsData(selectedMonth);
+    }
+
+    function initBestProductsMonths() {
+      const monthSelect = document.getElementById('best-products-month');
+      if (!monthSelect) return;
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (resp.status === "success") {
+            const months = resp.data;
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            monthSelect.innerHTML = '';
+            months.forEach(m => {
+              const parts = m.split('-');
+              const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+              const label = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+              const opt = document.createElement('option');
+              opt.value = m;
+              opt.text = label;
+              if (m === currentMonth) opt.selected = true;
+              monthSelect.add(opt);
+            });
+            loadBestProductsData();
+          }
+        })
+        .getBestProductsMonths();
+    }
+
+    function captureBestProducts() {
+      const btn = document.querySelector('button[onclick="captureBestProducts()"]');
+      const content = document.getElementById('best-products-content');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      const filterRow = document.querySelector('#best-products-view > .flex');
+
+      const isSidebarOpen = sidebar.classList.contains('translate-x-0');
+      const originalBtnText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+      btn.disabled = true;
+
+      if (isSidebarOpen) {
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('ml-80');
+        mainContent.classList.add('ml-0');
+      }
+
+      filterRow.style.display = 'none';
+
+      setTimeout(() => {
+        html2canvas(content, {
+          scale: 3,
+          useCORS: true,
+          backgroundColor: '#ffffff'
+        }).then(canvas => {
+          canvas.toBlob(blob => {
+            try {
+              const item = new ClipboardItem({ "image/png": blob });
+              navigator.clipboard.write([item]).then(() => {
+                showToast("Screenshot disalin! Silakan Paste (Ctrl+V).");
+              }).catch(() => {
+                const link = document.createElement('a');
+                link.download = 'Best-Produk.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+              });
+            } catch (e) {
+              const link = document.createElement('a');
+              link.download = 'Best-Produk.png';
+              link.href = canvas.toDataURL('image/png');
+              link.click();
+            }
+          });
+        }).catch(err => {
+          console.error("Screenshot gagal:", err);
+          alert("Gagal mengambil screenshot: " + err.message);
+        }).finally(() => {
+          btn.innerHTML = originalBtnText;
+          btn.disabled = false;
+          filterRow.style.display = '';
+          if (isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            mainContent.classList.remove('ml-0');
+            mainContent.classList.add('ml-80');
+          }
+        });
+      }, 300);
+    }
+
+    // --- Shared pivot helpers ---
+    function initMonthDropdown(selectId, callback) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (resp.status === "success") {
+            const months = resp.data;
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            select.innerHTML = '';
+            months.forEach(m => {
+              const parts = m.split('-');
+              const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+              const label = date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+              const opt = document.createElement('option');
+              opt.value = m;
+              opt.text = label;
+              if (m === currentMonth) opt.selected = true;
+              select.add(opt);
+            });
+            if (callback) callback();
+          }
+        })
+        .getBestProductsMonths();
+    }
+
+    function renderPivotTable(container, branches, rows, title) {
+      let html = '<div id="pivot-report-area" class="p-4 sm:p-6">';
+      html += `<h3 class="text-lg font-bold text-slate-800 mb-4">${title}</h3>`;
+      html += '<div class="overflow-x-auto"><table class="w-full text-xs text-left border-collapse">';
+      html += '<thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold"><tr><th class="px-3 py-3 border-b sticky left-0 bg-slate-50 z-10">Tanggal</th>';
+      branches.forEach(b => {
+        html += `<th class="px-3 py-3 border-b text-right whitespace-nowrap">${b}</th>`;
+      });
+      html += '<th class="px-3 py-3 border-b text-right bg-amber-50 text-amber-700">Grand Total</th></tr></thead>';
+      html += '<tbody class="divide-y divide-slate-100">';
+      rows.forEach(row => {
+        html += `<tr class="hover:bg-slate-50/50 transition-colors"><td class="px-3 py-2.5 font-bold text-slate-700 sticky left-0 bg-white z-10">${row.date}</td>`;
+        branches.forEach(b => {
+          const val = row[b] || 0;
+          const display = val > 0 ? val.toLocaleString('id-ID') : '<span class="text-slate-300">&ndash;</span>';
+          html += `<td class="px-3 py-2.5 text-right font-medium ${val > 0 ? 'text-slate-700' : ''}">${display}</td>`;
+        });
+        html += `<td class="px-3 py-2.5 text-right font-black text-amber-700 bg-amber-50/50">${row.grandTotal.toLocaleString('id-ID')}</td></tr>`;
+      });
+      html += '</tbody></table></div></div>';
+      container.innerHTML = html;
+    }
+
+    function capturePivot(containerId, filename, btnSelector, callback) {
+      const btn = document.querySelector(btnSelector);
+      const container = document.getElementById(containerId);
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      const filterRow = container.closest('.space-y-6').querySelector('.flex');
+
+      const isSidebarOpen = sidebar.classList.contains('translate-x-0');
+      const originalBtnText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+      btn.disabled = true;
+
+      if (isSidebarOpen) {
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('ml-80');
+        mainContent.classList.add('ml-0');
+      }
+
+      if (filterRow) filterRow.style.display = 'none';
+
+      setTimeout(() => {
+        html2canvas(container, { scale: 3, useCORS: true, backgroundColor: '#ffffff' })
+          .then(canvas => {
+            canvas.toBlob(blob => {
+              try {
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]).then(() => {
+                  showToast("Screenshot disalin! Silakan Paste (Ctrl+V).");
+                }).catch(() => {
+                  const link = document.createElement('a');
+                  link.download = filename;
+                  link.href = canvas.toDataURL('image/png');
+                  link.click();
+                });
+              } catch (e) {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+              }
+            });
+          }).catch(err => {
+            console.error("Screenshot gagal:", err);
+            alert("Gagal mengambil screenshot: " + err.message);
+          }).finally(() => {
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            if (filterRow) filterRow.style.display = '';
+            if (isSidebarOpen) {
+              sidebar.classList.remove('-translate-x-full');
+              sidebar.classList.add('translate-x-0');
+              mainContent.classList.remove('ml-0');
+              mainContent.classList.add('ml-80');
+            }
+            if (callback) callback();
+          });
+      }, 300);
+    }
+
+    // --- Laporan Harian ---
+    function initDailyReport() {
+      loadDailyReport();
+    }
+
+    function loadDailyReport() {
+      const loader = document.getElementById('daily-report-loader');
+      const content = document.getElementById('daily-report-content');
+      const daySelect = document.getElementById('daily-report-day');
+
+      if (loader && content) {
+        loader.classList.remove('hidden'); loader.classList.add('flex');
+        content.innerHTML = '';
+      }
+
+      const dayFilter = daySelect ? parseInt(daySelect.value) : -1;
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (loader) { loader.classList.add('hidden'); loader.classList.remove('flex'); }
+          if (resp.status === "success") {
+            const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            const dayLabel = dayFilter === -1 ? 'Semua Hari' : dayNames[dayFilter];
+            const now = new Date();
+            const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const rangeLabel = `Januari 2026 - ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+            renderPivotTable(content, resp.branches, resp.rows, `Laporan Penjualan - ${dayLabel} - ${rangeLabel}`);
+          } else {
+            content.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">${resp.message}</div>`;
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (loader) { loader.classList.add('hidden'); loader.classList.remove('flex'); }
+          console.error("Gagal memuat laporan harian:", err);
+          alert("Gagal mengambil data: " + err.message);
+        })
+        .getSalesDailyReport(dayFilter, '', '2026-01');
+    }
+
+    function captureDailyReport() {
+      capturePivot('daily-report-content', 'Laporan-Harian.png', 'button[onclick="captureDailyReport()"]');
+    }
+
+    function exportDailyReportPDF() {
+      const container = document.getElementById('daily-report-content');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      const daySelect = document.getElementById('daily-report-day');
+      const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const dayFilter = daySelect ? parseInt(daySelect.value) : -1;
+      const dayLabel = dayFilter === -1 ? 'Semua Hari' : dayNames[dayFilter];
+      const title = `Penjualan Setiap Hari ${dayLabel}`;
+
+      const isSidebarOpen = sidebar.classList.contains('translate-x-0');
+      if (isSidebarOpen) {
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('ml-80');
+        mainContent.classList.add('ml-0');
+      }
+
+      const area = container.querySelector('#pivot-report-area') || container;
+      const filterRow = container.closest('.space-y-6').querySelector('.flex');
+      if (filterRow) filterRow.style.display = 'none';
+
+      const origStyle = area.getAttribute('style') || '';
+      area.style.width = '1280px';
+      area.style.maxWidth = 'none';
+
+      setTimeout(() => {
+        html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+          const { jsPDF } = window.jspdf;
+          const imgData = canvas.toDataURL('image/png');
+          const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+          const pw = doc.internal.pageSize.getWidth();
+          const ph = doc.internal.pageSize.getHeight();
+
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text(title, pw / 2, 12, { align: 'center' });
+
+          const imgY = 17;
+          const margin = 8;
+          const availW = pw - margin * 2;
+          const availH = ph - imgY - margin;
+          const ratio = Math.min(availW / canvas.width, availH / canvas.height);
+          const imgW = canvas.width * ratio;
+          const imgH = canvas.height * ratio;
+          const cx = (pw - imgW) / 2;
+          doc.addImage(imgData, 'PNG', cx, imgY, imgW, imgH);
+          doc.save(`${title.replace(/\s+/g, '-')}.pdf`);
+        }).finally(() => {
+          area.setAttribute('style', origStyle);
+          if (filterRow) filterRow.style.display = '';
+          if (isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            mainContent.classList.remove('ml-0');
+            mainContent.classList.add('ml-80');
+          }
+        });
+      }, 400);
+    }
+
+    // --- Penjualan Pertanggal ---
+    function initSalesPerDate() {
+      initMonthDropdown('sales-per-date-month', loadSalesPerDate);
+    }
+
+    function loadSalesPerDate() {
+      const loader = document.getElementById('sales-per-date-loader');
+      const content = document.getElementById('sales-per-date-content');
+      const monthSelect = document.getElementById('sales-per-date-month');
+
+      if (loader && content) {
+        loader.classList.remove('hidden'); loader.classList.add('flex');
+        content.innerHTML = '';
+      }
+
+      const filterMonth = monthSelect ? monthSelect.value : '';
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (loader) { loader.classList.add('hidden'); loader.classList.remove('flex'); }
+          if (resp.status === "success") {
+            renderPivotTable(content, resp.branches, resp.rows, 'Penjualan Pertanggal');
+          } else {
+            content.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">${resp.message}</div>`;
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (loader) { loader.classList.add('hidden'); loader.classList.remove('flex'); }
+          console.error("Gagal memuat penjualan pertanggal:", err);
+          alert("Gagal mengambil data: " + err.message);
+        })
+        .getSalesDailyReport(-1, filterMonth, '');
+    }
+
+    function captureSalesPerDate() {
+      capturePivot('sales-per-date-content', 'Penjualan-Pertanggal.png', 'button[onclick="captureSalesPerDate()"]');
+    }
+
+    function exportSalesPerDatePDF() {
+      const container = document.getElementById('sales-per-date-content');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      const monthSelect = document.getElementById('sales-per-date-month');
+      const monthLabel = monthSelect ? monthSelect.options[monthSelect.selectedIndex]?.text || '' : '';
+      const title = `Penjualan Setiap Tanggal - ${monthLabel}`;
+
+      const isSidebarOpen = sidebar.classList.contains('translate-x-0');
+      if (isSidebarOpen) {
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('ml-80');
+        mainContent.classList.add('ml-0');
+      }
+
+      const area = container.querySelector('#pivot-report-area') || container;
+      const filterRow = container.closest('.space-y-6').querySelector('.flex');
+      if (filterRow) filterRow.style.display = 'none';
+
+      const origStyle = area.getAttribute('style') || '';
+      area.style.width = '1280px';
+      area.style.maxWidth = 'none';
+
+      setTimeout(() => {
+        html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+          const { jsPDF } = window.jspdf;
+          const imgData = canvas.toDataURL('image/png');
+          const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+          const pw = doc.internal.pageSize.getWidth();
+          const ph = doc.internal.pageSize.getHeight();
+
+          doc.setFontSize(14);
+          doc.setFont('helvetica', 'bold');
+          doc.text(title, pw / 2, 12, { align: 'center' });
+
+          const imgY = 17;
+          const margin = 8;
+          const availW = pw - margin * 2;
+          const availH = ph - imgY - margin;
+          const ratio = Math.min(availW / canvas.width, availH / canvas.height);
+          const imgW = canvas.width * ratio;
+          const imgH = canvas.height * ratio;
+          const cx = (pw - imgW) / 2;
+          doc.addImage(imgData, 'PNG', cx, imgY, imgW, imgH);
+          doc.save(`${title.replace(/\s+/g, '-')}.pdf`);
+        }).finally(() => {
+          area.setAttribute('style', origStyle);
+          if (filterRow) filterRow.style.display = '';
+          if (isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.classList.add('translate-x-0');
+            mainContent.classList.remove('ml-0');
+            mainContent.classList.add('ml-80');
+          }
+        });
+      }, 400);
     }
 
     function renderSalesCharts(data) {
@@ -820,6 +1440,93 @@
                 button.innerHTML = originalButtonText;
             })
             .savePastedData(dataToSubmit, type, branchSelect.value, subType);
+    }
+
+    function processPasteWHO() {
+      const text = document.getElementById('penjualan-who-paste-area').value.trim();
+      const container = document.getElementById('penjualan-who-preview');
+      const submitContainer = document.getElementById('penjualan-who-submit-container');
+
+      pastedDataCache['penjualan_who'] = null;
+
+      if (!text) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste data terlebih dahulu.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      let data = rows.map(row => row.split('\t'));
+
+      if (data.length < 2) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Minimal 2 baris (header + 1 data).</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      pastedDataCache['penjualan_who'] = data;
+
+      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
+      let htmlBody = '<tbody class="divide-y divide-slate-100">';
+
+      data.forEach((row, i) => {
+        if (i === 0) {
+          row.forEach((c, j) => tableHTML += `<th class="px-4 py-3 font-bold border border-slate-200 whitespace-nowrap">${c || 'Kolom '+(j+1)}</th>`);
+          tableHTML += '</tr></thead>';
+        } else {
+          htmlBody += '<tr class="hover:bg-slate-50">';
+          row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap">${c}</td>`);
+          htmlBody += '</tr>';
+        }
+      });
+
+      htmlBody += '</tbody></table>';
+      container.innerHTML = tableHTML + htmlBody;
+      submitContainer.classList.remove('hidden');
+    }
+
+    function submitDataWHO() {
+      const dataToSubmit = pastedDataCache['penjualan_who'];
+      const button = document.querySelector('#penjualan-who-submit-container button');
+      const originalButtonText = button.innerHTML;
+
+      if (!dataToSubmit || dataToSubmit.length < 2) {
+        alert('Tidak ada data. Silakan proses data terlebih dahulu.');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...';
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = response.message;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
+
+            document.getElementById('penjualan-who-paste-area').value = '';
+            document.getElementById('penjualan-who-preview').innerHTML = '';
+            document.getElementById('penjualan-who-submit-container').classList.add('hidden');
+            pastedDataCache['penjualan_who'] = null;
+
+            if (confirm('Data berhasil disimpan. Muat ulang dashboard sekarang?')) {
+              loadData();
+              switchMenu('distribusi');
+            }
+          } else {
+            alert('Gagal: ' + response.message);
+          }
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .withFailureHandler(function(error) {
+          alert('Gagal terhubung ke server: ' + error.message);
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .savePastedDataWHO(dataToSubmit);
     }
 
     function calculateLogic(cabangKey, p) {
@@ -1296,5 +2003,8 @@
       modal.classList.add('flex');
     }
 
-    window.onload = loadData;
+    window.onload = function() {
+      var role = sessionStorage.getItem('user_role') || 'admin';
+      if (role === 'super_admin') switchMenu('sales-dashboard');
+    };
   </script>
