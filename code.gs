@@ -383,6 +383,60 @@ function savePastedDataWHO(data) {
   }
 }
 
+function savePastedDataBIZ(data) {
+    try {
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const bizSheet = ss.getSheetByName("BIZ") || ss.getSheetByName(".BIZ");
+        if (!bizSheet) throw new Error("Sheet 'BIZ' tidak ditemukan.");
+
+        const lastCol = bizSheet.getLastColumn();
+        if (lastCol === 0) throw new Error("Sheet BIZ kosong (tidak ada kolom).");
+
+        // Preserve header row 4, data mulai row 5
+        const DATA_START_ROW = 5;
+        const maxRow = bizSheet.getMaxRows();
+
+        // Hapus semua data existing dari row 5 ke bawah
+        if (maxRow >= DATA_START_ROW) {
+            bizSheet.getRange(DATA_START_ROW, 1, maxRow - DATA_START_ROW + 1, lastCol).clearContent();
+        }
+
+        // Deteksi apakah baris pertama adalah header (mengandung keyword header)
+        const headerKeywords = ['BULAN', 'CABANG', 'TANGGAL', 'NO.', 'FAKTUR', 'CUSTOMER', 'GUDANG', 'NAMA'];
+        const firstRow = data[0].map(v => String(v).trim().toUpperCase());
+        const hasHeader = headerKeywords.some(kw => firstRow.some(v => v.indexOf(kw) !== -1));
+
+        let sourceDataRows;
+        if (hasHeader) {
+            sourceDataRows = data.slice(1);
+        } else {
+            sourceDataRows = data;
+        }
+
+        if (sourceDataRows.length === 0) {
+            throw new Error("Tidak ada baris data untuk disimpan.");
+        }
+
+        // Normalize row lengths
+        const colCount = sourceDataRows[0].length;
+        const dataToWrite = sourceDataRows.map(row => {
+            const newRow = Array(colCount).fill('');
+            for (let i = 0; i < row.length && i < colCount; i++) {
+                newRow[i] = row[i];
+            }
+            return newRow;
+        });
+
+        bizSheet.getRange(DATA_START_ROW, 1, dataToWrite.length, dataToWrite[0].length).setValues(dataToWrite);
+
+        return { status: "success", message: `Data BIZ berhasil disimpan (${dataToWrite.length} baris). Data lama sudah di-replace.` };
+
+    } catch (e) {
+        Logger.log(e);
+        return { status: "error", message: e.toString() };
+    }
+}
+
 function getBestProductsData(filterMonth) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();

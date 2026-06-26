@@ -284,6 +284,35 @@
     <!-- Kartu Laporan (tersembunyi, untuk screenshot) -->
     <div id="cp-report-card" style="position:fixed;left:-9999px;top:0;width:480px;background:#fff;padding:16px;font-family:sans-serif;border-radius:12px;"></div>
 
+    <!-- Input Stok BIZ View -->
+    <div id="input-stok-biz-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Stok BIZ</h2>
+        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel/export BIZ, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini. Data lama akan <b>diganti</b> dengan data baru.</p>
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-xs text-amber-800">
+          <p class="font-bold mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Perhatian:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Copy (Salin) data dari sheet BIZ/file export BIZ (header sudah termasuk).</li>
+            <li>Paste (Tempel) ke dalam kotak di bawah ini.</li>
+            <li>Klik tombol <b>Proses & Preview Data</b> untuk melihat pratinjau.</li>
+            <li>Klik <b>Simpan Data BIZ</b> untuk <b>menimpa</b> data BIZ yang ada.</li>
+          </ol>
+        </div>
+
+        <textarea id="input-stok-biz-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data BIZ di sini..."></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPasteBIZ()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('input-stok-biz-paste-area').value=''; document.getElementById('input-stok-biz-preview').innerHTML=''; document.getElementById('input-stok-biz-submit-container').classList.add('hidden'); pastedDataCache['input_stok_biz'] = null;" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="input-stok-biz-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="input-stok-biz-submit-container">
+           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitDataBIZ()"><i class="fas fa-save mr-2"></i> Simpan Data BIZ</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Penjualan View -->
     <div id="penjualan-view" class="hidden">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -533,6 +562,7 @@
       const dailyReportView = document.getElementById('daily-report-view');
       const salesPerDateView = document.getElementById('sales-per-date-view');
       const controlPointView = document.getElementById('control-point-view');
+      const inputStokBizView = document.getElementById('input-stok-biz-view');
       
       const menuDist = document.getElementById('menu-distribusi');
       const menuStok = document.getElementById('menu-stok');
@@ -544,6 +574,7 @@
       const menuDailyReport = document.getElementById('menu-daily-report');
       const menuSalesPerDate = document.getElementById('menu-sales-per-date');
       const menuControlPoint = document.getElementById('menu-control-point');
+      const menuInputStokBiz = document.getElementById('menu-input-stok-biz');
       
       const pageTitle = document.getElementById('page-title');
       const pageIcon = document.getElementById('page-icon');
@@ -562,6 +593,7 @@
       dailyReportView.classList.add('hidden');
       salesPerDateView.classList.add('hidden');
       controlPointView.classList.add('hidden');
+      inputStokBizView.classList.add('hidden');
       branchFilter.classList.add('hidden');
       if (summarySection) {
         summarySection.classList.add('hidden');
@@ -581,6 +613,7 @@
       if(menuDailyReport) menuDailyReport.className = defaultMenuClass;
       if(menuSalesPerDate) menuSalesPerDate.className = defaultMenuClass;
       if(menuControlPoint) menuControlPoint.className = defaultMenuClass;
+      if(menuInputStokBiz) menuInputStokBiz.className = defaultMenuClass;
 
       // Tampilkan View & Aktifkan Menu sesuai Pilihan
       if (menuName === 'stok') {
@@ -627,6 +660,12 @@
         if (menuControlPoint) menuControlPoint.className = activeMenuClass;
         const cpContent = document.getElementById('cp-dashboard-content');
         if (!cpContent || cpContent.innerHTML.trim() === '' || cpContent.querySelector('.text-red-500')) loadControlPoint();
+      }
+      else if (menuName === 'input-stok-biz') {
+        inputStokBizView.classList.remove('hidden');
+        pageTitle.innerText = "Input Stok BIZ";
+        pageIcon.className = "fas fa-database";
+        if (menuInputStokBiz) menuInputStokBiz.className = activeMenuClass;
       }
       else if (menuName === 'daily-report') {
         dailyReportView.classList.remove('hidden');
@@ -1583,6 +1622,88 @@
           button.innerHTML = originalButtonText;
         })
         .savePastedDataWHO(dataToSubmit);
+    }
+
+    function processPasteBIZ() {
+      const text = document.getElementById('input-stok-biz-paste-area').value.trim();
+      const container = document.getElementById('input-stok-biz-preview');
+      const submitContainer = document.getElementById('input-stok-biz-submit-container');
+
+      pastedDataCache['input_stok_biz'] = null;
+
+      if (!text) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste data terlebih dahulu.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      let data = rows.map(row => row.split('\t'));
+
+      if (data.length < 2) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Minimal 2 baris (header + 1 data).</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      pastedDataCache['input_stok_biz'] = data;
+
+      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
+      let htmlBody = '<tbody class="divide-y divide-slate-100">';
+
+      data.forEach((row, i) => {
+        if (i === 0) {
+          row.forEach((c, j) => tableHTML += `<th class="px-4 py-3 font-bold border border-slate-200 whitespace-nowrap">${c || 'Kolom '+(j+1)}</th>`);
+          tableHTML += '</tr></thead>';
+        } else {
+          htmlBody += '<tr class="hover:bg-slate-50">';
+          row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap">${c}</td>`);
+          htmlBody += '</tr>';
+        }
+      });
+
+      htmlBody += '</tbody></table>';
+      container.innerHTML = tableHTML + htmlBody;
+      submitContainer.classList.remove('hidden');
+    }
+
+    function submitDataBIZ() {
+      const dataToSubmit = pastedDataCache['input_stok_biz'];
+      const button = document.querySelector('#input-stok-biz-submit-container button');
+      const originalButtonText = button.innerHTML;
+
+      if (!dataToSubmit || dataToSubmit.length < 2) {
+        alert('Tidak ada data. Silakan proses data terlebih dahulu.');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...';
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = response.message;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
+
+            document.getElementById('input-stok-biz-paste-area').value = '';
+            document.getElementById('input-stok-biz-preview').innerHTML = '';
+            document.getElementById('input-stok-biz-submit-container').classList.add('hidden');
+            pastedDataCache['input_stok_biz'] = null;
+          } else {
+            alert('Gagal: ' + response.message);
+          }
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .withFailureHandler(function(error) {
+          alert('Gagal terhubung ke server: ' + error.message);
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .savePastedDataBIZ(dataToSubmit);
     }
 
     function calculateLogic(cabangKey, p) {
