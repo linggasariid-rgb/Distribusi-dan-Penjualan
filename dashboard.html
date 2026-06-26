@@ -1,0 +1,1300 @@
+    <div id="report-area" class="max-w-7xl mx-auto w-full bg-slate-50 p-1">
+    <!-- Company Branding Header -->
+    <div class="mb-8 px-1">
+      <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase">PT. TRIDAYA SINERGI INDONESIA</h1>
+      <p class="text-blue-600 font-bold uppercase tracking-[0.2em] text-[9px] sm:text-[10px] mt-1">Sales & Distribution Division</p>
+      <div class="text-slate-400 text-[10px] font-medium mt-2 flex items-center gap-2"><i class="far fa-calendar-alt"></i> <span id="header-today-date"></span></div>
+    </div>
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <div class="flex items-center gap-4 flex-shrink-0">
+        <button onclick="toggleSidebar()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all active:scale-95" title="Toggle Sidebar">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+        <h1 class="text-xl md:text-2xl font-extrabold text-blue-700 flex items-center gap-3">
+        <div class="bg-blue-100 text-blue-600 p-3 rounded-xl"><i id="page-icon" class="fas fa-truck-loading"></i></div>
+        <span id="page-title">Dashboard Distribusi</span>
+        </h1>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <select id="branchFilter" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56 transition-all" onchange="handleBranchFilterChange()">
+          <option value="ALL">-- Tampilkan Semua Cabang --</option>
+        </select>
+        <select id="whpFilter" class="hidden px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56 transition-all" onchange="handleAreaFilterChange()">
+          <option value="ALL">-- Tampilkan Semua Area --</option>
+        </select>
+        <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm shadow-blue-200 transition-all flex items-center justify-center gap-2 active:scale-95">
+          <i class="fas fa-sync-alt"></i> Segarkan Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div id="summarySection" class="hidden grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 border-l-4 border-l-red-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group" onclick="openUrgentProductsModal()">
+        <div class="absolute -right-4 -top-4 text-red-50 opacity-50 group-hover:scale-110 transition-transform"><i class="fas fa-exclamation-triangle text-8xl"></i></div>
+        <div class="bg-red-50 text-red-500 p-4 rounded-full z-10 group-hover:bg-red-100 transition-colors"><i class="fas fa-store-alt-slash text-xl"></i></div>
+        <div class="z-10">
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Produk yang harus segera dikirim </h4>
+          <span class="text-2xl font-black text-slate-800" id="urgentCountModalTrigger">0</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 border-l-4 border-l-amber-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group" onclick="openWHPCriticalModal('WHP BANDUNG')">
+        <div class="absolute -right-4 -top-4 text-amber-50 opacity-50 group-hover:scale-110 transition-transform"><i class="fas fa-warehouse text-8xl"></i></div>
+        <div class="bg-amber-50 text-amber-600 p-4 rounded-full z-10 group-hover:bg-amber-100 transition-colors"><i class="fas fa-warehouse text-xl"></i></div>
+        <div class="z-10">
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Stok Kritis WHP Bandung</h4>
+          <span class="text-2xl font-black text-slate-800" id="whpBandungMinStockCount">0</span>
+          <span class="text-xs text-slate-500 font-semibold ml-1">Produk</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 border-l-4 border-l-orange-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group" onclick="openWHPCriticalModal('WHP TASIKMALAYA')">
+        <div class="absolute -right-4 -top-4 text-orange-50 opacity-50 group-hover:scale-110 transition-transform"><i class="fas fa-warehouse text-8xl"></i></div>
+        <div class="bg-orange-50 text-orange-600 p-4 rounded-full z-10 group-hover:bg-orange-100 transition-colors"><i class="fas fa-warehouse text-xl"></i></div>
+        <div class="z-10">
+          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Stok Kritis WHP Tasikmalaya</h4>
+          <span class="text-2xl font-black text-slate-800" id="whpTasikmalayaMinStockCount">0</span>
+          <span class="text-xs text-slate-500 font-semibold ml-1">Produk</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Views -->
+    <div id="distribution-view">
+      <!-- Loader -->
+      <div id="loader" class="flex flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Antosan Sakedap...</p>
+      </div>
+      <!-- Content Area -->
+      <div id="content" class="space-y-8"></div>
+    </div>
+
+    <!-- Sales Dashboard View -->
+    <div id="sales-dashboard-view" class="hidden space-y-8">
+      <!-- Sales Loader -->
+      <div id="sales-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Antosan Sakedap...</p>
+      </div>
+
+      <div id="sales-dashboard-content" class="space-y-8">
+        <!-- Export Tools -->
+        <div class="flex justify-end">
+          <button onclick="captureReport()" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+            <i class="fas fa-camera"></i> Ambil Screenshot Report
+          </button>
+        </div>
+
+        <!-- Sales KPI Cards Row 1 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-400">
+            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Penjualan Bulan Lalu</h4>
+            <div class="text-lg font-black text-slate-700" id="sales-last-month">0</div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-600">
+            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Penjualan Bulan Berjalan</h4>
+            <div class="text-lg font-black text-amber-700" id="sales-monthly">0</div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-500">
+            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Pertumbuhan (Growth)</h4>
+            <div class="text-lg font-black" id="sales-growth">0</div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-400">
+            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1 text-amber-600">Terakhir Harian</h4>
+            <div class="text-lg font-black text-slate-700" id="sales-today">0</div>
+          </div>
+        </div>
+
+        <!-- Distribution & Receipt Split Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-amber-50/50 p-5 rounded-2xl shadow-sm border border-amber-100">
+            <h4 class="text-[9px] font-bold text-amber-600 uppercase mb-1">Distribusi Gudang Bandung</h4>
+            <div class="text-lg font-black text-slate-800" id="dist-bdg">0</div>
+          </div>
+          <div class="bg-amber-50/50 p-5 rounded-2xl shadow-sm border border-amber-100">
+            <h4 class="text-[9px] font-bold text-amber-600 uppercase mb-1">Distribusi Gudang Tasikmalaya</h4>
+            <div class="text-lg font-black text-slate-800" id="dist-tsm">0</div>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h4 class="text-[9px] font-bold text-slate-500 uppercase mb-1">Penerimaan Gudang Bandung</h4>
+            <div class="text-lg font-black text-slate-800" id="rec-bdg">0</div>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h4 class="text-[9px] font-bold text-slate-500 uppercase mb-1">Penerimaan Gudang Tasikmalaya</h4>
+            <div class="text-lg font-black text-slate-800" id="rec-tsm">0</div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 gap-6">
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-slate-700 uppercase text-xs tracking-widest">Ranking Penjualan Cabang</h3>
+              <i class="fas fa-crown text-amber-500"></i>
+            </div>
+            <div class="relative h-[500px]">
+              <canvas id="branchRankingChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="stock-summary-view" class="hidden">
+      <div id="stock-summary-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+    </div>
+
+    <!-- Penjualan View -->
+    <div id="penjualan-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Penjualan</h2>
+        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel Laporan Penjualan Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-xs text-blue-800">
+          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Panduan Input Data:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Pastikan Anda telah meng-<b>Unhide (tampilkan semua)</b> kolom di Excel Laporan Penjualan WHO Anda.</li>
+            <li>Pilih <b>Cabang</b> Anda dan <b>Tipe Laporan</b> (MST & STK / TsiApps / TsiEmployee) pada pilihan di bawah.</li>
+            <li>Block dan <i>Copy</i> (Salin) baris data dari <b>Kolom B sampai AF</b> (Kolom Tanggal sampai JUMLAH).</li>
+            <li><i>Paste</i> (Tempel) ke dalam kotak di bawah ini, lalu klik tombol <b>Proses & Preview Data</b>.</li>
+          </ol>
+        </div>
+        
+        <div class="mb-4 flex flex-col sm:flex-row gap-4">
+          <select id="penjualan-branch-select" class="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
+          <select id="penjualan-type-select" class="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" onchange="clearPenjualan()">
+            <option value="mst_stk">Tipe Laporan: MST & STK</option>
+            <option value="tsiapps">Tipe Laporan: TsiApps</option>
+            <option value="employee">Tipe Laporan: TsiEmployee</option>
+          </select>
+        </div>
+        
+        <textarea id="penjualan-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data Excel di sini..."></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPaste('penjualan-paste-area', 'penjualan-preview')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('penjualan-paste-area').value=''; document.getElementById('penjualan-preview').innerHTML=''; document.getElementById('penjualan-submit-container').classList.add('hidden');" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="penjualan-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="penjualan-submit-container">
+           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitData('penjualan')"><i class="fas fa-save mr-2"></i> Simpan & Potong Stok Cabang</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Penerimaan View -->
+    <div id="penerimaan-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Penerimaan (Barang Masuk)</h2>
+        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel Surat Jalan / Penerimaan Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-xs text-blue-800">
+          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Panduan Input Data:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Pastikan Anda telah meng-<b>Unhide (tampilkan semua)</b> kolom di Excel Surat Jalan / Penerimaan Anda.</li>
+            <li>Pilih <b>Cabang</b> Anda pada menu pilihan di bawah.</li>
+            <li>Block dan <i>Copy</i> (Salin) baris data dari <b>Kolom B sampai AF</b> (Kolom Tanggal sampai JUMLAH).</li>
+            <li><i>Paste</i> (Tempel) ke dalam kotak di bawah ini, lalu klik tombol <b>Proses & Preview Data</b>.</li>
+          </ol>
+        </div>
+        
+        <div class="mb-4">
+          <select id="penerimaan-branch-select" class="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
+        </div>
+
+        <textarea id="penerimaan-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data Excel di sini..."></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPaste('penerimaan-paste-area', 'penerimaan-preview')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('penerimaan-paste-area').value=''; document.getElementById('penerimaan-preview').innerHTML=''; document.getElementById('penerimaan-submit-container').classList.add('hidden');" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="penerimaan-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="penerimaan-submit-container">
+           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitData('penerimaan')"><i class="fas fa-save mr-2"></i> Simpan & Tambahkan Stok Cabang</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-12 text-sm text-slate-400 font-medium pb-8">
+      Powered by ATR™ Created by SND Support | © 2026 Tridaya Sinergi Indonesia
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-32 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-semibold pointer-events-none">
+    <i class="fas fa-check-circle text-emerald-400 text-xl"></i>
+    <span>Teks WhatsApp berhasil disalin!</span>
+  </div>
+
+  <!-- Urgent Products Modal -->
+  <div id="urgentProductsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+        <h2 class="text-xl font-bold text-red-700 flex items-center gap-3">
+          <i class="fas fa-exclamation-triangle text-red-500"></i> Produk Mendesak
+        </h2>
+        <button onclick="closeUrgentProductsModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div id="urgentProductsModalContent" class="p-6 overflow-y-auto flex-1">
+        <!-- Content will be loaded here by JavaScript -->
+      </div>
+      <div class="p-4 border-t border-slate-200 text-right">
+        <button onclick="closeUrgentProductsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl font-semibold transition-colors">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gData = null;
+    let branchDays = {}; 
+    let urgentBranchesData = {}; // Global variable to store urgent product details for the modal
+    let whpCriticalData = { "WHP BANDUNG": [], "WHP TASIKMALAYA": [] };
+    let branchBuffers = {}; 
+    let globalAllocations = {}; 
+    let pastedDataCache = {}; // Cache to hold parsed data
+    let salesTrendChart = null;
+    let branchRankingChart = null;
+
+    /**
+     * Fungsi untuk menyembunyikan/menampilkan sidebar.
+     * Menggunakan kelas standar Tailwind (w-80, ml-80) agar layout konsisten.
+     */
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      
+      if (sidebar.classList.contains('translate-x-0')) { // Sidebar is open
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('ml-80');
+        mainContent.classList.add('ml-0');
+      } else { // Sidebar is closed
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        mainContent.classList.remove('ml-0');
+        mainContent.classList.add('ml-80');
+      }
+    }
+
+    function loadData() {
+      // Update Tanggal Hari Ini di Header
+      const dateObj = new Date();
+      const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('header-today-date').innerText = dateObj.toLocaleDateString('id-ID', dateOptions);
+
+      const loader = document.getElementById('loader');
+      const content = document.getElementById('content');
+      const stockContent = document.getElementById('stock-summary-content');
+      const summary = document.getElementById('summarySection');
+      
+      loader.classList.remove('hidden');
+      loader.classList.add('flex');
+      content.innerHTML = '';
+      stockContent.innerHTML = '';
+      summary.classList.add('hidden');
+      summary.classList.remove('grid');
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          loader.classList.add('hidden');
+          loader.classList.remove('flex');
+          if (resp.status === "error") {
+            content.innerHTML = `<div class="text-red-500 text-center font-bold p-10 bg-red-50 rounded-xl border border-red-200">${resp.message}</div>`;
+          } else {
+            gData = resp.data;
+            initFilter();
+            renderCards();
+            renderStockSummaryTable();
+          }
+        })
+        .withFailureHandler(function(err) {
+          loader.classList.add('hidden');
+          loader.classList.remove('flex');
+          content.innerHTML = `<div class="text-red-500 text-center font-bold p-10 bg-red-50 rounded-xl border border-red-200">Gagal Memuat Data: ${err.message}</div>`;
+        })
+        .getDistributionData();
+    }
+
+    function initFilter() {
+      const select = document.getElementById('branchFilter');
+      const keys = Object.keys(gData.result).sort();
+      select.innerHTML = '<option value="ALL">-- Tampilkan Semua Cabang --</option>';
+      
+      const penSelect = document.getElementById('penjualan-branch-select');
+      const recSelect = document.getElementById('penerimaan-branch-select');
+      if (penSelect) penSelect.innerHTML = '<option value="">-- Pilih Cabang (Sesuai Login) --</option>';
+      if (recSelect) recSelect.innerHTML = '<option value="">-- Pilih Cabang (Sesuai Login) --</option>';
+
+      keys.forEach(k => {
+        select.add(new Option(gData.result[k].nama, k));
+        if (penSelect) penSelect.add(new Option(gData.result[k].nama, k));
+        if (recSelect) recSelect.add(new Option(gData.result[k].nama, k));
+        
+        if (!branchDays[k]) branchDays[k] = 8;
+        if (branchBuffers[k] === undefined) branchBuffers[k] = 4;
+      });
+      
+      const whpSelect = document.getElementById('whpFilter');
+      whpSelect.innerHTML = '<option value="ALL">-- Tampilkan Semua WHO --</option>';
+      const whpKeys = Object.keys(gData.whpMapping).sort();
+      whpKeys.forEach(k => {
+        let opt = document.createElement('option');
+        opt.value = k;
+        opt.text = k;
+        whpSelect.add(opt);
+      });
+
+      const summary = document.getElementById('summarySection');
+      const distView = document.getElementById('distribution-view');
+      if (distView.style.display !== 'none') {
+        summary.classList.remove('hidden');
+        summary.classList.add('grid');
+      }
+    }
+
+    function getWHP(branchKey) {
+      for (let whp in gData.whpMapping) {
+        if (gData.whpMapping[whp].some(b => branchKey.includes(b))) return whp;
+      }
+      return null;
+    }
+    
+    function switchMenu(menuName) {
+      const distView = document.getElementById('distribution-view');
+      const stockView = document.getElementById('stock-summary-view');
+      const penjualanView = document.getElementById('penjualan-view');
+      const penerimaanView = document.getElementById('penerimaan-view');
+      const salesDashboardView = document.getElementById('sales-dashboard-view');
+      
+      const menuDist = document.getElementById('menu-distribusi');
+      const menuStok = document.getElementById('menu-stok');
+      const menuPenjualan = document.getElementById('menu-penjualan');
+      const menuPenerimaan = document.getElementById('menu-penerimaan');
+      const menuSalesDash = document.getElementById('menu-sales-dashboard');
+      
+      const pageTitle = document.getElementById('page-title');
+      const pageIcon = document.getElementById('page-icon');
+      const branchFilter = document.getElementById('branchFilter');
+      const whpFilter = document.getElementById('whpFilter');
+      const summarySection = document.getElementById('summarySection');
+
+      // Sembunyikan semua View terlebih dahulu
+      distView.style.display = 'none';
+      stockView.classList.add('hidden');
+      penjualanView.classList.add('hidden');
+      penerimaanView.classList.add('hidden');
+      salesDashboardView.classList.add('hidden');
+      branchFilter.classList.add('hidden');
+      if (summarySection) {
+        summarySection.classList.add('hidden');
+        summarySection.classList.remove('grid');
+      }
+
+      // Reset semua Menu Class (Non-aktif)
+      const defaultMenuClass = "flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300";
+      const activeMenuClass = "flex items-center gap-4 px-4 py-3.5 bg-blue-600/10 text-blue-500 rounded-xl font-bold border border-blue-500/20 transition-all";
+      if(menuDist) menuDist.className = defaultMenuClass;
+      if(menuStok) menuStok.className = defaultMenuClass;
+      if(menuPenjualan) menuPenjualan.className = defaultMenuClass;
+      if(menuPenerimaan) menuPenerimaan.className = defaultMenuClass;
+      if(menuSalesDash) menuSalesDash.className = defaultMenuClass;
+
+      // Tampilkan View & Aktifkan Menu sesuai Pilihan
+      if (menuName === 'stok') {
+        stockView.classList.remove('hidden');
+        pageTitle.innerText = "Ringkasan Stok";
+        pageIcon.className = "fas fa-boxes";
+        branchFilter.classList.remove('hidden');
+        if (menuStok) menuStok.className = activeMenuClass;
+      } 
+      else if (menuName === 'penjualan') {
+        penjualanView.classList.remove('hidden');
+        pageTitle.innerText = "Input Penjualan";
+        pageIcon.className = "fas fa-file-invoice-dollar";
+        if (menuPenjualan) menuPenjualan.className = activeMenuClass;
+      }
+      else if (menuName === 'penerimaan') {
+        penerimaanView.classList.remove('hidden');
+        pageTitle.innerText = "Input Penerimaan (WH)";
+        pageIcon.className = "fas fa-box-open";
+        if (menuPenerimaan) menuPenerimaan.className = activeMenuClass;
+      }
+      else if (menuName === 'sales-dashboard') {
+        salesDashboardView.classList.remove('hidden');
+        pageTitle.innerText = "Report Penjualan";
+        pageIcon.className = "fas fa-chart-line";
+        branchFilter.classList.remove('hidden');
+        if (menuSalesDash) menuSalesDash.className = activeMenuClass;
+        loadSalesData(); // Pastikan fungsi ini dipanggil
+      }
+      else { // 'distribusi'
+        distView.style.display = 'block';
+        pageTitle.innerText = "Dashboard Distribusi";
+        pageIcon.className = "fas fa-truck-loading";
+        branchFilter.classList.remove('hidden');
+        if (summarySection && gData) { // Hanya munculkan jika data sudah beres di-load
+          summarySection.classList.remove('hidden');
+          summarySection.classList.add('grid');
+        }
+        if (menuDist) menuDist.className = activeMenuClass;
+      }
+    }
+
+    function refreshData() {
+      const salesDashboardView = document.getElementById('sales-dashboard-view');
+      if (salesDashboardView && !salesDashboardView.classList.contains('hidden')) {
+        loadSalesData();
+      } else {
+        loadData();
+      }
+    }
+    
+    function handleBranchFilterChange() {
+      const salesDashboardView = document.getElementById('sales-dashboard-view');
+      const stockView = document.getElementById('stock-summary-view');
+      if (!salesDashboardView.classList.contains('hidden')) {
+        loadSalesData();
+      } else if (!stockView.classList.contains('hidden')) {
+        renderStockSummaryTable();
+      } else {
+        renderCards();
+      }
+    }
+
+    function handleAreaFilterChange() {
+      const salesDashboardView = document.getElementById('sales-dashboard-view');
+      const stockView = document.getElementById('stock-summary-view');
+      
+      if (!salesDashboardView.classList.contains('hidden')) {
+        loadSalesData();
+      } else if (!stockView.classList.contains('hidden')) {
+        renderStockSummaryTable();
+      }
+    }
+
+    function captureReport() {
+      const btn = document.querySelector('button[onclick="captureReport()"]');
+      const reportArea = document.getElementById('report-area');
+      const filterArea = document.querySelector('.flex.flex-col.md\\:flex-row.justify-between.items-center.mb-8');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+
+      // Simpan status sidebar saat ini untuk dikembalikan nanti
+      const isSidebarOpen = sidebar.classList.contains('translate-x-0');
+      
+      const originalBtnText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+      btn.disabled = true;
+
+      // Sembunyikan sidebar secara otomatis agar area tangkapan layar menjadi landscape penuh
+      if (isSidebarOpen) {
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
+        mainContent.classList.remove('ml-80');
+        mainContent.classList.add('ml-0');
+      }
+
+      // Simpan styling asli untuk dikembalikan nanti
+      const originalStyle = reportArea.getAttribute('style') || '';
+      
+      // Paksa lebar ke mode landscape (Desktop View) agar layout tidak menumpuk (stack)
+      // 1280px (7xl) adalah standar landscape yang bagus untuk dashboard ini
+      reportArea.style.width = '1280px';
+      reportArea.style.maxWidth = 'none';
+      
+      // Sembunyikan elemen yang tidak ingin masuk ke gambar
+      btn.style.visibility = 'hidden';
+      filterArea.style.display = 'none';
+      
+      // Beri jeda agar browser merender ulang layout dengan lebar baru (Reflow)
+      setTimeout(() => {
+        html2canvas(reportArea, {
+          scale: 3, // Meningkatkan kualitas dan ukuran gambar untuk kejelasan lebih baik
+          useCORS: true,
+          backgroundColor: '#f8fafc'
+        }).then(canvas => {
+          canvas.toBlob(blob => {
+            try {
+              const item = new ClipboardItem({ "image/png": blob });
+              navigator.clipboard.write([item]).then(() => {
+                showToast("Screenshot Landscape disalin! Silakan Paste (Ctrl+V).");
+              }).catch(() => {
+                // Fallback jika Clipboard API gagal (biasanya karena masalah izin browser)
+                const link = document.createElement('a');
+                link.download = `Report-Sales-Landscape.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                showToast("Gagal menyalin, file diunduh otomatis.");
+              });
+            } catch (e) { showToast("Browser tidak mendukung copy gambar."); }
+            
+            // Kembalikan tampilan ke semula
+            reportArea.setAttribute('style', originalStyle);
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            btn.style.visibility = 'visible';
+            filterArea.style.display = 'flex';
+
+            // Kembalikan status sidebar ke kondisi semula
+            if (isSidebarOpen) {
+              sidebar.classList.add('translate-x-0');
+              sidebar.classList.remove('-translate-x-full');
+              mainContent.classList.add('ml-80');
+              mainContent.classList.remove('ml-0');
+            }
+          }, 'image/png');
+        });
+      }, 500); // Jeda 500ms untuk proses re-layout yang lebih stabil
+    }
+
+    function loadSalesData() {
+      const selectedWHO = document.getElementById('whpFilter').value;
+      const selectedBranch = document.getElementById('branchFilter').value;
+      const loader = document.getElementById('sales-loader');
+      const content = document.getElementById('sales-dashboard-content');
+
+      if (loader && content) {
+        loader.classList.remove('hidden');
+        loader.classList.add('flex');
+        content.classList.add('hidden');
+      }
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (loader && content) {
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            content.classList.remove('hidden');
+          }
+          if (resp.status === "success") {
+            const d = resp.data;
+            
+            // Update KPI Cards
+            document.getElementById('sales-last-month').innerText = d.kpis.lastMonth.toLocaleString('id-ID') + " Bks";
+            document.getElementById('sales-monthly').innerText = d.kpis.monthly.toLocaleString('id-ID') + " Bks";
+            
+            const growthVal = d.kpis.growth;
+            const growthPct = d.kpis.lastMonth === 0 ? (growthVal > 0 ? 100 : 0) : Math.round((growthVal / d.kpis.lastMonth) * 100);
+            const growthEl = document.getElementById('sales-growth');
+            growthEl.innerHTML = `
+              <div class="${growthVal >= 0 ? 'text-emerald-600' : 'text-red-600'}">
+                ${growthVal > 0 ? '+' : ''}${growthPct}%
+              </div>
+              <div class="text-[10px] text-slate-400 font-medium">Selisih: ${growthVal.toLocaleString('id-ID')}</div>
+            `;
+
+            document.getElementById('sales-today').innerText = d.kpis.today.toLocaleString('id-ID') + " Bks";
+            document.getElementById('dist-bdg').innerText = d.kpis.distBDG.toLocaleString('id-ID') + " Bks";
+            document.getElementById('dist-tsm').innerText = d.kpis.distTSM.toLocaleString('id-ID') + " Bks";
+            document.getElementById('rec-bdg').innerText = d.kpis.recBDG.toLocaleString('id-ID') + " Bks";
+            document.getElementById('rec-tsm').innerText = d.kpis.recTSM.toLocaleString('id-ID') + " Bks";
+            
+            renderSalesCharts(d);
+            renderRankingTable(d.ranking);
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (loader && content) {
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            content.classList.remove('hidden');
+          }
+          console.error("Gagal memuat data sales:", err);
+          alert("Gagal mengambil data dari spreadsheet: " + err.message);
+        })
+        .getSalesDashboardData(selectedWHO, selectedBranch);
+    }
+
+    function renderSalesCharts(data) {
+      // Ranking Penjualan Cabang
+      const ctxRank = document.getElementById('branchRankingChart').getContext('2d');
+      if (branchRankingChart) branchRankingChart.destroy();
+      
+      const rankLabels = data.ranking.slice(0, 10).map(item => item.branch);
+      const rankValues = data.ranking.slice(0, 10).map(item => item.total);
+
+      if (rankLabels.length === 0) return;
+
+      branchRankingChart = new Chart(ctxRank, {
+        type: 'bar',
+        data: {
+          labels: rankLabels,
+          datasets: [{
+            label: 'Total Penjualan',
+            data: rankValues,
+            backgroundColor: '#d4af37',
+            borderRadius: 8
+          }]
+        },
+        plugins: [ChartDataLabels],
+        options: { 
+          indexAxis: 'y',
+          responsive: true, 
+          plugins: { 
+            legend: { display: false },
+            datalabels: {
+              anchor: 'center',
+              align: 'right',
+              offset: 10,
+              color: '#78350f',
+            font: { weight: '800', size: 10 },
+              formatter: (value) => value.toLocaleString('id-ID')
+            }
+          },
+          scales: {
+            x: { display: false },
+            y: { 
+              ticks: { font: { weight: 'bold' }, color: '#334155' }
+            }
+          }
+        }
+      });
+    }
+
+    function renderRankingTable(ranking) {
+      let html = `
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+            <tr>
+              <th class="px-6 py-4">Rank</th>
+              <th class="px-6 py-4">Cabang</th>
+              <th class="px-6 py-4 text-right">Total Penjualan</th>
+              <th class="px-6 py-4 text-right">Kontribusi (%)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">`;
+      
+      const grandTotal = ranking.reduce((sum, item) => sum + item.total, 0);
+      
+      ranking.forEach((item, index) => {
+        const percentage = grandTotal > 0 ? ((item.total / grandTotal) * 100).toFixed(1) : 0;
+        html += `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-4 font-bold text-slate-400">#${index + 1}</td>
+            <td class="px-6 py-4 font-bold text-slate-700">${item.branch}</td>
+            <td class="px-6 py-4 text-right font-black text-blue-600">${item.total.toLocaleString('id-ID')}</td>
+            <td class="px-6 py-4 text-right text-slate-500">${percentage}%</td>
+          </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('sales-ranking-content').innerHTML = html;
+    }
+
+    function clearPenjualan() {
+      document.getElementById('penjualan-paste-area').value = '';
+      document.getElementById('penjualan-preview').innerHTML = '';
+      document.getElementById('penjualan-submit-container').classList.add('hidden');
+      pastedDataCache['penjualan'] = null;
+    }
+
+    function processPaste(textareaId, previewId) {
+      const type = textareaId.split('-')[0]; // 'penjualan' or 'penerimaan'
+      const text = document.getElementById(textareaId).value.trim();
+      const container = document.getElementById(previewId);
+      const submitContainer = document.getElementById(type + '-submit-container');
+      
+      pastedDataCache[type] = null; // Clear cache on new process
+      
+      if (!text) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste (tempel) data terlebih dahulu dari Excel.</p>';
+        if (submitContainer) submitContainer.classList.add('hidden');
+        return;
+      }
+
+      let subType = '';
+      if (type === 'penjualan') {
+         subType = document.getElementById('penjualan-type-select').value;
+      }
+
+      const predefinedHeaders = {
+        penjualan_mst_stk: ['TANGGAL', 'NO. PURCHASE ORDER', 'NO. FAKTUR PENJUALAN', 'NO. SURAT JALAN', 'Jam Print', 'NAMA PDM', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'Zona', 'JUMLAH'],
+        penjualan_tsiapps: ['TANGGAL', 'NO. ORDER MEMBER', 'NO. FAKTUR PENJUALAN', 'JAM PRINT', 'Nama', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'Ongkir', 'JUMLAH'],
+        penjualan_employee: ['TANGGAL', 'NO. ORDER MEMBER', 'NO. FAKTUR PENJUALAN', 'JAM PRINT', 'Nama', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'JUMLAH'],
+        penerimaan: ['TANGGAL', 'NO. PEMESANAN', 'NO. PENERIMAAN', 'NO. SURAT JALAN', 'JAM PRINT', 'Gudang', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'Status', 'JUMLAH']
+      };
+
+      let headerKey = type === 'penjualan' ? `penjualan_${subType}` : 'penerimaan';
+
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      let dataForBackend = rows.map(row => row.split('\t'));
+
+      // Jika baris pertama yang dipaste adalah header dari excel, kita hapus agar tidak dobel
+      if (dataForBackend.length > 0 && String(dataForBackend[0][0]).toUpperCase().includes('TANGGAL')) {
+        dataForBackend.shift();
+      }
+
+      // Sisipkan header bawaan yang sudah di-setting
+      dataForBackend.unshift(predefinedHeaders[headerKey]);
+
+      const headerCols = dataForBackend[0].length;
+      // Standarisasi panjang baris (mencegah error karena excel memotong trailing tab)
+      dataForBackend = dataForBackend.map((row, index) => {
+        if (index === 0) return row;
+        let newRow = [...row];
+        while (newRow.length < headerCols) newRow.push('-');
+        return newRow.slice(0, headerCols);
+      });
+
+      // --- Basic Validation ---
+      if (dataForBackend.length < 2) {
+        container.innerHTML = `<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Error: Data yang di-paste minimal harus 2 baris (1 baris header dan 1 baris data).</p>`;
+        if (submitContainer) submitContainer.classList.add('hidden');
+        return;
+      }
+
+      pastedDataCache[type] = dataForBackend; // Store parsed data in cache
+
+      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
+      let htmlBody = '<tbody class="divide-y divide-slate-100">';
+      
+      dataForBackend.forEach((row, i) => {
+        if (i === 0) {
+          row.forEach((c, j) => tableHTML += `<th class="px-4 py-3 font-bold border border-slate-200 whitespace-nowrap">${c || 'Kolom '+(j+1)}</th>`);
+          tableHTML += '</tr></thead>';
+        } else {
+          htmlBody += '<tr class="hover:bg-slate-50">';
+          row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap">${c}</td>`);
+          htmlBody += '</tr>';
+        }
+      });
+      
+      htmlBody += '</tbody></table>';
+      container.innerHTML = tableHTML + htmlBody;
+      if (submitContainer) submitContainer.classList.remove('hidden');
+    }
+
+    function submitData(type) {
+        const dataToSubmit = pastedDataCache[type];
+        const button = document.querySelector(`#${type}-submit-container button`);
+        const branchSelect = document.getElementById(`${type}-branch-select`);
+        const originalButtonText = button.innerHTML;
+
+        if (!dataToSubmit || dataToSubmit.length < 2) {
+            alert('Tidak ada data untuk disimpan. Silakan proses data dari Excel terlebih dahulu.');
+            return;
+        }
+        
+        if (!branchSelect || !branchSelect.value) {
+            alert('PENTING: Silakan pilih Cabang terlebih dahulu di atas kotak input!');
+            return;
+        }
+
+        // Disable button and show loader
+        button.disabled = true;
+        button.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...`;
+        let subType = type === 'penjualan' ? document.getElementById('penjualan-type-select').value : '';
+
+        google.script.run
+            .withSuccessHandler(function(response) {
+                if (response.status === 'success') {
+                    const toast = document.getElementById('toast');
+                    toast.querySelector('span').innerText = response.message;
+                    toast.classList.remove('translate-y-32', 'opacity-0');
+                    setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
+
+                    document.getElementById(`${type}-paste-area`).value = '';
+                    document.getElementById(`${type}-preview`).innerHTML = '';
+                    document.getElementById(`${type}-submit-container`).classList.add('hidden');
+
+                    if (confirm('Data berhasil disimpan. Apakah Anda ingin memuat ulang data dashboard sekarang?')) {
+                        loadData();
+                        switchMenu('distribusi');
+                    }
+                } else {
+                    alert('Terjadi kesalahan saat menyimpan: ' + response.message);
+                }
+                button.disabled = false;
+                button.innerHTML = originalButtonText;
+            })
+            .withFailureHandler(function(error) {
+                alert('Gagal terhubung ke server: ' + error.message);
+                button.disabled = false;
+                button.innerHTML = originalButtonText;
+            })
+            .savePastedData(dataToSubmit, type, branchSelect.value, subType);
+    }
+
+    function calculateLogic(cabangKey, p) {
+      let cb = gData.result[cabangKey];
+      let pInfo = gData.productInfo[p] || {ctn:10, targetStock:8};
+      let targetDays = branchDays[cabangKey] || 8;
+      let bufferDays = branchBuffers[cabangKey] !== undefined ? branchBuffers[cabangKey] : 4;
+      let totalDays = targetDays + bufferDays;
+      let hasSalesData = cb.produk[p].salesTotal > 0;
+      let dsr = hasSalesData ? Math.ceil(cb.produk[p].salesTotal / cb.pembagi) : 0;
+      let stok = cb.produk[p].currentStock;
+      
+      let sisaHari = hasSalesData ? (dsr > 0 ? (stok / dsr) : 99) : null;
+      let qtyReguler = hasSalesData ? Math.max(0, (dsr * totalDays) - stok) : 0;
+      
+      let qtyMendesak = 0;
+      if (hasSalesData && sisaHari !== null && sisaHari <= 1.5) {
+        qtyMendesak = Math.max(0, (dsr * 3) - stok);
+      }
+
+      const pembulatan = (q) => {
+        if (q <= 0) return 0;
+        let alwaysUp = gData.specialRoundUp || ["SP19 TSI", "SKM TSI", "SSJ", "SNN ORG"];
+        let ctn = pInfo.ctn;
+        if (alwaysUp.includes(p.toUpperCase())) return Math.ceil(q / ctn) * ctn;
+        let rounded = Math.round(q / ctn) * ctn;
+        return rounded > 0 ? rounded : ctn;
+      };
+
+      return {
+        dsr: dsr,
+        stok: stok,
+        sisaHari: sisaHari,
+        kirimReguler: hasSalesData ? pembulatan(qtyReguler) : 0,
+        kirimMendesak: hasSalesData ? pembulatan(qtyMendesak) : 0,
+        isCritical: hasSalesData && sisaHari !== null && sisaHari <= 1.0,
+        isWarning: hasSalesData && sisaHari !== null && sisaHari > 1.0 && sisaHari <= 2.0,
+        noSalesData: !hasSalesData
+      };
+    }
+
+    function renderCards() {
+      // --- LOGIKA ALOKASI PEMBAGIAN STOK WHP ---
+      let allocations = {};
+      for (let key in gData.result) { allocations[key] = {}; }
+
+      // Reset data stok kritis WHP
+      whpCriticalData = { "WHP BANDUNG": [], "WHP TASIKMALAYA": [] };
+
+      // Counter untuk Produk Stok Kritis di WHP
+      let bdgCriticalCount = 0;
+      let tsmCriticalCount = 0;
+
+      gData.productList.forEach(p => {
+        let whpRequests = {};
+        for (let key in gData.result) {
+          let whp = getWHP(key);
+          if (!whpRequests[whp]) whpRequests[whp] = [];
+          let res = calculateLogic(key, p);
+          let req = res.kirimMendesak > 0 ? res.kirimMendesak : res.kirimReguler;
+          whpRequests[whp].push({ branch: key, req: req, sisaHari: res.sisaHari, allocated: 0 });
+        }
+
+        for (let whp in whpRequests) {
+          let branchesReq = whpRequests[whp];
+          let totalReq = branchesReq.reduce((sum, b) => sum + b.req, 0);
+          let whpExists = gData.whpStockData && gData.whpStockData[whp];
+          let available = whpExists ? (gData.whpStockData[whp][p] || 0) : Infinity;
+
+          // Cek stok kritis: Stok Kosong di WHP ATAU total kebutuhan cabang > stok yang tersedia
+          if ((available === 0 || (totalReq > available && totalReq > 0)) && available !== Infinity) {
+            if (whp === "WHP BANDUNG") {
+              bdgCriticalCount++;
+              whpCriticalData["WHP BANDUNG"].push({ product: p, available: available, totalReq: totalReq });
+            }
+            if (whp === "WHP TASIKMALAYA") {
+              tsmCriticalCount++;
+              whpCriticalData["WHP TASIKMALAYA"].push({ product: p, available: available, totalReq: totalReq });
+            }
+          }
+
+          if (totalReq <= available) {
+            branchesReq.forEach(b => allocations[b.branch][p] = b.req);
+          } else {
+            // Stok tidak cukup! Prioritaskan yang Sisa Harinya paling kecil (paling Kritis)
+            branchesReq.sort((a, b) => a.sisaHari - b.sisaHari);
+            let ctn = gData.productInfo[p].ctn || 10;
+            
+            let keepAllocating = true;
+            while (keepAllocating && available >= ctn) {
+              keepAllocating = false;
+              for (let i = 0; i < branchesReq.length; i++) {
+                if (available < ctn) break;
+                let bReq = branchesReq[i];
+                if (bReq.allocated + ctn <= bReq.req) {
+                  bReq.allocated += ctn; available -= ctn; keepAllocating = true;
+                }
+              }
+            }
+            // Alokasikan sisa stok (< 1 CTN) ke cabang paling kritis yang masih butuh
+            if (available > 0) {
+              for (let i = 0; i < branchesReq.length; i++) {
+                let bReq = branchesReq[i];
+                if (bReq.allocated < bReq.req) {
+                  let sisa = Math.min(available, bReq.req - bReq.allocated);
+                  bReq.allocated += sisa;
+                  available -= sisa;
+                  break;
+                }
+              }
+            }
+            branchesReq.forEach(b => allocations[b.branch][p] = b.allocated);
+          }
+        }
+      });
+      globalAllocations = allocations;
+      // ------------------------------------------
+
+      const filter = document.getElementById('branchFilter').value;
+      let html = '';
+      let grandTotal = 0;
+
+      // Clear urgentBranchesData for a fresh render
+      urgentBranchesData = {};
+
+      for (let key in gData.result) {
+        if (filter !== "ALL" && filter !== key) continue;
+
+        let rows = '';
+        let totalKirimCabang = 0;
+        let cabangHasCritical = false;
+
+        let criticalProductsForBranch = []; // To store critical products for this branch
+        gData.productList.forEach(p => {
+          let res = calculateLogic(key, p);
+          let reqIdeal = res.kirimMendesak > 0 ? res.kirimMendesak : res.kirimReguler;
+          let qtyFinal = globalAllocations[key][p];
+          // Limit stok WHP terdeteksi jika alokasi lebih kecil dari kebutuhan ideal (target hari)
+          let isStockLimit = qtyFinal < reqIdeal && reqIdeal > 0; 
+
+          totalKirimCabang += qtyFinal;
+          if (res.isCritical) {
+            cabangHasCritical = true;
+            criticalProductsForBranch.push({
+              product: p,
+              sisaHari: res.sisaHari,
+              qtyToShip: qtyFinal,
+              reqIdeal: reqIdeal,
+              isStockLimit: isStockLimit            });
+          }
+
+          let noData = res.noSalesData;
+          let dayClass = noData ? 'text-slate-400 italic text-xs' : (res.isCritical ? 'text-red-600 font-extrabold bg-red-50' : (res.isWarning ? 'text-amber-600 font-extrabold bg-amber-50' : 'text-slate-600 font-medium text-xs'));
+          let rowClass = res.isCritical ? 'bg-red-50/40' : (noData ? 'opacity-60' : 'hover:bg-slate-50');
+
+          let qtyDisplay = isStockLimit ? `<span class="text-red-600 font-black" title="Stok WHP Limit (Kebutuhan Ideal: ${reqIdeal.toLocaleString('id-ID')})">${qtyFinal.toLocaleString('id-ID')}</span>` : qtyFinal.toLocaleString('id-ID');
+          let mendesakDisplay = noData ? '-' : (res.kirimMendesak > 0 ? qtyDisplay : '-');
+          let regulerDisplay = noData ? '-' : (res.kirimMendesak > 0 ? '-' : qtyDisplay);
+          let sisaHariDisplay = noData ? 'N/A' : (res.sisaHari.toFixed(1) + ' Hari');
+
+          rows += `
+            <tr class="${rowClass} transition-colors border-b border-slate-100 last:border-0">
+              <td class="px-5 py-3 whitespace-nowrap font-bold text-slate-800">${p}</td>
+              <td class="px-5 py-3 whitespace-nowrap text-slate-600 font-medium">${res.dsr}</td>
+              <td class="px-5 py-3 whitespace-nowrap text-slate-600 font-medium">${res.stok}</td>
+              <td class="px-5 py-3 whitespace-nowrap ${dayClass} rounded-lg text-sm">${sisaHariDisplay}</td>
+              <td class="px-5 py-3 whitespace-nowrap font-extrabold text-slate-800">${regulerDisplay}</td>
+              <td class="px-5 py-3 whitespace-nowrap font-extrabold text-indigo-600">${mendesakDisplay}</td>
+            </tr>`;
+        });
+
+        if (cabangHasCritical) {
+          urgentBranchesData[key] = { name: gData.result[key].nama, products: criticalProductsForBranch };
+        }
+        grandTotal += totalKirimCabang;
+
+        html += `
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+            <!-- Branch Header -->
+            <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div class="flex items-center gap-3">
+                <h2 class="text-lg font-extrabold text-blue-800 uppercase tracking-tight">${gData.result[key].nama}</h2>
+                ${cabangHasCritical ? '<span class="bg-red-100 text-red-600 px-3 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 animate-pulse"><i class="fas fa-exclamation-circle"></i> Kritis</span>' : ''}
+              </div>
+              <div class="flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
+                <div class="text-xs font-semibold text-slate-500 flex items-center gap-2 border-r border-slate-200 pr-4">
+                  Target
+                  <input type="number" value="${branchDays[key]}" onchange="updateTarget('${key}', this.value)" class="w-14 px-1 py-1 border border-slate-300 rounded-lg text-center font-bold text-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"> H
+                  <span class="text-slate-300 mx-1">|</span>
+                  Buffer
+                  <input type="number" value="${branchBuffers[key]}" onchange="updateBuffer('${key}', this.value)" class="w-14 px-1 py-1 border border-slate-300 rounded-lg text-center font-bold text-emerald-600 focus:ring-2 focus:ring-emerald-500 focus:outline-none"> H
+                </div>
+                <div class="text-xs font-bold text-slate-700 whitespace-nowrap">
+                  Total: <span class="text-blue-600 text-base ml-1">${totalKirimCabang.toLocaleString('id-ID')}</span> Bks
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto table-container">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100/50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
+                    <th class="px-5 py-3 font-bold">Produk</th>
+                    <th class="px-5 py-3 font-bold">Avg /H</th>
+                    <th class="px-5 py-3 font-bold">Stok</th>
+                    <th class="px-5 py-3 font-bold">Kecukupan Produk</th>
+                    <th class="px-5 py-3 font-bold">Kirim (${branchDays[key]}H + ${branchBuffers[key]}H)</th>
+                    <th class="px-5 py-3 font-bold">Mendesak</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${rows}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Action Button -->
+            <div class="p-4 bg-slate-50/50 border-t border-slate-100">
+              <button class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-sm shadow-emerald-200 flex items-center justify-center gap-2 active:scale-[0.98] text-base" onclick="copyWA('${key}')">
+                <i class="fab fa-whatsapp text-xl"></i> Salin Data untuk Gudang (WH)
+              </button>
+            </div>
+          </div>`;
+      }
+
+      document.getElementById('content').innerHTML = html;
+      document.getElementById('urgentCountModalTrigger').innerText = Object.keys(urgentBranchesData).length;
+      document.getElementById('whpBandungMinStockCount').innerText = bdgCriticalCount;
+      document.getElementById('whpTasikmalayaMinStockCount').innerText = tsmCriticalCount;
+    }
+
+    function renderStockSummaryTable() {
+      const container = document.getElementById('stock-summary-content');
+      if (!gData || !gData.result) {
+          container.innerHTML = `<p class="p-8 text-center text-slate-500">Data stok tidak tersedia.</p>`;
+          return;
+      }
+
+      const productList = gData.productList;
+      let columnTotals = {};
+      productList.forEach(p => columnTotals[p] = 0);
+      let grandTotal = 0;
+
+      let tableHTML = `<div class="overflow-auto table-container max-h-[70vh] rounded-xl border border-slate-200 shadow-sm"><table class="w-full text-xs text-left border-collapse">`;
+      
+      tableHTML += `<thead class="sticky top-0 z-30 bg-slate-100 shadow-sm">
+                      <tr class="text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
+                          <th class="px-5 py-4 font-bold text-left whitespace-nowrap sticky left-0 z-40 bg-slate-100">Cabang</th>`;
+      productList.forEach(p => {
+          tableHTML += `<th class="px-4 py-4 font-bold text-right whitespace-nowrap">${p}</th>`;
+      });
+      tableHTML += `<th class="px-5 py-4 font-bold text-right whitespace-nowrap bg-slate-200 text-slate-700">Jumlah</th>
+                      </tr>
+                    </thead>`;
+
+      tableHTML += `<tbody class="divide-y divide-slate-100 bg-white">`;
+      
+      const selectedBranch = document.getElementById('branchFilter').value;
+
+      let allBranches = [];
+      if (gData.whpStockData) {
+          for (const whpName in gData.whpStockData) {
+              if (selectedBranch !== 'ALL') {
+                  const targetWHP = getWHP(selectedBranch);
+                  if (whpName !== targetWHP) continue;
+              }
+              allBranches.push({ name: whpName, type: 'whp', data: gData.whpStockData[whpName] });
+          }
+      }
+      for (const branchKey in gData.result) {
+          if (selectedBranch !== 'ALL' && selectedBranch !== branchKey) continue;
+          allBranches.push({ name: gData.result[branchKey].nama, type: 'branch', data: gData.result[branchKey] });
+      }
+      
+      allBranches.sort((a, b) => {
+          if (a.type === 'whp' && b.type !== 'whp') return -1;
+          if (a.type !== 'whp' && b.type === 'whp') return 1;
+          return a.name.localeCompare(b.name);
+      });
+
+      allBranches.forEach(branch => {
+          let rowTotal = 0;
+          let rowClass = branch.type === 'whp' ? 'bg-blue-50/50 font-bold text-slate-800' : 'hover:bg-slate-50 text-slate-600 transition-colors';
+          let colClass = branch.type === 'whp' ? 'bg-blue-50/50' : 'bg-white';
+          let displayName = branch.type === 'whp' ? branch.name.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : branch.name;
+          
+          tableHTML += `<tr class="${rowClass} group">
+                          <td class="px-5 py-3 whitespace-nowrap sticky left-0 z-20 font-semibold ${colClass} group-hover:bg-slate-50 transition-colors shadow-[1px_0_0_0_rgba(241,245,249,1)]">${displayName}</td>`;
+          
+          productList.forEach(p => {
+              let stock = 0;
+              if (branch.type === 'whp') {
+                  stock = branch.data[p] || 0;
+              } else {
+                  stock = branch.data.produk[p] ? branch.data.produk[p].currentStock : 0;
+              }
+              rowTotal += stock;
+              columnTotals[p] += stock;
+              tableHTML += `<td class="px-4 py-3 whitespace-nowrap text-right">${stock > 0 ? stock.toLocaleString('id-ID') : '<span class="text-slate-300">-</span>'}</td>`;
+          });
+          
+          grandTotal += rowTotal;
+          tableHTML += `<td class="px-5 py-3 whitespace-nowrap text-right text-slate-800 font-bold bg-slate-50/50">${rowTotal.toLocaleString('id-ID')}</td>
+                        </tr>`;
+      });
+
+      tableHTML += `</tbody>`;
+
+      tableHTML += `<tfoot class="sticky bottom-0 z-30 shadow-[0_-1px_0_0_rgba(226,232,240,1)]">
+                      <tr class="font-bold text-slate-700 bg-slate-100">
+                          <td class="px-5 py-4 whitespace-nowrap sticky left-0 z-40 bg-slate-100">Total</td>`;
+      productList.forEach(p => {
+          tableHTML += `<td class="px-4 py-4 whitespace-nowrap text-right">${columnTotals[p].toLocaleString('id-ID')}</td>`;
+      });
+      tableHTML += `<td class="px-5 py-4 whitespace-nowrap text-right bg-slate-200">${grandTotal.toLocaleString('id-ID')}</td>
+                      </tr>
+                    </tfoot>`;
+
+      tableHTML += `</table></div>`;
+      container.innerHTML = tableHTML;
+    }
+
+    function updateTarget(key, val) {
+      branchDays[key] = parseInt(val) || 1;
+      renderCards();
+    }
+
+    function updateBuffer(key, val) {
+      branchBuffers[key] = parseInt(val) || 0;
+      renderCards();
+    }
+
+    function copyWA(key) {
+      let cb = gData.result[key];
+      let text = `*DISTRIBUSI : ${cb.nama.toUpperCase()}*\n\n`;
+      let total = 0;
+      
+      gData.productList.forEach(p => {
+        let res = calculateLogic(key, p);
+        let qtyFinal = globalAllocations[key][p];
+        if (qtyFinal > 0) {
+          text += `• *${p}*: ${qtyFinal.toLocaleString('id-ID')} Bks ${res.isCritical ? '(URGENT! 🚨)' : ''}\n`;
+          total += qtyFinal;
+        }
+      });
+      
+      text += `\n*TOTAL: ${total.toLocaleString('id-ID')} Bks*`;
+      text += `\n\n_Powered by ATR Crafted by SND_`;
+      
+      const el = document.createElement('textarea');
+      el.value = text; document.body.appendChild(el);
+      el.select(); document.execCommand('copy');
+      document.body.removeChild(el);
+      
+      showToast("Teks WhatsApp berhasil disalin!");
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.querySelector('span').innerText = message;
+      toast.classList.remove('translate-y-32', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-32', 'opacity-0');
+      }, 3000);
+    }
+    function openUrgentProductsModal() {
+      const modal = document.getElementById('urgentProductsModal');
+      const modalContent = document.getElementById('urgentProductsModalContent');
+      const modalHeader = modal.querySelector('h2');
+      
+      // Reset Header untuk Urgensi Cabang
+      modalHeader.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> Produk Mendesak`;
+      modalHeader.className = "text-xl font-bold text-red-700 flex items-center gap-3";
+
+      modalContent.innerHTML = ''; // Clear previous content
+
+      let contentHtml = '<div class="space-y-4">';
+      const urgentBranchKeys = Object.keys(urgentBranchesData);
+
+      if (urgentBranchKeys.length === 0) {
+        contentHtml += '<p class="text-slate-600 text-center p-4">Tidak ada produk yang harus segera dikirim saat ini.</p>';
+      } else {
+        // Sort branches by name for consistent display
+        urgentBranchKeys.sort((a, b) => urgentBranchesData[a].name.localeCompare(urgentBranchesData[b].name));
+
+        urgentBranchKeys.forEach(branchKey => {
+          const branchInfo = urgentBranchesData[branchKey];
+          contentHtml += `
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-base text-blue-700">${branchInfo.name}</h3>
+                <button onclick="viewBranchFromModal('${branchKey}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-xs font-semibold hover:bg-blue-200 transition-colors">
+                  <i class="fas fa-eye mr-1"></i> Lihat
+                </button>
+              </div>
+              <ul class="list-disc list-inside text-sm text-slate-700 space-y-1">
+          `;
+          // Sort products by name
+          branchInfo.products.sort((a, b) => a.product.localeCompare(b.product));
+
+          branchInfo.products.forEach(product => {
+            let qtyDisplay = product.qtyToShip.toLocaleString('id-ID');
+            if (product.isStockLimit) {
+              qtyDisplay = `<span class="text-red-600 font-bold">${qtyDisplay}</span>`;
+            }
+            contentHtml += `<li class="text-xs">${product.product}: ${qtyDisplay} Bks (Sisa Hari: ${product.sisaHari.toFixed(1)})</li>`;
+          });
+          contentHtml += `
+              </ul>
+            </div>
+          `;
+        });
+      }
+      contentHtml += '</div>';
+      modalContent.innerHTML = contentHtml;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeUrgentProductsModal() {
+      const modal = document.getElementById('urgentProductsModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function viewBranchFromModal(branchKey) {
+      document.getElementById('branchFilter').value = branchKey;
+      renderCards();
+      closeUrgentProductsModal();
+      switchMenu('distribusi'); // Ensure the distribution view is active
+    }
+
+    function openWHPCriticalModal(whpName) {
+      const modal = document.getElementById('urgentProductsModal');
+      const modalContent = document.getElementById('urgentProductsModalContent');
+      const modalHeader = modal.querySelector('h2');
+      
+      // Update Header untuk Stok Kritis WHP
+      modalHeader.innerHTML = `<i class="fas fa-warehouse text-amber-500"></i> Detail Stok Kritis: ${whpName}`;
+      modalHeader.className = "text-xl font-bold text-amber-700 flex items-center gap-3";
+
+      let products = whpCriticalData[whpName] || [];
+      let contentHtml = '<div class="overflow-x-auto"><table class="w-full text-xs text-left border-collapse">';
+      contentHtml += `
+        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+          <tr>
+            <th class="px-4 py-3 border-b">Nama Produk</th>
+            <th class="px-4 py-3 border-b text-right">Stok Tersedia</th>
+            <th class="px-4 py-3 border-b text-right">Total Kebutuhan</th>
+            <th class="px-4 py-3 border-b text-right text-red-600">Selisih Kurang</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">`;
+
+      if (products.length === 0) {
+        contentHtml += '<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500 font-medium">Semua kebutuhan cabang untuk gudang ini terpenuhi oleh stok WHP.</td></tr>';
+      } else {
+        products.forEach(p => {
+          const short = p.totalReq - (p.available === Infinity ? p.totalReq : p.available);
+          contentHtml += `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-4 py-3 font-bold text-slate-700">${p.product}</td>
+              <td class="px-4 py-3 text-right text-blue-600 font-bold">${p.available === Infinity ? '∞' : p.available.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-3 text-right text-slate-600">${p.totalReq.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-3 text-right text-red-600 font-black">-${short.toLocaleString('id-ID')}</td>
+            </tr>`;
+        });
+      }
+
+      contentHtml += '</tbody></table></div>';
+      modalContent.innerHTML = contentHtml;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    window.onload = loadData;
+  </script>
