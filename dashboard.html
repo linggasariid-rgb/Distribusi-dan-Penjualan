@@ -313,6 +313,36 @@
       </div>
     </div>
 
+    <!-- Input Stok Excel View -->
+    <div id="input-stok-excel-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Stok Excel</h2>
+        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) data stok dari kolom <b>B sampai W</b> (nilai stok saja, tanpa kolom A/Cabang), lalu <i>Paste</i> (Tempel) di kotak bawah. Data lama akan <b>diganti</b> sesuai urutan baris.</p>
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-xs text-amber-800">
+          <p class="font-bold mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Perhatian:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Copy data dari kolom <b>B sampai W</b> (nilai stok produk) di file Excel Anda.</li>
+            <li>Urutan baris harus <b>sama persis</b> dengan urutan cabang di sheet Update-STOCK.</li>
+            <li>Paste (Tempel) ke dalam kotak di bawah ini.</li>
+            <li>Klik tombol <b>Proses & Preview Data</b>.</li>
+            <li>Klik <b>Simpan Data</b> untuk menimpa nilai stok yang ada.</li>
+          </ol>
+        </div>
+
+        <textarea id="input-stok-excel-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data stok Excel (kolom B-W) di sini..."></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPasteStokExcel()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('input-stok-excel-paste-area').value=''; document.getElementById('input-stok-excel-preview').innerHTML=''; document.getElementById('input-stok-excel-submit-container').classList.add('hidden'); pastedDataCache['input_stok_excel'] = null;" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="input-stok-excel-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="input-stok-excel-submit-container">
+           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitDataStokExcel()"><i class="fas fa-save mr-2"></i> Simpan Data Stok</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Penjualan View -->
     <div id="penjualan-view" class="hidden">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -412,6 +442,27 @@
       </div>
       <div class="p-4 border-t border-slate-200 text-right">
         <button onclick="closeUrgentProductsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl font-semibold transition-colors">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-800">Konfirmasi</h3>
+            <p id="confirmMessage" class="text-sm text-slate-600 mt-1"></p>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 pb-4 flex gap-3 justify-end">
+        <button id="confirmNoBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-semibold transition-colors text-sm">Tidak</button>
+        <button id="confirmYesBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors text-sm">Ya, Muat Ulang</button>
       </div>
     </div>
   </div>
@@ -544,7 +595,8 @@
         'penerimaan': 'super_admin',
         'best-products': 'super_admin',
         'daily-report': 'super_admin',
-        'sales-per-date': 'super_admin'
+        'sales-per-date': 'super_admin',
+        'input-stok-excel': 'super_admin'
       };
       if (restricted[role] > restricted[menuAccess[menuName] || 'admin']) {
         var roleLabels = { admin: 'Admin', super_admin: 'Super Admin' };
@@ -563,6 +615,7 @@
       const salesPerDateView = document.getElementById('sales-per-date-view');
       const controlPointView = document.getElementById('control-point-view');
       const inputStokBizView = document.getElementById('input-stok-biz-view');
+      const inputStokExcelView = document.getElementById('input-stok-excel-view');
       
       const menuDist = document.getElementById('menu-distribusi');
       const menuStok = document.getElementById('menu-stok');
@@ -575,6 +628,7 @@
       const menuSalesPerDate = document.getElementById('menu-sales-per-date');
       const menuControlPoint = document.getElementById('menu-control-point');
       const menuInputStokBiz = document.getElementById('menu-input-stok-biz');
+      const menuInputStokExcel = document.getElementById('menu-input-stok-excel');
       
       const pageTitle = document.getElementById('page-title');
       const pageIcon = document.getElementById('page-icon');
@@ -594,6 +648,7 @@
       salesPerDateView.classList.add('hidden');
       controlPointView.classList.add('hidden');
       inputStokBizView.classList.add('hidden');
+      inputStokExcelView.classList.add('hidden');
       branchFilter.classList.add('hidden');
       if (summarySection) {
         summarySection.classList.add('hidden');
@@ -614,6 +669,7 @@
       if(menuSalesPerDate) menuSalesPerDate.className = defaultMenuClass;
       if(menuControlPoint) menuControlPoint.className = defaultMenuClass;
       if(menuInputStokBiz) menuInputStokBiz.className = defaultMenuClass;
+      if(menuInputStokExcel) menuInputStokExcel.className = defaultMenuClass;
 
       // Tampilkan View & Aktifkan Menu sesuai Pilihan
       if (menuName === 'stok') {
@@ -666,6 +722,12 @@
         pageTitle.innerText = "Input Stok BIZ";
         pageIcon.className = "fas fa-database";
         if (menuInputStokBiz) menuInputStokBiz.className = activeMenuClass;
+      }
+      else if (menuName === 'input-stok-excel') {
+        inputStokExcelView.classList.remove('hidden');
+        pageTitle.innerText = "Input Stok Excel";
+        pageIcon.className = "fas fa-file-excel";
+        if (menuInputStokExcel) menuInputStokExcel.className = activeMenuClass;
       }
       else if (menuName === 'daily-report') {
         dailyReportView.classList.remove('hidden');
@@ -1519,10 +1581,10 @@
                     document.getElementById(`${type}-preview`).innerHTML = '';
                     document.getElementById(`${type}-submit-container`).classList.add('hidden');
 
-                    if (confirm('Data berhasil disimpan. Apakah Anda ingin memuat ulang data dashboard sekarang?')) {
+                    showConfirmModal('Data berhasil disimpan. Apakah Anda ingin memuat ulang data dashboard sekarang?', function() {
                         loadData();
                         switchMenu('distribusi');
-                    }
+                    });
                 } else {
                     alert('Terjadi kesalahan saat menyimpan: ' + response.message);
                 }
@@ -1606,10 +1668,10 @@
             document.getElementById('penjualan-who-submit-container').classList.add('hidden');
             pastedDataCache['penjualan_who'] = null;
 
-            if (confirm('Data berhasil disimpan. Muat ulang dashboard sekarang?')) {
+            showConfirmModal('Data berhasil disimpan. Muat ulang dashboard sekarang?', function() {
               loadData();
               switchMenu('distribusi');
-            }
+            });
           } else {
             alert('Gagal: ' + response.message);
           }
@@ -1704,6 +1766,84 @@
           button.innerHTML = originalButtonText;
         })
         .savePastedDataBIZ(dataToSubmit);
+    }
+
+    function processPasteStokExcel() {
+      const text = document.getElementById('input-stok-excel-paste-area').value.trim();
+      const container = document.getElementById('input-stok-excel-preview');
+      const submitContainer = document.getElementById('input-stok-excel-submit-container');
+
+      pastedDataCache['input_stok_excel'] = null;
+
+      if (!text) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste data terlebih dahulu.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      let data = rows.map(row => row.split('\t'));
+
+      if (data.length < 1) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Data kosong.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      pastedDataCache['input_stok_excel'] = data;
+
+      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
+      let htmlBody = '<tbody class="divide-y divide-slate-100">';
+
+      data.forEach((row, i) => {
+        htmlBody += '<tr class="hover:bg-slate-50">';
+        htmlBody += `<td class="px-3 py-2 text-slate-400 font-mono text-[10px] border border-slate-200">${i+1}</td>`;
+        row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap font-mono">${c}</td>`);
+        htmlBody += '</tr>';
+      });
+
+      htmlBody += '</tbody></table>';
+      container.innerHTML = `<div class="text-xs text-slate-500 mb-2 font-semibold">${data.length} baris data</div>` + tableHTML;
+      submitContainer.classList.remove('hidden');
+    }
+
+    function submitDataStokExcel() {
+      const dataToSubmit = pastedDataCache['input_stok_excel'];
+      const button = document.querySelector('#input-stok-excel-submit-container button');
+      const originalButtonText = button.innerHTML;
+
+      if (!dataToSubmit || dataToSubmit.length < 1) {
+        alert('Tidak ada data. Silakan proses data terlebih dahulu.');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...';
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = response.message;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
+
+            document.getElementById('input-stok-excel-paste-area').value = '';
+            document.getElementById('input-stok-excel-preview').innerHTML = '';
+            document.getElementById('input-stok-excel-submit-container').classList.add('hidden');
+            pastedDataCache['input_stok_excel'] = null;
+          } else {
+            alert('Gagal: ' + response.message);
+          }
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .withFailureHandler(function(error) {
+          alert('Gagal terhubung ke server: ' + error.message);
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .savePastedDataUpdateStock(dataToSubmit);
     }
 
     function calculateLogic(cabangKey, p) {
@@ -2070,6 +2210,41 @@
         toast.classList.add('translate-y-32', 'opacity-0');
       }, 3000);
     }
+
+    let confirmCallback = null;
+
+    function showConfirmModal(message, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('confirmMessage').innerText = message;
+      confirmCallback = onConfirm;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    document.addEventListener('click', function(e) {
+      const modal = document.getElementById('confirmModal');
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        confirmCallback = null;
+      }
+    });
+
+    document.getElementById('confirmYesBtn').addEventListener('click', function() {
+      const modal = document.getElementById('confirmModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      if (confirmCallback) confirmCallback();
+      confirmCallback = null;
+    });
+
+    document.getElementById('confirmNoBtn').addEventListener('click', function() {
+      const modal = document.getElementById('confirmModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      confirmCallback = null;
+    });
+
     function openUrgentProductsModal() {
       const modal = document.getElementById('urgentProductsModal');
       const modalContent = document.getElementById('urgentProductsModalContent');

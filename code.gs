@@ -437,6 +437,59 @@ function savePastedDataBIZ(data) {
     }
 }
 
+function savePastedDataUpdateStock(data) {
+    try {
+        const ss = SpreadsheetApp.getActiveSpreadsheet();
+        const sheet = ss.getSheetByName("Update-STOCK");
+        if (!sheet) throw new Error("Sheet 'Update-STOCK' tidak ditemukan.");
+
+        // Data dimulai dari baris 2, kolom B (index 2, kolom ke-2)
+        const DATA_START_ROW = 2;
+        const DATA_START_COL = 2;
+
+        // Deteksi apakah baris pertama adalah header (mengandung keyword header)
+        const headerKeywords = ['BULAN', 'CABANG', 'TANGGAL', 'NO.', 'FAKTUR', 'CUSTOMER', 'GUDANG', 'NAMA'];
+        const firstRow = data[0].map(v => String(v).trim().toUpperCase());
+        const hasHeader = headerKeywords.some(kw => firstRow.some(v => v.indexOf(kw) !== -1));
+
+        let sourceDataRows;
+        if (hasHeader) {
+            sourceDataRows = data.slice(1);
+        } else {
+            sourceDataRows = data;
+        }
+
+        if (sourceDataRows.length === 0) {
+            throw new Error("Tidak ada baris data untuk disimpan.");
+        }
+
+        // Normalize row lengths & convert kosong/strip jadi angka 0
+        const colCount = sourceDataRows[0].length;
+        const dataToWrite = sourceDataRows.map(row => {
+            const newRow = Array(colCount).fill(0);
+            for (let i = 0; i < row.length && i < colCount; i++) {
+                const val = String(row[i]).trim();
+                if (val === '' || val === '-' || val === '–' || val === '—') {
+                    newRow[i] = 0;
+                } else {
+                    const num = Number(val.replace(/\./g, ''));
+                    newRow[i] = isNaN(num) ? 0 : num;
+                }
+            }
+            return newRow;
+        });
+
+        // Tulis data mulai baris 2, kolom B
+        sheet.getRange(DATA_START_ROW, DATA_START_COL, dataToWrite.length, dataToWrite[0].length).setValues(dataToWrite);
+
+        return { status: "success", message: `Data stok berhasil disimpan (${dataToWrite.length} baris).` };
+
+    } catch (e) {
+        Logger.log(e);
+        return { status: "error", message: e.toString() };
+    }
+}
+
 function getBestProductsData(filterMonth) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
