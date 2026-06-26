@@ -13,6 +13,10 @@
     body { font-family: 'Inter', sans-serif; }
     .table-container::-webkit-scrollbar { height: 8px; }
     .table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    .cp-card-match { border-top: 4px solid #22c55e; }
+    .cp-card-mismatch { border-top: 4px solid #ef4444; border: 1px solid #fee2e2; border-top-width: 4px; }
+    .dot-pulse { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
@@ -70,6 +74,10 @@
       <a href="#" id="menu-penjualan-who" onclick="switchMenu('penjualan-who'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
         <i class="fas fa-file-invoice w-5 text-center text-lg"></i>
         Penjualan WHO
+      </a>
+      <a href="#" id="menu-control-point" onclick="switchMenu('control-point'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-balance-scale w-5 text-center text-lg"></i>
+        Stok BIZ vs Excel
       </a>
       <a href="#" id="menu-best-products" onclick="switchMenu('best-products'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
         <i class="fas fa-trophy w-5 text-center text-lg"></i>
