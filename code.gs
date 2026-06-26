@@ -940,7 +940,7 @@ function getControlPointData() {
       } else if (cabang.indexOf("TASIK") !== -1) {
         // "TAMPUNGAN TASIK" etc — skip, bukan Tasikmalaya utama
         continue;
-      } else if (cabang === "GUDANG BANDUNG" || cabang === "GDG BANDUNG" || cabang === "WHP BANDUNG") {
+      } else if (cabang === "GUDANG BDG" || cabang === "GUDANG BANDUNG" || cabang === "GDG BANDUNG" || cabang === "WHP BANDUNG") {
         bandungBizRow = bizData[i];
       } else {
         branchNames.push({ name: cabang, row: bizData[i] });
@@ -961,7 +961,7 @@ function getControlPointData() {
         tasikStockRow = stockData[i];
       } else if (cabang === "WHP TASIKMALAYA" || cabang.indexOf("WHP TASIK") !== -1) {
         whpTasikRow = stockData[i];
-      } else if (cabang === "WHP BANDUNG" || cabang.indexOf("WHP BANDUNG") !== -1) {
+      } else if (cabang.indexOf("WHP BANDUNG") !== -1) {
         whpBandungRow = stockData[i];
       } else {
         stockByBranch[cabang] = stockData[i];

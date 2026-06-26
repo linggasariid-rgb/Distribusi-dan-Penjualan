@@ -389,6 +389,7 @@
 
   <script>
     let gData = null;
+    let gSalesData = null;
     let branchDays = {}; 
     let urgentBranchesData = {}; // Global variable to store urgent product details for the modal
     let whpCriticalData = { "WHP BANDUNG": [], "WHP TASIKMALAYA": [] };
@@ -649,8 +650,7 @@
         pageIcon.className = "fas fa-chart-line";
         branchFilter.classList.remove('hidden');
         if (menuSalesDash) menuSalesDash.className = activeMenuClass;
-        const sdContent = document.getElementById('sales-dashboard-content');
-        if (!sdContent || sdContent.innerHTML.trim() === '' || sdContent.querySelector('.text-red-500')) loadSalesData();
+        if (!gSalesData) loadSalesData();
       }
       else { // 'distribusi'
         distView.style.display = 'block';
@@ -793,6 +793,7 @@
             content.classList.remove('hidden');
           }
           if (resp.status === "success") {
+            gSalesData = true;
             const d = resp.data;
             
             // Update KPI Cards
@@ -1080,6 +1081,8 @@
       loadDailyReport();
     }
 
+    let dailyReportRows = [];
+
     function loadDailyReport() {
       const loader = document.getElementById('daily-report-loader');
       const content = document.getElementById('daily-report-content');
@@ -1096,7 +1099,8 @@
         .withSuccessHandler(function(resp) {
           if (loader) { loader.classList.add('hidden'); loader.classList.remove('flex'); }
           if (resp.status === "success") {
-            const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            dailyReportRows = resp.rows || [];
+            const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jum\'at','Sabtu'];
             const dayLabel = dayFilter === -1 ? 'Semua Hari' : dayNames[dayFilter];
             const now = new Date();
             const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -1123,10 +1127,10 @@
       const sidebar = document.getElementById('sidebar');
       const mainContent = document.getElementById('main-content');
       const daySelect = document.getElementById('daily-report-day');
-      const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jum\'at','Sabtu'];
       const dayFilter = daySelect ? parseInt(daySelect.value) : -1;
       const dayLabel = dayFilter === -1 ? 'Semua Hari' : dayNames[dayFilter];
-      const title = `Penjualan Setiap Hari ${dayLabel}`;
+      const title = `Penjualan setiap hari ${dayLabel.toLowerCase()}`;
 
       const isSidebarOpen = sidebar.classList.contains('translate-x-0');
       if (isSidebarOpen) {
@@ -1165,7 +1169,7 @@
           const imgH = canvas.height * ratio;
           const cx = (pw - imgW) / 2;
           doc.addImage(imgData, 'PNG', cx, imgY, imgW, imgH);
-          doc.save(`${title.replace(/\s+/g, '-')}.pdf`);
+          doc.save(`${title}.pdf`);
         }).finally(() => {
           area.setAttribute('style', origStyle);
           if (filterRow) filterRow.style.display = '';
@@ -1184,6 +1188,8 @@
       initMonthDropdown('sales-per-date-month', loadSalesPerDate);
     }
 
+    let salesPerDateRows = [];
+
     function loadSalesPerDate() {
       const loader = document.getElementById('sales-per-date-loader');
       const content = document.getElementById('sales-per-date-content');
@@ -1200,6 +1206,7 @@
         .withSuccessHandler(function(resp) {
           if (loader) { loader.classList.add('hidden'); loader.classList.remove('flex'); }
           if (resp.status === "success") {
+            salesPerDateRows = resp.rows || [];
             renderPivotTable(content, resp.branches, resp.rows, 'Penjualan Pertanggal');
           } else {
             content.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">${resp.message}</div>`;
@@ -1221,9 +1228,15 @@
       const container = document.getElementById('sales-per-date-content');
       const sidebar = document.getElementById('sidebar');
       const mainContent = document.getElementById('main-content');
-      const monthSelect = document.getElementById('sales-per-date-month');
-      const monthLabel = monthSelect ? monthSelect.options[monthSelect.selectedIndex]?.text || '' : '';
-      const title = `Penjualan Setiap Tanggal - ${monthLabel}`;
+      const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      let title = 'Penjualan Pertanggal';
+      if (salesPerDateRows.length > 0) {
+        const first = salesPerDateRows[0].date;
+        const last = salesPerDateRows[salesPerDateRows.length - 1].date;
+        const fp = first.split('/');
+        const lp = last.split('/');
+        title = `Penjualan ${parseInt(fp[0])} ${monthNames[parseInt(fp[1])-1]} ${fp[2]} - ${parseInt(lp[0])} ${monthNames[parseInt(lp[1])-1]} ${lp[2]}`;
+      }
 
       const isSidebarOpen = sidebar.classList.contains('translate-x-0');
       if (isSidebarOpen) {
@@ -1262,7 +1275,7 @@
           const imgH = canvas.height * ratio;
           const cx = (pw - imgW) / 2;
           doc.addImage(imgData, 'PNG', cx, imgY, imgW, imgH);
-          doc.save(`${title.replace(/\s+/g, '-')}.pdf`);
+          doc.save(`${title}.pdf`);
         }).finally(() => {
           area.setAttribute('style', origStyle);
           if (filterRow) filterRow.style.display = '';
