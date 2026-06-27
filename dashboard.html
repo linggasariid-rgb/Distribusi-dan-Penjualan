@@ -906,8 +906,7 @@
           useCORS: true,
           backgroundColor: '#f8fafc'
         }).then(function(canvas) {
-          var a4Canvas = canvasToA4Clipboard(canvas, { orientation: 'landscape' });
-          a4Canvas.toBlob(function(blob) {
+          canvas.toBlob(function(blob) {
             try {
               var item = new ClipboardItem({ "image/png": blob });
               navigator.clipboard.write([item]).then(function() {
@@ -915,7 +914,7 @@
               }).catch(function() {
                 var link = document.createElement('a');
                 link.download = 'Report-Sales-Landscape.png';
-                link.href = a4Canvas.toDataURL();
+                link.href = canvas.toDataURL();
                 link.click();
                 showToast("Gagal menyalin, file diunduh otomatis.");
               });
@@ -2952,8 +2951,7 @@
           scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
           allowTaint: false
         });
-        var a4Canvas = canvasToA4Clipboard(canvas, { orientation: 'landscape' });
-        const blob = await new Promise(resolve => a4Canvas.toBlob(resolve, 'image/png'));
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         showToast('Screenshot tersalin!');
       } catch (err) {
@@ -2975,33 +2973,6 @@
       card.innerHTML = '';
       btn.innerHTML = '<i class="fas fa-camera"></i> Screenshot';
       btn.disabled = false;
-    }
-
-    function canvasToA4Clipboard(sourceCanvas, options) {
-      options = options || {};
-      var orientation = options.orientation || 'landscape';
-      var dpi = options.dpi || 200;
-      var marginMM = options.margin || 15;
-      var a4Wmm = orientation === 'landscape' ? 297 : 210;
-      var a4Hmm = orientation === 'landscape' ? 210 : 297;
-      var a4W = Math.round(a4Wmm * dpi / 25.4);
-      var a4H = Math.round(a4Hmm * dpi / 25.4);
-      var a4Canvas = document.createElement('canvas');
-      a4Canvas.width = a4W;
-      a4Canvas.height = a4H;
-      var ctx = a4Canvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, a4W, a4H);
-      var marginPx = Math.round(marginMM * dpi / 25.4);
-      var availW = a4W - marginPx * 2;
-      var availH = a4H - marginPx * 2;
-      var ratio = Math.min(availW / sourceCanvas.width, availH / sourceCanvas.height);
-      var imgW = sourceCanvas.width * ratio;
-      var imgH = sourceCanvas.height * ratio;
-      var cx = (a4W - imgW) / 2;
-      var cy = (a4H - imgH) / 2;
-      ctx.drawImage(sourceCanvas, cx, cy, imgW, imgH);
-      return a4Canvas;
     }
 
     function formatNum(val) {
