@@ -11,8 +11,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .table-container::-webkit-scrollbar { height: 8px; }
-    .table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    .table-container::-webkit-scrollbar { height: 6px; }
+    .table-container::-webkit-scrollbar-thumb { background-color: #94a3b8; border-radius: 3px; }
+    .table-container::-webkit-scrollbar-track { background: #f1f5f9; }
+    nav::-webkit-scrollbar { width: 4px; }
+    nav::-webkit-scrollbar-thumb { background-color: #475569; border-radius: 2px; }
+    nav::-webkit-scrollbar-track { background: transparent; }
     .cp-card-match { border-top: 4px solid #22c55e; }
     .cp-card-mismatch { border-top: 4px solid #ef4444; border: 1px solid #fee2e2; border-top-width: 4px; }
     .dot-pulse { animation: pulse 1.5s ease-in-out infinite; }
@@ -27,102 +31,106 @@
       <div class="text-center mb-6">
         <div class="bg-blue-600 text-white p-3 rounded-xl inline-flex mb-4"><i class="fas fa-boxes text-2xl"></i></div>
         <h1 class="text-[15px] font-black text-slate-900 whitespace-nowrap">Monitoring Penjualan dan Distribusi</h1>
-        <p class="text-xs text-slate-500 mt-1">Masuk ke akun Anda</p>
+        <p class="text-sm text-slate-500 mt-1">Masuk ke akun Anda</p>
       </div>
       <form id="login-form" onsubmit="return doLogin(event)">
         <div class="mb-4">
-          <label class="text-xs font-bold text-slate-600 block mb-1.5">Username</label>
-          <input id="login-username" type="text" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Masukkan username" required>
+          <label class="text-sm font-bold text-slate-600 block mb-1.5">Username</label>
+          <input id="login-username" type="text" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan username" required>
         </div>
         <div class="mb-4">
-          <label class="text-xs font-bold text-slate-600 block mb-1.5">Password</label>
-          <input id="login-password" type="password" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Masukkan password" required>
+          <label class="text-sm font-bold text-slate-600 block mb-1.5">Password</label>
+          <input id="login-password" type="password" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan password" required>
         </div>
-        <div id="login-error" class="text-red-500 text-xs font-semibold mb-3 hidden"></div>
-        <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-all text-sm">Masuk</button>
+        <div id="login-error" class="text-red-500 font-semibold mb-3 hidden"></div>
+        <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-all">Masuk</button>
       </form>
     </div>
   </div>
 
   <!-- Sidebar Menu -->
-  <aside id="sidebar" class="fixed h-full top-0 left-0 w-80 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50 transform translate-x-0 transition-transform duration-300">
-    <div class="h-20 flex items-center px-6 border-b border-slate-800">
-      <div class="flex items-center gap-2">
-        <div class="bg-blue-600 text-white p-1.5 rounded-lg"><i class="fas fa-boxes text-base"></i></div>
-        <span class="font-black text-white text-[13px] tracking-tight uppercase whitespace-nowrap">Monitoring Penjualan & Distribusi</span>
+  <aside id="sidebar" class="fixed h-full top-0 left-0 w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50 transform translate-x-0 transition-transform duration-300">
+    <div class="h-16 flex items-center px-4 border-b border-slate-800">
+      <div class="flex items-center gap-2.5">
+        <div class="bg-blue-600 text-white p-1.5 rounded-lg"><i class="fas fa-boxes"></i></div>
+        <span class="font-black text-white text-[11px] tracking-tight uppercase leading-tight">Monitoring Penjualan & Distribusi</span>
       </div>
     </div>
     
-    <div class="px-6 py-5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Menu Utama</div>
-    <nav class="flex-1 px-4 space-y-2 overflow-y-auto">
-      <a href="#" id="menu-sales-dashboard" onclick="switchMenu('sales-dashboard'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-chart-line w-5 text-center text-lg"></i>
+    <div class="px-4 py-3 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Menu Utama</div>
+    <nav class="flex-1 px-3 space-y-1 overflow-y-auto text-sm">
+      <a href="#" id="menu-sales-dashboard" onclick="switchMenu('sales-dashboard'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-chart-line w-5 text-center"></i>
         Report Penjualan
       </a>
-      <a href="#" id="menu-distribusi" onclick="switchMenu('distribusi'); return false;" class="flex items-center gap-4 px-4 py-3.5 bg-blue-600/10 text-blue-500 rounded-xl font-bold border border-blue-500/20 transition-all">
-        <i class="fas fa-truck-loading w-5 text-center text-lg"></i>
+      <a href="#" id="menu-distribusi" onclick="switchMenu('distribusi'); return false;" class="flex items-center gap-3 px-3 py-2.5 bg-blue-600/10 text-blue-500 rounded-lg font-bold border border-blue-500/20 transition-all">
+        <i class="fas fa-truck-loading w-5 text-center"></i>
         Distribusi
       </a>
-      <a href="#" id="menu-stok" onclick="switchMenu('stok'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300">
-        <i class="fas fa-boxes w-5 text-center text-lg"></i>
+      <a href="#" id="menu-stok" onclick="switchMenu('stok'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
+        <i class="fas fa-boxes w-5 text-center"></i>
         Ringkasan Stok
       </a>
-      <a href="#" id="menu-penjualan" onclick="switchMenu('penjualan'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-file-invoice-dollar w-5 text-center text-lg"></i>
+      <a href="#" id="menu-penjualan" onclick="switchMenu('penjualan'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
         Input Penjualan
       </a>
-      <a href="#" id="menu-penjualan-who" onclick="switchMenu('penjualan-who'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-file-invoice w-5 text-center text-lg"></i>
+      <a href="#" id="menu-penjualan-who" onclick="switchMenu('penjualan-who'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-file-invoice w-5 text-center"></i>
         Penjualan WHO
       </a>
-      <a href="#" id="menu-control-point" onclick="switchMenu('control-point'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-balance-scale w-5 text-center text-lg"></i>
+      <a href="#" id="menu-control-point" onclick="switchMenu('control-point'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-balance-scale w-5 text-center"></i>
         Stok BIZ vs Excel
       </a>
-      <a href="#" id="menu-input-stok-biz" onclick="switchMenu('input-stok-biz'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-database w-5 text-center text-lg"></i>
+      <a href="#" id="menu-input-stok-biz" onclick="switchMenu('input-stok-biz'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-database w-5 text-center"></i>
         Input Stok BIZ
       </a>
-      <a href="#" id="menu-input-stok-excel" onclick="switchMenu('input-stok-excel'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-file-excel w-5 text-center text-lg"></i>
+      <a href="#" id="menu-input-stok-excel" onclick="switchMenu('input-stok-excel'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-file-excel w-5 text-center"></i>
         Input Stok Excel
       </a>
-      <a href="#" id="menu-best-products" onclick="switchMenu('best-products'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-trophy w-5 text-center text-lg"></i>
+      <a href="#" id="menu-best-products" onclick="switchMenu('best-products'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-trophy w-5 text-center"></i>
         Best Produk
       </a>
-      <a href="#" id="menu-daily-report" onclick="switchMenu('daily-report'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-calendar-week w-5 text-center text-lg"></i>
+      <a href="#" id="menu-daily-report" onclick="switchMenu('daily-report'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-calendar-week w-5 text-center"></i>
         Laporan Harian
       </a>
-      <a href="#" id="menu-sales-per-date" onclick="switchMenu('sales-per-date'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-calendar-day w-5 text-center text-lg"></i>
+      <a href="#" id="menu-sales-per-date" onclick="switchMenu('sales-per-date'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-calendar-day w-5 text-center"></i>
         Penjualan Pertanggal
       </a>
-      <a href="#" id="menu-penerimaan" onclick="switchMenu('penerimaan'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-box-open w-5 text-center text-lg"></i>
+      <a href="#" id="menu-sales-hub" onclick="switchMenu('sales-hub'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
+        <i class="fas fa-chart-bar w-5 text-center"></i>
+        Perbandingan Penjualan
+      </a>
+      <a href="#" id="menu-penerimaan" onclick="switchMenu('penerimaan'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
+        <i class="fas fa-box-open w-5 text-center"></i>
         Input Penerimaan
       </a>
-      <a href="#" onclick="alert('Modul sedang di kembangkan oleh Angga SND Support'); return false;" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors opacity-50 cursor-not-allowed" title="Modul Akan Datang">
-        <i class="fas fa-cog w-5 text-center text-lg"></i>
+      <a href="#" onclick="alert('Modul sedang di kembangkan oleh Angga SND Support'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors cursor-not-allowed text-slate-500" title="Modul Akan Datang">
+        <i class="fas fa-cog w-5 text-center"></i>
         Pengaturan
       </a>
     </nav>
     
-    <div class="p-6 border-t border-slate-800">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white" id="user-avatar"><i class="fas fa-user"></i></div>
+    <div class="p-4 border-t border-slate-800">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white shrink-0" id="user-avatar"><i class="fas fa-user"></i></div>
         <div class="flex-1 min-w-0">
-          <div class="text-xs font-bold text-white truncate" id="user-name">SND Support</div>
+          <div class="text-sm font-bold text-white truncate" id="user-name">SND Support</div>
           <div class="text-[10px] text-slate-500" id="user-role">SuperAdmin</div>
         </div>
-        <button onclick="doLogout()" class="text-slate-500 hover:text-white transition-colors text-sm p-1.5" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
+        <button onclick="doLogout()" class="text-slate-500 hover:text-white transition-colors p-1.5" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
   </aside>
 
   <!-- Main Content Area -->
-  <main id="main-content" class="flex-1 flex flex-col h-screen overflow-y-auto relative p-4 md:p-8 transition-all duration-300 ml-80">
+  <main id="main-content" class="flex-1 flex flex-col h-screen overflow-y-auto relative p-4 md:p-8 transition-all duration-300 ml-64">
     <?!= include('dashboard'); ?>
   </main>
 
@@ -195,6 +203,12 @@
           el.style.display = 'none';
         }
       });
+
+      var menuSH = document.getElementById('menu-sales-hub');
+      if (menuSH) {
+        if (role === 'admin_whp') menuSH.style.display = 'none';
+        else menuSH.style.removeProperty('display');
+      }
 
       if (role !== 'super_admin') switchMenu('distribusi');
     }
