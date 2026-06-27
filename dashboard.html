@@ -269,10 +269,6 @@
             class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-5 rounded-xl transition-all shadow-lg active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
             <i class="fas fa-copy mr-2"></i>Salin Teks WA
           </button>
-          <button onclick="loadControlPoint()" id="btn-refresh-cp"
-            class="flex-1 md:flex-none bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-5 rounded-xl transition-all active:scale-95 text-sm">
-            <i class="fas fa-sync-alt mr-2"></i>Refresh
-          </button>
         </div>
       </div>
 
@@ -479,6 +475,10 @@
     let salesTrendChart = null;
     let branchRankingChart = null;
 
+    function getUserWHP() {
+      return sessionStorage.getItem('user_whp') || '';
+    }
+
     /**
      * Fungsi untuk menyembunyikan/menampilkan sidebar.
      * Menggunakan kelas standar Tailwind (w-80, ml-80) agar layout konsisten.
@@ -536,12 +536,13 @@
           loader.classList.remove('flex');
           content.innerHTML = `<div class="text-red-500 text-center font-bold p-10 bg-red-50 rounded-xl border border-red-200">Gagal Memuat Data: ${err.message}</div>`;
         })
-        .getDistributionData();
+        .getDistributionData(getUserWHP());
     }
 
     function initFilter() {
+      const userWHP = getUserWHP();
       const select = document.getElementById('branchFilter');
-      const keys = Object.keys(gData.result).sort();
+      let keys = Object.keys(gData.result).sort();
       select.innerHTML = '<option value="ALL">-- Tampilkan Semua Cabang --</option>';
       
       const penSelect = document.getElementById('penjualan-branch-select');
@@ -568,6 +569,11 @@
         whpSelect.add(opt);
       });
 
+      if (userWHP) {
+        whpSelect.value = userWHP;
+        whpSelect.disabled = true;
+      }
+
       const summary = document.getElementById('summarySection');
       const distView = document.getElementById('distribution-view');
       if (distView.style.display !== 'none') {
@@ -585,7 +591,7 @@
     
     function switchMenu(menuName) {
       var role = sessionStorage.getItem('user_role') || 'admin';
-      var restricted = { super_admin: 0, admin: 1 };
+      var restricted = { super_admin: 0, admin_whp: 1, admin: 1 };
       var menuAccess = {
         'distribusi': 'admin',
         'stok': 'admin',
@@ -599,7 +605,7 @@
         'input-stok-excel': 'super_admin'
       };
       if (restricted[role] > restricted[menuAccess[menuName] || 'admin']) {
-        var roleLabels = { admin: 'Admin', super_admin: 'Super Admin' };
+        var roleLabels = { admin: 'Admin', admin_whp: 'Admin WHP', super_admin: 'Super Admin' };
         alert('Menu "' + menuName + '" hanya bisa diakses oleh ' + roleLabels[menuAccess[menuName]]);
         return;
       }
@@ -769,8 +775,11 @@
 
     function refreshData() {
       const salesDashboardView = document.getElementById('sales-dashboard-view');
+      const controlPointView = document.getElementById('control-point-view');
       if (salesDashboardView && !salesDashboardView.classList.contains('hidden')) {
         loadSalesData();
+      } else if (controlPointView && !controlPointView.classList.contains('hidden')) {
+        loadControlPoint();
       } else {
         loadData();
       }
@@ -930,7 +939,7 @@
           console.error("Gagal memuat data sales:", err);
           alert("Gagal mengambil data dari spreadsheet: " + err.message);
         })
-        .getSalesDashboardData(selectedWHO, selectedBranch);
+        .getSalesDashboardData(selectedWHO, selectedBranch, getUserWHP());
     }
 
     function loadBestProductsData() {
@@ -1216,7 +1225,7 @@
           console.error("Gagal memuat laporan harian:", err);
           alert("Gagal mengambil data: " + err.message);
         })
-        .getSalesDailyReport(dayFilter, '', '2026-01');
+        .getSalesDailyReport(dayFilter, '', '2026-01', getUserWHP());
     }
 
     function captureDailyReport() {
@@ -1318,7 +1327,7 @@
           console.error("Gagal memuat penjualan pertanggal:", err);
           alert("Gagal mengambil data: " + err.message);
         })
-        .getSalesDailyReport(-1, filterMonth, '');
+        .getSalesDailyReport(-1, filterMonth, '', getUserWHP());
     }
 
     function captureSalesPerDate() {
@@ -1851,6 +1860,7 @@
       let pInfo = gData.productInfo[p] || {ctn:10, targetStock:8};
       let targetDays = branchDays[cabangKey] || 8;
       let bufferDays = branchBuffers[cabangKey] !== undefined ? branchBuffers[cabangKey] : 4;
+      let leadTime = gData.leadTime && gData.leadTime[cabangKey] !== undefined ? gData.leadTime[cabangKey] : 1;
       let totalDays = targetDays + bufferDays;
       let hasSalesData = cb.produk[p].salesTotal > 0;
       let dsr = hasSalesData ? Math.ceil(cb.produk[p].salesTotal / cb.pembagi) : 0;
@@ -1860,8 +1870,8 @@
       let qtyReguler = hasSalesData ? Math.max(0, (dsr * totalDays) - stok) : 0;
       
       let qtyMendesak = 0;
-      if (hasSalesData && sisaHari !== null && sisaHari <= 1.5) {
-        qtyMendesak = Math.max(0, (dsr * 3) - stok);
+      if (hasSalesData && sisaHari !== null && sisaHari <= leadTime + 0.5) {
+        qtyMendesak = Math.max(0, (dsr * (leadTime + 1)) - stok);
       }
 
       const pembulatan = (q) => {
@@ -2030,6 +2040,8 @@
               </div>
               <div class="flex items-center gap-4 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
                 <div class="text-xs font-semibold text-slate-500 flex items-center gap-2 border-r border-slate-200 pr-4">
+                  <span class="text-indigo-600 font-bold">LT ${gData.leadTime && gData.leadTime[key] ? gData.leadTime[key] : '?'}H</span>
+                  <span class="text-slate-300 mx-1">|</span>
                   Target
                   <input type="number" value="${branchDays[key]}" onchange="updateTarget('${key}', this.value)" class="w-14 px-1 py-1 border border-slate-300 rounded-lg text-center font-bold text-blue-600 focus:ring-2 focus:ring-blue-500 focus:outline-none"> H
                   <span class="text-slate-300 mx-1">|</span>
@@ -2360,15 +2372,12 @@
 
     function loadControlPoint() {
       const content = document.getElementById('cp-dashboard-content');
-      const btn = document.getElementById('btn-refresh-cp');
       content.innerHTML = '<div class="col-span-full text-center py-20"><div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent"></div></div>';
       document.getElementById('cp-summary-bar').style.display = 'none';
-      if (btn) btn.disabled = true;
       if (document.getElementById('btn-screenshot-cp')) document.getElementById('btn-screenshot-cp').disabled = true;
 
       google.script.run
         .withSuccessHandler(function(data) {
-          if (btn) btn.disabled = false;
           if (document.getElementById('btn-screenshot-cp')) document.getElementById('btn-screenshot-cp').disabled = false;
           if (data && data.error) {
             content.innerHTML = '<div class="col-span-full bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 font-bold">' + data.error + '</div>';

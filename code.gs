@@ -46,6 +46,11 @@ const CONFIG = {
     "WHP TASIKMALAYA": ["TASIKMALAYA", "GARUT", "CIREBON"]
   },
   IGNORE_BRANCHES: ["WHP BANDUNG", "WHP TASIKMALAYA", "TOTAL", "GRAND TOTAL", "TOTAL KESELURUHAN", "BANYUMAS"],
+  LEAD_TIME: {
+    "BANDUNG": 1, "PURWAKARTA": 2, "KARAWANG": 2, "SUKABUMI": 2,
+    "BOGOR": 2, "TANGERANG": 3, "SERANG": 4,
+    "TASIKMALAYA": 1, "GARUT": 3, "CIREBON": 3
+  },
   LIBUR_NASIONAL: [
     "2026-01-01", "2026-01-16", "2026-02-17", "2026-03-19",
     "2026-03-21", "2026-03-22", "2026-04-03", "2026-04-05",
@@ -54,7 +59,27 @@ const CONFIG = {
   ]
 };
 
-function getDistributionData() {
+function filterBranchesByWHP(result, userWHP) {
+  if (!userWHP || !CONFIG.WHP_MAPPING[userWHP]) return result;
+  var allowed = CONFIG.WHP_MAPPING[userWHP];
+  var filtered = {};
+  for (var key in result) {
+    if (allowed.some(function(b) { return key.indexOf(b) !== -1; })) {
+      filtered[key] = result[key];
+    }
+  }
+  return filtered;
+}
+
+function filterBranchListByWHP(branches, userWHP) {
+  if (!userWHP || !CONFIG.WHP_MAPPING[userWHP]) return branches;
+  var allowed = CONFIG.WHP_MAPPING[userWHP];
+  return branches.filter(function(b) {
+    return allowed.some(function(c) { return b.indexOf(c) !== -1; });
+  });
+}
+
+function getDistributionData(userWHP) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const salesSheet = ss.getSheetByName("Update-Penjualan WHO");
@@ -90,10 +115,11 @@ function getDistributionData() {
 
     let today = new Date();
     today.setHours(23, 59, 59, 999);
-    let startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    let startDate = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
     startDate.setHours(0, 0, 0, 0);
 
     let result = {};
+    let dailySales = {};
 
     // 1. PROSES PENJUALAN
     for (let i = 1; i < salesData.length; i++) {
@@ -127,14 +153,37 @@ function getDistributionData() {
           result[cabangKey].produk[p] = { salesTotal: 0, currentStock: 0 };
         });
       }
+      if (!dailySales[cabangKey]) dailySales[cabangKey] = {};
       result[cabangKey].nama = String(row[1]).trim();
       
       productList.forEach(p => {
         let colIdx = productIdxMap[p].sales;
         if (colIdx > -1) {
           let rawVal = String(row[colIdx]).trim();
-          result[cabangKey].produk[p].salesTotal += (Number(rawVal.replace(/\./g, '')) || 0);
+          let val = Number(rawVal.replace(/\./g, '')) || 0;
+          if (!dailySales[cabangKey][p]) dailySales[cabangKey][p] = [];
+          dailySales[cabangKey][p].push(val);
         }
+      });
+    }
+
+    // Filter outlier per produk per cabang
+    for (let cabangKey in dailySales) {
+      if (!result[cabangKey]) continue;
+      productList.forEach(p => {
+        let ds = dailySales[cabangKey][p];
+        if (!ds || ds.length === 0) return;
+        if (ds.length >= 3) {
+          let sorted = ds.slice().sort((a, b) => a - b);
+          let highest = sorted[sorted.length - 1];
+          let restSum = sorted.slice(0, -1).reduce((s, v) => s + v, 0);
+          let restAvg = restSum / (ds.length - 1);
+          if (highest > restAvg * 3) {
+            result[cabangKey].produk[p].salesTotal = restSum;
+            return;
+          }
+        }
+        result[cabangKey].produk[p].salesTotal = ds.reduce((s, v) => s + v, 0);
       });
     }
 
@@ -187,12 +236,13 @@ function getDistributionData() {
     return { 
       status: "success", 
       data: { 
-        result, 
+        result: filterBranchesByWHP(result, userWHP), 
         productList, 
         productInfo: CONFIG.PRODUCT_INFO, 
         whpMapping: CONFIG.WHP_MAPPING, 
         specialRoundUp: CONFIG.SPECIAL_ROUND_UP,
-        whpStockData 
+        whpStockData: userWHP ? (function(){ var w={}; if(whpStockData[userWHP]) w[userWHP]=whpStockData[userWHP]; return w; })() : whpStockData,
+        leadTime: CONFIG.LEAD_TIME
       } 
     };
 
@@ -608,7 +658,7 @@ function parseTglCell(raw) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function getSalesDailyReport(dayFilter, filterMonth, startMonth) {
+function getSalesDailyReport(dayFilter, filterMonth, startMonth, userWHP) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName("Update-Penjualan WHO");
@@ -676,6 +726,13 @@ function getSalesDailyReport(dayFilter, filterMonth, startMonth) {
     let allBranches = Object.keys(branchSet)
       .filter(b => !ignorePatterns.some(p => b.includes(p)))
       .sort();
+    // Apply WHP filter
+    if (userWHP && CONFIG.WHP_MAPPING[userWHP]) {
+      var whpAllowed = CONFIG.WHP_MAPPING[userWHP];
+      allBranches = allBranches.filter(function(b) {
+        return whpAllowed.some(function(c) { return b.indexOf(c) !== -1; });
+      });
+    }
 
     // Build pivot rows
     const pivotRows = Object.keys(dateBranchMap).sort((a, b) => {
@@ -809,7 +866,7 @@ function isSameMonth(input, targetDate) {
 /**
  * Mengambil data analitik penjualan untuk Sales Dashboard
  */
-function getSalesDashboardData(filterWHO, filterBranch) {
+function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const salesSheet = ss.getSheetByName("Update-Penjualan WHO");
@@ -821,10 +878,14 @@ function getSalesDashboardData(filterWHO, filterBranch) {
     const now = new Date();
     const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    // 1. Identifikasi Cabang berdasarkan Filter WHO
+    // 1. Identifikasi Cabang berdasarkan Filter WHO & User WHP
+    let effFilterWHO = filterWHO || "ALL";
+    if ((!filterWHO || filterWHO === "ALL") && userWHP) {
+      effFilterWHO = userWHP;
+    }
     let allowedBranches = []; 
-    if (filterWHO && filterWHO !== "ALL") {
-      allowedBranches = CONFIG.WHP_MAPPING[filterWHO] || [];
+    if (effFilterWHO && effFilterWHO !== "ALL") {
+      allowedBranches = CONFIG.WHP_MAPPING[effFilterWHO] || [];
     }
 
     // 2. Proses Data Penjualan
@@ -1186,10 +1247,28 @@ function getControlPointData() {
   }
 }
 
-// ──── LOGIN ─────────────────────────────────────────────────────────────────
+// ──── USER MANIFEST ─────────────────────────────────────────────────────────
+//
+// Role & Akses:
+//   super_admin → Semua menu & semua cabang (10 cabang)
+//   admin       → Menu: distribusi, stok + semua cabang
+//   admin_whp   → Menu: distribusi, stok + cabang sesuai WHP
+//
+// WHP Mapping:
+//   WHP BANDUNG      → Bandung, Purwakarta, Karawang, Sukabumi, Bogor, Tangerang, Serang
+//   WHP TASIKMALAYA  → Tasikmalaya, Garut, Cirebon
+//
+// Akun:
+//   superadmin  / admin123   → super_admin (full akses)
+//   admin       / admin456   → admin (semua cabang)
+//   whp_tasik   / tasik123   → admin_whp (Tasikmalaya, Garut, Cirebon)
+//   whp_bandung / bandung123 → admin_whp (Bandung, Purwakarta, ..., Serang)
+// ─────────────────────────────────────────────────────────────────────────────
 var USERS = {
-  'superadmin': { passwordHash: _hashPw('admin123'), role: 'super_admin', name: 'Super Admin' },
-  'admin':      { passwordHash: _hashPw('admin456'), role: 'admin',      name: 'Admin' }
+  'superadmin':  { passwordHash: _hashPw('admin123'),  role: 'super_admin', name: 'Super Admin',       whp: null },
+  'admin':       { passwordHash: _hashPw('admin456'),  role: 'admin',       name: 'Admin',            whp: null },
+  'whp_tasik':   { passwordHash: _hashPw('tasik123'),  role: 'admin_whp',   name: 'Admin WHP Tasikmalaya', whp: 'WHP TASIKMALAYA' },
+  'whp_bandung': { passwordHash: _hashPw('bandung123'), role: 'admin_whp',  name: 'Admin WHP Bandung',     whp: 'WHP BANDUNG' }
 };
 
 function _hashPw(pw) {
@@ -1205,5 +1284,5 @@ function loginUser(username, password) {
   var user = USERS[username.toLowerCase().trim()];
   if (!user) return { status: 'error', message: 'Username tidak ditemukan' };
   if (_hashPw(password) !== user.passwordHash) return { status: 'error', message: 'Password salah' };
-  return { status: 'success', role: user.role, name: user.name };
+  return { status: 'success', role: user.role, name: user.name, whp: user.whp };
 }

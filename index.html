@@ -145,8 +145,11 @@
           if (resp.status === 'success') {
             sessionStorage.setItem('user_role', resp.role);
             sessionStorage.setItem('user_name', resp.name);
+            sessionStorage.setItem('user_whp', resp.whp || '');
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('login-overlay').classList.remove('flex');
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
             applyRoleFilter();
             if (resp.role === 'super_admin') switchMenu('sales-dashboard');
           } else {
@@ -165,21 +168,24 @@
     }
 
     function doLogout() {
-      sessionStorage.removeItem('user_role');
-      sessionStorage.removeItem('user_name');
+      sessionStorage.clear();
+      if (typeof gData !== 'undefined') gData = null;
+      if (typeof gSalesData !== 'undefined') gSalesData = null;
       document.getElementById('login-overlay').classList.remove('hidden');
       document.getElementById('login-overlay').classList.add('flex');
-      document.getElementById('sidebar').classList.add('-translate-x-full');
-      document.getElementById('sidebar').classList.remove('translate-x-0');
-      document.getElementById('main-content').innerHTML = '';
-      document.getElementById('user-name').textContent = '';
-      document.getElementById('user-role').textContent = '';
+      document.getElementById('sidebar').classList.add('hidden');
+      document.getElementById('main-content').classList.add('hidden');
     }
 
     function applyRoleFilter() {
       var role = sessionStorage.getItem('user_role') || 'admin';
+      var whp = sessionStorage.getItem('user_whp') || '';
       document.getElementById('user-name').textContent = sessionStorage.getItem('user_name') || 'User';
-      document.getElementById('user-role').textContent = role === 'super_admin' ? 'Super Admin' : 'Admin';
+      if (whp) {
+        document.getElementById('user-role').textContent = whp;
+      } else {
+        document.getElementById('user-role').textContent = role === 'super_admin' ? 'Super Admin' : 'Admin';
+      }
 
       document.querySelectorAll('nav a[data-role]').forEach(function(el) {
         if (role === 'super_admin') {
