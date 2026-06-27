@@ -1396,6 +1396,15 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
       dateSnapshots.push({ date: label, data: buildSnapshotTable(branchData) });
     });
 
+    // Total penjualan hari ini
+    var todayKey = Utilities.formatDate(snapDates[0], "GMT+7", "yyyy-MM-dd");
+    var todayBranchData = dailyAll[todayKey] || {};
+    var todayTotal = 0;
+    Object.keys(todayBranchData).forEach(function(b) {
+      var d = todayBranchData[b];
+      todayTotal += (d['STK'] || 0) + (d['MST'] || 0) + (d['KARYAWAN'] || 0) + (d['TSIAPPS'] || 0);
+    });
+
     var currentLabel = monthNames[currentMonth] + ' ' + currentYear;
     var prevLabel = monthNames[prevMonth] + ' ' + prevYear;
 
@@ -1404,7 +1413,7 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
       data: {
         currentMonth: { label: currentLabel, data: currentTable },
         previousMonth: { label: prevLabel, data: previousTable },
-        kpis: { delta: delta, growthPct: growthPct, currentTotal: currentTotal, previousTotal: previousTotal, currentDays: currDayNum },
+        kpis: { delta: delta, growthPct: growthPct, currentTotal: currentTotal, previousTotal: previousTotal, currentDays: currDayNum, todayTotal: Math.round(todayTotal) },
         dateSnapshots: dateSnapshots,
         branches: allBranches
       }
