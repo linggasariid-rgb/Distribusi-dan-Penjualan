@@ -1404,7 +1404,7 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
       data: {
         currentMonth: { label: currentLabel, data: currentTable },
         previousMonth: { label: prevLabel, data: previousTable },
-        kpis: { delta: delta, growthPct: growthPct, currentTotal: currentTotal, previousTotal: previousTotal },
+        kpis: { delta: delta, growthPct: growthPct, currentTotal: currentTotal, previousTotal: previousTotal, currentDays: currDayNum },
         dateSnapshots: dateSnapshots,
         branches: allBranches
       }

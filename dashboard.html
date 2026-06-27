@@ -2705,7 +2705,6 @@
     function renderSalesHubKPIs(kpis) {
       const container = document.getElementById('sales-hub-kpis');
       const deltaClass = kpis.delta >= 0 ? 'text-emerald-600' : 'text-red-600';
-      const deltaIcon = kpis.delta >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
 
       container.innerHTML = `
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
@@ -2720,9 +2719,9 @@
           <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Selisih M-1</h4>
           <div class="text-lg font-black ${deltaClass}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 ${deltaClass.replace('text-', 'border-').replace('emerald', 'emerald').replace('red', 'red')}">
-          <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Growth</h4>
-          <div class="text-lg font-black ${deltaClass}"><i class="fas ${deltaIcon} mr-1"></i>${kpis.growthPct}%</div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-violet-500">
+          <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Rata-rata Harian</h4>
+          <div class="text-lg font-black text-violet-700">${Math.round(kpis.currentTotal / kpis.currentDays).toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
         </div>
       `;
     }
