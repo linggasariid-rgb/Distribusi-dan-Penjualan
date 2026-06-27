@@ -900,35 +900,33 @@
       filterArea.style.display = 'none';
       
       // Beri jeda agar browser merender ulang layout dengan lebar baru (Reflow)
-      setTimeout(() => {
+      setTimeout(function() {
         html2canvas(reportArea, {
-          scale: 3, // Meningkatkan kualitas dan ukuran gambar untuk kejelasan lebih baik
+          scale: 3,
           useCORS: true,
           backgroundColor: '#f8fafc'
-        }).then(canvas => {
-          canvas.toBlob(blob => {
+        }).then(function(canvas) {
+          var a4Canvas = canvasToA4Clipboard(canvas, { orientation: 'landscape' });
+          a4Canvas.toBlob(function(blob) {
             try {
-              const item = new ClipboardItem({ "image/png": blob });
-              navigator.clipboard.write([item]).then(() => {
+              var item = new ClipboardItem({ "image/png": blob });
+              navigator.clipboard.write([item]).then(function() {
                 showToast("Screenshot Landscape disalin! Silakan Paste (Ctrl+V).");
-              }).catch(() => {
-                // Fallback jika Clipboard API gagal (biasanya karena masalah izin browser)
-                const link = document.createElement('a');
-                link.download = `Report-Sales-Landscape.png`;
-                link.href = canvas.toDataURL();
+              }).catch(function() {
+                var link = document.createElement('a');
+                link.download = 'Report-Sales-Landscape.png';
+                link.href = a4Canvas.toDataURL();
                 link.click();
                 showToast("Gagal menyalin, file diunduh otomatis.");
               });
             } catch (e) { showToast("Browser tidak mendukung copy gambar."); }
             
-            // Kembalikan tampilan ke semula
             reportArea.setAttribute('style', originalStyle);
             btn.innerHTML = originalBtnText;
             btn.disabled = false;
             btn.style.visibility = 'visible';
             filterArea.style.display = 'flex';
 
-            // Kembalikan status sidebar ke kondisi semula
             if (isSidebarOpen) {
               sidebar.classList.add('translate-x-0');
               sidebar.classList.remove('-translate-x-full');
@@ -937,7 +935,7 @@
             }
           }, 'image/png');
         });
-      }, 500); // Jeda 500ms untuk proses re-layout yang lebih stabil
+      }, 500);
     }
 
     function loadSalesData() {
@@ -2954,7 +2952,8 @@
           scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
           allowTaint: false
         });
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        var a4Canvas = canvasToA4Clipboard(canvas, { orientation: 'landscape' });
+        const blob = await new Promise(resolve => a4Canvas.toBlob(resolve, 'image/png'));
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         showToast('Screenshot tersalin!');
       } catch (err) {
@@ -2976,6 +2975,33 @@
       card.innerHTML = '';
       btn.innerHTML = '<i class="fas fa-camera"></i> Screenshot';
       btn.disabled = false;
+    }
+
+    function canvasToA4Clipboard(sourceCanvas, options) {
+      options = options || {};
+      var orientation = options.orientation || 'landscape';
+      var dpi = options.dpi || 200;
+      var marginMM = options.margin || 15;
+      var a4Wmm = orientation === 'landscape' ? 297 : 210;
+      var a4Hmm = orientation === 'landscape' ? 210 : 297;
+      var a4W = Math.round(a4Wmm * dpi / 25.4);
+      var a4H = Math.round(a4Hmm * dpi / 25.4);
+      var a4Canvas = document.createElement('canvas');
+      a4Canvas.width = a4W;
+      a4Canvas.height = a4H;
+      var ctx = a4Canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, a4W, a4H);
+      var marginPx = Math.round(marginMM * dpi / 25.4);
+      var availW = a4W - marginPx * 2;
+      var availH = a4H - marginPx * 2;
+      var ratio = Math.min(availW / sourceCanvas.width, availH / sourceCanvas.height);
+      var imgW = sourceCanvas.width * ratio;
+      var imgH = sourceCanvas.height * ratio;
+      var cx = (a4W - imgW) / 2;
+      var cy = (a4H - imgH) / 2;
+      ctx.drawImage(sourceCanvas, cx, cy, imgW, imgH);
+      return a4Canvas;
     }
 
     function formatNum(val) {
