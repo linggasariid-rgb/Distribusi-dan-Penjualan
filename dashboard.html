@@ -2792,10 +2792,10 @@
               <thead>
                 <tr class="bg-slate-100 text-slate-900 text-sm font-black uppercase tracking-wider border-b-2 border-slate-300">
                   <th class="px-5 py-3 whitespace-nowrap">Warehouse</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">Stokis</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">Master Stokis</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">STK</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">MST</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap">Karyawan</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">TSI Apps</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">APPS</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap">MSI</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap bg-blue-50 text-blue-800">Total</th>
                 </tr>
@@ -2868,10 +2868,10 @@
                 <thead>
                   <tr class="bg-slate-100 text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
                     <th class="px-4 py-2.5">Cabang</th>
-                    <th class="px-4 py-2.5 text-right">Stokis</th>
-                    <th class="px-4 py-2.5 text-right">Master Stokis</th>
+                    <th class="px-4 py-2.5 text-right">STK</th>
+                    <th class="px-4 py-2.5 text-right">MST</th>
                     <th class="px-4 py-2.5 text-right">Karyawan</th>
-                    <th class="px-4 py-2.5 text-right">TSI Apps</th>
+                    <th class="px-4 py-2.5 text-right">APPS</th>
                     <th class="px-4 py-2.5 text-right">MSI</th>
                     <th class="px-4 py-2.5 text-right bg-blue-50 text-blue-800">Total</th>
                   </tr>
@@ -2951,7 +2951,7 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:1600px;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:2000px;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
               #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr !important; }
               #sales-hub-snapshot-cards > div:first-child { grid-column:1 / -1 !important; }
@@ -2969,7 +2969,7 @@
         card.style.left = '0';
         card.style.zIndex = '999999';
         card.style.overflow = 'visible';
-        card.style.width = '1600px';
+        card.style.width = '2000px';
         card.style.height = 'auto';
 
         // Scroll ke atas, beri reflow
@@ -2977,7 +2977,7 @@
         await new Promise(r => setTimeout(r, 100));
 
         const canvas = await html2canvas(card.querySelector('div'), {
-          scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
+          scale: 4, useCORS: true, logging: false, backgroundColor: '#ffffff',
           allowTaint: false
         });
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
