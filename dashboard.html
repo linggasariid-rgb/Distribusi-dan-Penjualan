@@ -2803,7 +2803,7 @@
               <tbody class="divide-y divide-slate-100">`;
 
       if (!hasData) {
-        html += '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data</td></tr>';
+        html += '<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data</td></tr>';
       } else {
         data.forEach(function(row) {
           html += `
@@ -2961,6 +2961,7 @@
               #sh-overlay-content .text-2xl { font-size:1.5em !important; }
               #sh-overlay-content .text-3xl { font-size:1.8em !important; }
               #sh-overlay-content [class*="text-\\["] { font-size:0.6em !important; }
+              #sh-overlay-content #sales-hub-periods { display:grid !important; grid-template-columns:1fr 1fr !important; gap:30px !important; }
               #sh-overlay-content th, #sh-overlay-content td { padding:10px 14px !important; }
               #sh-overlay-content .px-3 { padding-left:12px !important; padding-right:12px !important; }
               #sh-overlay-content .px-4 { padding-left:14px !important; padding-right:14px !important; }
