@@ -2942,12 +2942,7 @@
           logging: false,
           backgroundColor: '#ffffff',
           allowTaint: false,
-          width: reportArea.scrollWidth,
-          height: reportArea.scrollHeight,
-          windowWidth: reportArea.scrollWidth,
-          windowHeight: reportArea.scrollHeight,
-          scrollX: 0,
-          scrollY: 0,
+          windowWidth: 1280,
           onclone: function(clonedDoc) {
             // Hapus semua view kecuali sales-hub-view
             var views = clonedDoc.querySelectorAll('[id$="-view"]');
