@@ -2953,7 +2953,8 @@
         var wrapperHtml = `
           <div style="width:1600px;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
-              #sales-hub-periods { display:grid !important; grid-template-columns:1fr 1fr !important; gap:32px !important; }
+              #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr !important; }
+              #sales-hub-snapshot-cards > div:first-child { grid-column:1 / -1 !important; }
             </style>
             ${headerHtml}
             <div id="sh-overlay-content" style="padding:24px 32px;">${clone.innerHTML}</div>
