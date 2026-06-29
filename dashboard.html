@@ -2953,11 +2953,9 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:3000px;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:3000px;margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
-              #sh-overlay-content .overflow-x-auto,
-              #sh-overlay-content .table-container { overflow:visible !important; }
-              #sh-overlay-content .overflow-hidden { overflow:visible !important; }
+              #sh-overlay-content, #sh-overlay-content * { overflow:visible !important; }
               #sh-overlay-content .max-w-7xl { max-width:none !important; }
               #sh-overlay-content { font-size:32px !important; }
               #sh-overlay-content #sales-hub-kpis h4 { font-size:22px !important; }
@@ -2978,26 +2976,19 @@
               #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr 1fr !important; }
             </style>
             ${headerHtml}
-            <div id="sh-overlay-content" style="padding:24px 32px;">${clone.innerHTML}</div>
+            <div id="sh-overlay-content" style="margin:0;padding:24px 32px;">${clone.innerHTML}</div>
             <div style="text-align:center;padding:16px 32px 22px;font-size:16px;color:#94a3b8;font-weight:600;border-top:1px solid #e2e8f0;">
               Powered by ATR built by SND Support &middot; PT. Tridaya Sinergi Indonesia
             </div>
           </div>`;
         card.innerHTML = wrapperHtml;
-        card.style.display = 'block';
-        card.style.position = 'fixed';
-        card.style.top = '0';
-        card.style.left = '0';
-        card.style.zIndex = '999999';
-        card.style.overflow = 'visible';
-        card.style.width = '3000px';
-        card.style.height = 'auto';
+        card.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:999999;overflow:visible;width:3000px;height:auto;margin:0;padding:0;border:0;';
 
         // Scroll ke atas, beri reflow
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 100));
 
-        const canvas = await html2canvas(card.querySelector('div'), {
+        const canvas = await html2canvas(card.firstElementChild, {
           scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
           allowTaint: false
         });
@@ -3067,11 +3058,9 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:3000px;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:3000px;margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
-              #sh-overlay-content .overflow-x-auto,
-              #sh-overlay-content .table-container { overflow:visible !important; }
-              #sh-overlay-content .overflow-hidden { overflow:visible !important; }
+              #sh-overlay-content, #sh-overlay-content * { overflow:visible !important; }
               #sh-overlay-content .max-w-7xl { max-width:none !important; }
               #sh-overlay-content { font-size:32px !important; }
               #sh-overlay-content #sales-hub-kpis h4 { font-size:22px !important; }
@@ -3092,25 +3081,18 @@
               #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr 1fr !important; }
             </style>
             ${headerHtml}
-            <div id="sh-overlay-content" style="padding:24px 32px;">${clone.innerHTML}</div>
+            <div id="sh-overlay-content" style="margin:0;padding:24px 32px;">${clone.innerHTML}</div>
             <div style="text-align:center;padding:16px 32px 22px;font-size:16px;color:#94a3b8;font-weight:600;border-top:1px solid #e2e8f0;">
               Powered by ATR built by SND Support &middot; PT. Tridaya Sinergi Indonesia
             </div>
           </div>`;
         card.innerHTML = wrapperHtml;
-        card.style.display = 'block';
-        card.style.position = 'fixed';
-        card.style.top = '0';
-        card.style.left = '0';
-        card.style.zIndex = '999999';
-        card.style.overflow = 'visible';
-        card.style.width = '3000px';
-        card.style.height = 'auto';
+        card.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:999999;overflow:visible;width:3000px;height:auto;margin:0;padding:0;border:0;';
 
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 100));
 
-        const canvas = await html2canvas(card.querySelector('div'), {
+        const canvas = await html2canvas(card.firstElementChild, {
           scale: 4, useCORS: true, logging: false, backgroundColor: '#ffffff',
           allowTaint: false
         });
