@@ -2932,27 +2932,58 @@
 
       try {
         // Scroll ke atas, beri reflow
-        content.scrollIntoView(true);
         window.scrollTo(0, 0);
         await new Promise(r => setTimeout(r, 200));
 
-        const canvas = await html2canvas(content, {
+        const reportArea = document.getElementById('report-area');
+        const canvas = await html2canvas(reportArea, {
           scale: 4,
           useCORS: true,
           logging: false,
           backgroundColor: '#ffffff',
           allowTaint: false,
-          width: content.scrollWidth,
-          height: content.scrollHeight,
-          windowWidth: content.scrollWidth,
-          windowHeight: content.scrollHeight,
+          width: reportArea.scrollWidth,
+          height: reportArea.scrollHeight,
+          windowWidth: reportArea.scrollWidth,
+          windowHeight: reportArea.scrollHeight,
           scrollX: 0,
           scrollY: 0,
           onclone: function(clonedDoc) {
-            var clonedContent = clonedDoc.getElementById('sales-hub-content');
-            if (clonedContent) {
-              var filterBar = clonedContent.querySelector('.flex.flex-wrap.items-center.gap-4');
+            // Hapus semua view kecuali sales-hub-view
+            var views = clonedDoc.querySelectorAll('[id$="-view"]');
+            views.forEach(function(v) {
+              if (v.id !== 'sales-hub-view') v.remove();
+            });
+
+            // Hapus header section (theme toggle, filters, refresh)
+            var headerToggle = clonedDoc.getElementById('header-theme-toggle');
+            if (headerToggle) {
+              var headerSection = headerToggle.closest('.flex.flex-col');
+              if (headerSection) headerSection.remove();
+            }
+
+            // Hapus summary section
+            var summarySection = clonedDoc.getElementById('summarySection');
+            if (summarySection) summarySection.remove();
+
+            // Hapus filter bar dari sales hub
+            var salesHubView = clonedDoc.getElementById('sales-hub-view');
+            if (salesHubView) {
+              var filterBar = salesHubView.querySelector('.flex.flex-wrap.items-center.gap-4');
               if (filterBar) filterBar.remove();
+            }
+
+            // Override overflow-hidden untuk html2canvas
+            var allCards = clonedDoc.querySelectorAll('.overflow-hidden');
+            allCards.forEach(function(el) {
+              el.style.overflow = 'visible';
+            });
+
+            // Sembunyikan sidebar
+            var sidebarClone = clonedDoc.getElementById('sidebar');
+            if (sidebarClone) {
+              sidebarClone.classList.add('-translate-x-full');
+              sidebarClone.classList.remove('translate-x-0');
             }
           }
         });
