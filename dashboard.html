@@ -2953,7 +2953,7 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:1600px;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:2000px;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
               #sh-overlay-content .overflow-x-auto { overflow:visible !important; }
               #sh-overlay-content .overflow-hidden { overflow:visible !important; }
@@ -2973,7 +2973,8 @@
               #sh-overlay-content .py-3 { padding-top:20px !important; padding-bottom:20px !important; }
               #sh-overlay-content .py-4 { padding-top:26px !important; padding-bottom:26px !important; }
               #sh-overlay-content table { width:auto !important; min-width:100% !important; }
-              #sales-hub-snapshot-cards { grid-template-columns:1fr !important; }
+              #sales-hub-periods { grid-template-columns:1fr 1fr !important; }
+              #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr 1fr !important; }
             </style>
             ${headerHtml}
             <div id="sh-overlay-content" style="padding:24px 32px;">${clone.innerHTML}</div>
@@ -2988,7 +2989,7 @@
         card.style.left = '0';
         card.style.zIndex = '999999';
         card.style.overflow = 'visible';
-        card.style.width = '1600px';
+        card.style.width = '2000px';
         card.style.height = 'auto';
 
         // Scroll ke atas, beri reflow
@@ -3065,7 +3066,7 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:1600px;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:2000px;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
               #sh-overlay-content .overflow-x-auto { overflow:visible !important; }
               #sh-overlay-content .overflow-hidden { overflow:visible !important; }
@@ -3085,6 +3086,7 @@
               #sh-overlay-content .py-3 { padding-top:20px !important; padding-bottom:20px !important; }
               #sh-overlay-content .py-4 { padding-top:26px !important; padding-bottom:26px !important; }
               #sh-overlay-content table { width:auto !important; min-width:100% !important; }
+              #sales-hub-periods { grid-template-columns:1fr 1fr !important; }
               #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr 1fr !important; }
             </style>
             ${headerHtml}
@@ -3100,7 +3102,7 @@
         card.style.left = '0';
         card.style.zIndex = '999999';
         card.style.overflow = 'visible';
-        card.style.width = '1600px';
+        card.style.width = '2000px';
         card.style.height = 'auto';
 
         window.scrollTo(0, 0);
