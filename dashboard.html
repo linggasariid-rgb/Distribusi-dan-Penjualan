@@ -1217,7 +1217,7 @@
 
     function renderPivotTable(container, branches, rows, title) {
       let html = '<div id="pivot-report-area" class="p-4 sm:p-6">';
-      html += `<h3 class="text-xl font-bold text-blue-800 border-l-4 border-amber-500 pl-3 mb-4">${title}</h3>`;
+      html += `<h3 class="text-xl font-bold border-l-4 pl-3 mb-4" style="color:var(--color-header-title);border-left-color:var(--color-header-border);">${title}</h3>`;
       html += '<div class="overflow-x-auto"><table class="w-full text-xs text-left border-collapse">';
       html += '<thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold"><tr><th class="px-3 py-3 border-b sticky left-0 bg-slate-50 z-10">Tanggal</th>';
       branches.forEach(b => {
