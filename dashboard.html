@@ -2951,10 +2951,12 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:2000px;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:2600px;background:#ffffff;font-family:Arial,sans-serif;">
             <style>
               #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr !important; }
               #sales-hub-snapshot-cards > div:first-child { grid-column:1 / -1 !important; }
+              #sh-overlay-content .overflow-x-auto { overflow:visible !important; }
+              #sh-overlay-content .max-w-7xl { max-width:none !important; }
             </style>
             ${headerHtml}
             <div id="sh-overlay-content" style="padding:24px 32px;">${clone.innerHTML}</div>
@@ -2969,7 +2971,7 @@
         card.style.left = '0';
         card.style.zIndex = '999999';
         card.style.overflow = 'visible';
-        card.style.width = '2000px';
+        card.style.width = '2600px';
         card.style.height = 'auto';
 
         // Scroll ke atas, beri reflow
