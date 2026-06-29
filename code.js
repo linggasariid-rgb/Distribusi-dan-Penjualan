@@ -1320,7 +1320,7 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
       var dateKey = Utilities.formatDate(tgl, "GMT+7", "yyyy-MM-dd");
 
       if (!dailyAll[dateKey]) dailyAll[dateKey] = {};
-      if (!dailyAll[dateKey][branchName]) dailyAll[dateKey][branchName] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0 };
+      if (!dailyAll[dateKey][branchName]) dailyAll[dateKey][branchName] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0, MSI:0 };
       dailyAll[dateKey][branchName][tipe] = (dailyAll[dateKey][branchName][tipe] || 0) + qty;
 
       if (snapDates.some(function(s) { return s.getMonth() === month && s.getFullYear() === year; })) {
@@ -1335,8 +1335,8 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
         if (dt.getMonth() === month && dt.getFullYear() === year && dt.getDate() <= endDay) {
           var branches = dailyAll[dk] || {};
           Object.keys(branches).forEach(function(b) {
-            if (!result[b]) result[b] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0 };
-            ['MST','STK','KARYAWAN','TSIAPPS'].forEach(function(t) {
+            if (!result[b]) result[b] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0, MSI:0 };
+            ['MST','STK','KARYAWAN','TSIAPPS','MSI'].forEach(function(t) {
               result[b][t] = (result[b][t] || 0) + (branches[b][t] || 0);
             });
           });
@@ -1360,7 +1360,8 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
           masterStokis: Math.round(d['MST'] || 0),
           karyawan: Math.round(d['KARYAWAN'] || 0),
           tsiApps: Math.round(d['TSIAPPS'] || 0),
-          total: Math.round((d['STK'] || 0) + (d['MST'] || 0) + (d['KARYAWAN'] || 0) + (d['TSIAPPS'] || 0))
+          msi: Math.round(d['MSI'] || 0),
+          total: Math.round((d['STK'] || 0) + (d['MST'] || 0) + (d['KARYAWAN'] || 0) + (d['TSIAPPS'] || 0) + (d['MSI'] || 0))
         };
       });
     }
@@ -1374,7 +1375,8 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
           masterStokis: Math.round(d['MST'] || 0),
           karyawan: Math.round(d['KARYAWAN'] || 0),
           tsiApps: Math.round(d['TSIAPPS'] || 0),
-          total: Math.round((d['STK'] || 0) + (d['MST'] || 0) + (d['KARYAWAN'] || 0) + (d['TSIAPPS'] || 0))
+          msi: Math.round(d['MSI'] || 0),
+          total: Math.round((d['STK'] || 0) + (d['MST'] || 0) + (d['KARYAWAN'] || 0) + (d['TSIAPPS'] || 0) + (d['MSI'] || 0))
         };
       });
     }

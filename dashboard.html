@@ -9,8 +9,8 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
       <div class="flex items-center gap-4 flex-shrink-0">
-        <button onclick="toggleSidebar()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all active:scale-95" title="Toggle Sidebar">
-          <i class="fas fa-bars text-lg"></i>
+        <button onclick="toggleTheme()" id="header-theme-toggle" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all active:scale-95" title="Ganti Tema">
+          <i id="header-theme-icon" class="fas fa-moon text-lg"></i>
         </button>
         <h1 class="text-xl md:text-2xl font-extrabold text-blue-700 flex items-center gap-3">
         <div class="bg-blue-100 text-blue-600 p-3 rounded-xl"><i id="page-icon" class="fas fa-truck-loading"></i></div>
@@ -263,11 +263,11 @@
         <!-- Filter Tanggal -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2">
-            <label class="text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-blue-500"></i>Tanggal Berakhir</label>
+            <label class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-blue-500"></i>Tanggal Berakhir</label>
             <input type="date" id="sh-end-date" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="syncPrevDate()">
           </div>
           <div class="flex items-center gap-2">
-            <label class="text-[10px] font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-slate-400"></i>Periode Lalu</label>
+            <label class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-slate-400"></i>Periode Lalu</label>
             <input type="date" id="sh-prev-date" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <button onclick="loadSalesHubData()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm shadow-sm shadow-blue-200 transition-all flex items-center gap-2 active:scale-95">
@@ -280,11 +280,11 @@
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="sales-hub-kpis"></div>
         <!-- Period Tables -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="sales-hub-periods"></div>
+        <div class="grid grid-cols-1 gap-6" id="sales-hub-periods"></div>
         <!-- Date Snapshots -->
         <div id="sales-hub-snapshots" class="space-y-3">
           <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider">Penjualan Harian</h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="sales-hub-snapshot-cards"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="sales-hub-snapshot-cards"></div>
         </div>
       </div>
     </div>
@@ -514,29 +514,80 @@
     let salesTrendChart = null;
     let branchRankingChart = null;
 
+    // ──── THEME MANAGEMENT ───────────────────────────────────────────────
+    function applyTheme() {
+      var theme = localStorage.getItem('theme') || 'light';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      updateThemeIcons();
+    }
+
+    function updateThemeIcons() {
+      var isDark = document.documentElement.classList.contains('dark');
+      var iconClass = isDark ? 'fas fa-sun' : 'fas fa-moon';
+      var headerIcon = document.getElementById('header-theme-icon');
+      var sidebarIcon = document.getElementById('sidebar-theme-icon');
+      if (headerIcon) headerIcon.className = iconClass + ' text-lg';
+      if (sidebarIcon) sidebarIcon.className = iconClass;
+    }
+
+    function toggleTheme() {
+      var isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+      updateThemeIcons();
+      // Update Chart.js colors if charts exist
+      if (branchRankingChart) {
+        updateChartTheme();
+      }
+    }
+
+    function updateChartTheme() {
+      if (!branchRankingChart) return;
+      var isDark = document.documentElement.classList.contains('dark');
+      var tickColor = isDark ? '#94a3b8' : '#334155';
+      branchRankingChart.options.scales.y.ticks.color = tickColor;
+      branchRankingChart.update();
+    }
+
     function getUserWHP() {
       return sessionStorage.getItem('user_whp') || '';
     }
 
-    /**
-     * Fungsi untuk menyembunyikan/menampilkan sidebar.
-     * Menggunakan kelas standar Tailwind (w-64, ml-64) agar layout konsisten.
-     */
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const mainContent = document.getElementById('main-content');
-      
-      if (sidebar.classList.contains('translate-x-0')) { // Sidebar is open
-        sidebar.classList.remove('translate-x-0');
-        sidebar.classList.add('-translate-x-full');
-        mainContent.classList.remove('ml-64');
-        mainContent.classList.add('ml-0');
-      } else { // Sidebar is closed
-        sidebar.classList.remove('-translate-x-full');
-        sidebar.classList.add('translate-x-0');
-        mainContent.classList.remove('ml-0');
-        mainContent.classList.add('ml-64');
-      }
+    function initSidebarAutohide() {
+      var sidebar = document.getElementById('sidebar');
+      var mainContent = document.getElementById('main-content');
+      if (!sidebar || !mainContent) return;
+      var hideTimer = null;
+      document.addEventListener('mousemove', function(e) {
+        if (e.clientX < 15 && sidebar.classList.contains('-translate-x-full')) {
+          clearTimeout(hideTimer);
+          sidebar.classList.remove('-translate-x-full');
+          sidebar.classList.add('translate-x-0');
+          mainContent.classList.remove('ml-0');
+          mainContent.classList.add('ml-64');
+        }
+      });
+      sidebar.addEventListener('mouseenter', function() {
+        clearTimeout(hideTimer);
+      });
+      sidebar.addEventListener('mouseleave', function() {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(function() {
+          sidebar.classList.remove('translate-x-0');
+          sidebar.classList.add('-translate-x-full');
+          mainContent.classList.remove('ml-64');
+          mainContent.classList.add('ml-0');
+        }, 500);
+      });
     }
 
     function loadData() {
@@ -926,12 +977,10 @@
             btn.style.visibility = 'visible';
             filterArea.style.display = 'flex';
 
-            if (isSidebarOpen) {
-              sidebar.classList.add('translate-x-0');
-              sidebar.classList.remove('-translate-x-full');
-              mainContent.classList.add('ml-64');
-              mainContent.classList.remove('ml-0');
-            }
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+            mainContent.classList.add('ml-0');
+            mainContent.classList.remove('ml-64');
           }, 'image/png');
         });
       }, 500);
@@ -1120,12 +1169,10 @@
           btn.innerHTML = originalBtnText;
           btn.disabled = false;
           filterRow.style.display = '';
-          if (isSidebarOpen) {
-            sidebar.classList.remove('-translate-x-full');
-            sidebar.classList.add('translate-x-0');
-            mainContent.classList.remove('ml-0');
-            mainContent.classList.add('ml-64');
-          }
+          sidebar.classList.add('-translate-x-full');
+          sidebar.classList.remove('translate-x-0');
+          mainContent.classList.add('ml-0');
+          mainContent.classList.remove('ml-64');
         });
       }, 300);
     }
@@ -1229,12 +1276,10 @@
             btn.innerHTML = originalBtnText;
             btn.disabled = false;
             if (filterRow) filterRow.style.display = '';
-            if (isSidebarOpen) {
-              sidebar.classList.remove('-translate-x-full');
-              sidebar.classList.add('translate-x-0');
-              mainContent.classList.remove('ml-0');
-              mainContent.classList.add('ml-64');
-            }
+            sidebar.classList.add('-translate-x-full');
+            sidebar.classList.remove('translate-x-0');
+            mainContent.classList.add('ml-0');
+            mainContent.classList.remove('ml-64');
             if (callback) callback();
           });
       }, 300);
@@ -1337,12 +1382,10 @@
         }).finally(() => {
           area.setAttribute('style', origStyle);
           if (filterRow) filterRow.style.display = '';
-          if (isSidebarOpen) {
-            sidebar.classList.remove('-translate-x-full');
-            sidebar.classList.add('translate-x-0');
-            mainContent.classList.remove('ml-0');
-            mainContent.classList.add('ml-64');
-          }
+          sidebar.classList.add('-translate-x-full');
+          sidebar.classList.remove('translate-x-0');
+          mainContent.classList.add('ml-0');
+          mainContent.classList.remove('ml-64');
         });
       }, 400);
     }
@@ -1443,12 +1486,10 @@
         }).finally(() => {
           area.setAttribute('style', origStyle);
           if (filterRow) filterRow.style.display = '';
-          if (isSidebarOpen) {
-            sidebar.classList.remove('-translate-x-full');
-            sidebar.classList.add('translate-x-0');
-            mainContent.classList.remove('ml-0');
-            mainContent.classList.add('ml-64');
-          }
+          sidebar.classList.add('-translate-x-full');
+          sidebar.classList.remove('translate-x-0');
+          mainContent.classList.add('ml-0');
+          mainContent.classList.remove('ml-64');
         });
       }, 400);
     }
@@ -2708,19 +2749,19 @@
 
       container.innerHTML = `
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-          <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Bulan Berjalan</h4>
+          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Bulan Berjalan</h4>
           <div class="text-lg font-black text-blue-700">${kpis.currentTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-slate-400">
-          <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Bulan Lalu</h4>
+          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Bulan Lalu</h4>
           <div class="text-lg font-black text-slate-700">${kpis.previousTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
-          <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Selisih M-1</h4>
+          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Selisih M-1</h4>
           <div class="text-lg font-black ${deltaClass}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
         </div>
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-violet-500">
-          <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Penjualan Hari Ini</h4>
+          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Penjualan Hari Ini</h4>
           <div class="text-lg font-black text-violet-700">${kpis.todayTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
         </div>
       `;
@@ -2728,13 +2769,14 @@
 
     function renderSalesHubTable(title, data, label) {
       let hasData = data && data.length > 0;
-      let grandTotals = { stokis: 0, masterStokis: 0, karyawan: 0, tsiApps: 0, total: 0 };
+      let grandTotals = { stokis: 0, masterStokis: 0, karyawan: 0, tsiApps: 0, msi: 0, total: 0 };
       if (hasData) {
         data.forEach(function(r) {
           grandTotals.stokis += r.stokis;
           grandTotals.masterStokis += r.masterStokis;
           grandTotals.karyawan += r.karyawan;
           grandTotals.tsiApps += r.tsiApps;
+          grandTotals.msi += r.msi;
           grandTotals.total += r.total;
         });
       }
@@ -2742,46 +2784,49 @@
       let html = `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50">
-            <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-tight">${title}</h3>
-            <p class="text-[10px] text-slate-400 font-medium mt-0.5">${label}</p>
+            <h3 class="text-base font-extrabold text-slate-700 uppercase tracking-tight">${title}</h3>
+            <p class="text-xs text-slate-400 font-medium mt-0.5">${label}</p>
           </div>
           <div class="overflow-x-auto table-container">
-            <table class="w-full text-xs text-left border-collapse">
+            <table class="w-full text-sm text-left border-collapse">
               <thead>
-                <tr class="bg-slate-100 text-slate-900 text-xs font-black uppercase tracking-wider border-b-2 border-slate-300">
-                  <th class="px-4 py-3 whitespace-nowrap">Warehouse</th>
-                  <th class="px-4 py-3 text-right whitespace-nowrap">Stokis</th>
-                  <th class="px-4 py-3 text-right whitespace-nowrap">Master Stokis</th>
-                  <th class="px-4 py-3 text-right whitespace-nowrap">Karyawan</th>
-                  <th class="px-4 py-3 text-right whitespace-nowrap">TSI Apps</th>
-                  <th class="px-4 py-3 text-right whitespace-nowrap bg-blue-50 text-blue-800">Total</th>
+                <tr class="bg-slate-100 text-slate-900 text-sm font-black uppercase tracking-wider border-b-2 border-slate-300">
+                  <th class="px-5 py-3 whitespace-nowrap">Warehouse</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">Stokis</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">Master Stokis</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">Karyawan</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">TSI Apps</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">MSI</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-blue-50 text-blue-800">Total</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">`;
 
       if (!hasData) {
-        html += '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data</td></tr>';
+        html += '<tr><td colspan="8" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data</td></tr>';
       } else {
         data.forEach(function(row) {
           html += `
             <tr class="hover:bg-slate-50 transition-colors">
-              <td class="px-4 py-2.5 font-bold text-slate-800 whitespace-nowrap">${row.warehouse}</td>
-              <td class="px-4 py-2.5 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
-              <td class="px-4 py-2.5 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
-              <td class="px-4 py-2.5 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
-              <td class="px-4 py-2.5 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
-              <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
+              <td class="px-5 py-3 font-bold text-slate-800 whitespace-nowrap">${row.warehouse}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
+              <td class="px-5 py-3 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
             </tr>`;
         });
         html += `
-          <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
-            <td class="px-4 py-3 whitespace-nowrap">TOTAL</td>
-            <td class="px-4 py-3 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
-            <td class="px-4 py-3 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
-            <td class="px-4 py-3 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
-            <td class="px-4 py-3 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
-            <td class="px-4 py-3 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
-          </tr>`;
+                <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
+                  <td class="px-4 py-2.5">TOTAL</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
+                </tr>`;
       }
 
       html += `</tbody></table></div></div>`;
@@ -2803,52 +2848,56 @@
       }
       let html = '';
       snapshots.forEach(function(snap) {
-        let grandTotals = { stokis: 0, masterStokis: 0, karyawan: 0, tsiApps: 0, total: 0 };
+        let grandTotals = { stokis: 0, masterStokis: 0, karyawan: 0, tsiApps: 0, msi: 0, total: 0 };
         snap.data.forEach(function(r) {
           grandTotals.stokis += r.stokis;
           grandTotals.masterStokis += r.masterStokis;
           grandTotals.karyawan += r.karyawan;
           grandTotals.tsiApps += r.tsiApps;
+          grandTotals.msi += r.msi;
           grandTotals.total += r.total;
         });
 
         html += `
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
-              <h4 class="text-xs font-extrabold text-blue-700 uppercase tracking-tight">${snap.date}</h4>
+              <h4 class="text-sm font-extrabold text-blue-700 uppercase tracking-tight">${snap.date}</h4>
             </div>
             <div class="overflow-x-auto">
-              <table class="w-full text-[10px] text-left border-collapse">
+              <table class="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr class="bg-slate-100 text-slate-800 uppercase text-[10px] font-black border-b-2 border-slate-300">
-                    <th class="px-3 py-2">Cabang</th>
-                    <th class="px-3 py-2 text-right">Stokis</th>
-                    <th class="px-3 py-2 text-right">Master Stokis</th>
-                    <th class="px-3 py-2 text-right">Karyawan</th>
-                    <th class="px-3 py-2 text-right">TSI Apps</th>
-                    <th class="px-3 py-2 text-right bg-blue-50 text-blue-800">Total</th>
+                  <tr class="bg-slate-100 text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
+                    <th class="px-4 py-2.5">Cabang</th>
+                    <th class="px-4 py-2.5 text-right">Stokis</th>
+                    <th class="px-4 py-2.5 text-right">Master Stokis</th>
+                    <th class="px-4 py-2.5 text-right">Karyawan</th>
+                    <th class="px-4 py-2.5 text-right">TSI Apps</th>
+                    <th class="px-4 py-2.5 text-right">MSI</th>
+                    <th class="px-4 py-2.5 text-right bg-blue-50 text-blue-800">Total</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">`;
         snap.data.forEach(function(row) {
           html += `
             <tr class="hover:bg-slate-50 transition-colors">
-              <td class="px-3 py-1.5 font-bold text-slate-700 whitespace-nowrap">${row.warehouse}</td>
-              <td class="px-3 py-1.5 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
-              <td class="px-3 py-1.5 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
-              <td class="px-3 py-1.5 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
-              <td class="px-3 py-1.5 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
-              <td class="px-3 py-1.5 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
+              <td class="px-4 py-2 font-bold text-slate-700 whitespace-nowrap">${row.warehouse}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
+              <td class="px-4 py-2 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
             </tr>`;
         });
         html += `
                 <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
-                  <td class="px-3 py-2">TOTAL</td>
-                  <td class="px-3 py-2 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
-                  <td class="px-3 py-2 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
-                  <td class="px-3 py-2 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
-                  <td class="px-3 py-2 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
-                  <td class="px-3 py-2 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
+                  <td class="px-4 py-2.5">TOTAL</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
                 </tr>
                 </tbody>
               </table>
@@ -2958,14 +3007,11 @@
         showToast('Gagal screenshot');
       }
 
-      // Kembalikan sidebar
-      if (sidebarWasOpen) {
-        sidebar.classList.remove('-translate-x-full');
-        sidebar.classList.add('translate-x-0');
-        if (mainContent) {
-          mainContent.classList.remove('ml-0');
-          mainContent.classList.add('ml-64');
-        }
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      if (mainContent) {
+        mainContent.classList.add('ml-0');
+        mainContent.classList.remove('ml-64');
       }
 
       card.style.display = 'none';
@@ -2979,6 +3025,8 @@
     }
 
     window.onload = function() {
+      initSidebarAutohide();
+      applyTheme();
       var role = sessionStorage.getItem('user_role') || 'admin';
       if (role === 'super_admin') switchMenu('sales-dashboard');
     };
