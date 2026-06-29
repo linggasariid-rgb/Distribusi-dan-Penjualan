@@ -561,6 +561,14 @@
       branchRankingChart.update();
     }
 
+    function getExportBgColor() {
+      return document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff';
+    }
+
+    function getExportBodyBgColor() {
+      return document.documentElement.classList.contains('dark') ? '#0f172a' : '#f8fafc';
+    }
+
     function getUserWHP() {
       return sessionStorage.getItem('user_whp') || '';
     }
@@ -958,7 +966,7 @@
         html2canvas(reportArea, {
           scale: 3,
           useCORS: true,
-          backgroundColor: '#f8fafc'
+          backgroundColor: getExportBodyBgColor()
         }).then(function(canvas) {
           canvas.toBlob(function(blob) {
             try {
@@ -1145,7 +1153,7 @@
         html2canvas(content, {
           scale: 3,
           useCORS: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: getExportBgColor()
         }).then(canvas => {
           canvas.toBlob(blob => {
             try {
@@ -1252,7 +1260,7 @@
       if (filterRow) filterRow.style.display = 'none';
 
       setTimeout(() => {
-        html2canvas(container, { scale: 3, useCORS: true, backgroundColor: '#ffffff' })
+        html2canvas(container, { scale: 3, useCORS: true, backgroundColor: getExportBgColor() })
           .then(canvas => {
             canvas.toBlob(blob => {
               try {
@@ -1361,7 +1369,7 @@
       area.style.maxWidth = 'none';
 
       setTimeout(() => {
-        html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+        html2canvas(area, { scale: 2, useCORS: true, backgroundColor: getExportBgColor() }).then(canvas => {
           const { jsPDF } = window.jspdf;
           const imgData = canvas.toDataURL('image/png');
           const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -1465,7 +1473,7 @@
       area.style.maxWidth = 'none';
 
       setTimeout(() => {
-        html2canvas(area, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+        html2canvas(area, { scale: 2, useCORS: true, backgroundColor: getExportBgColor() }).then(canvas => {
           const { jsPDF } = window.jspdf;
           const imgData = canvas.toDataURL('image/png');
           const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -2642,7 +2650,7 @@
       btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
       try {
         const canvas = await html2canvas(card, {
-          scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff'
+          scale: 2, useCORS: true, logging: false, backgroundColor: getExportBgColor()
         });
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
@@ -2770,7 +2778,7 @@
       `;
     }
 
-    function renderSalesHubTable(title, data, label) {
+    function renderSalesHubTable(title, data) {
       let hasData = data && data.length > 0;
       let grandTotals = { stokis: 0, masterStokis: 0, karyawan: 0, tsiApps: 0, msi: 0, total: 0 };
       if (hasData) {
@@ -2788,18 +2796,17 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50">
             <h3 class="text-base font-extrabold text-slate-700 uppercase tracking-tight">${title}</h3>
-            <p class="text-xs text-slate-400 font-medium mt-0.5">${label}</p>
           </div>
           <div class="overflow-x-auto table-container">
             <table class="w-full text-sm text-left border-collapse">
               <thead>
                 <tr class="bg-slate-100 text-slate-900 text-sm font-black uppercase tracking-wider border-b-2 border-slate-300">
                   <th class="px-5 py-3 whitespace-nowrap">Warehouse</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">STK</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap">MST</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">MSI</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">STK</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap">Karyawan</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap">APPS</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">MSI</th>
                   <th class="px-5 py-3 text-right whitespace-nowrap bg-blue-50 text-blue-800">Total</th>
                 </tr>
               </thead>
@@ -2812,22 +2819,22 @@
           html += `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="px-5 py-3 font-bold text-slate-800 whitespace-nowrap">${row.warehouse}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
               <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
+              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
               <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
               <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
               <td class="px-5 py-3 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
             </tr>`;
         });
         html += `
                 <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
                   <td class="px-4 py-2.5">TOTAL</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
                   <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
                   <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
                   <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
                   <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
                 </tr>`;
       }
@@ -2839,8 +2846,8 @@
     function renderSalesHubPeriods(current, previous) {
       const container = document.getElementById('sales-hub-periods');
       container.innerHTML =
-        renderSalesHubTable(current.label, current.data, 'Bulan Berjalan') +
-        renderSalesHubTable(previous.label, previous.data, 'Bulan Lalu');
+        renderSalesHubTable(current.label, current.data) +
+        renderSalesHubTable(previous.label, previous.data);
     }
 
     function renderSalesHubSnapshots(snapshots) {
@@ -2871,11 +2878,11 @@
                 <thead>
                   <tr class="bg-slate-100 text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
                     <th class="px-4 py-2.5">Cabang</th>
-                    <th class="px-4 py-2.5 text-right">STK</th>
                     <th class="px-4 py-2.5 text-right">MST</th>
+                    <th class="px-4 py-2.5 text-right">MSI</th>
+                    <th class="px-4 py-2.5 text-right">STK</th>
                     <th class="px-4 py-2.5 text-right">Karyawan</th>
                     <th class="px-4 py-2.5 text-right">APPS</th>
-                    <th class="px-4 py-2.5 text-right">MSI</th>
                     <th class="px-4 py-2.5 text-right bg-blue-50 text-blue-800">Total</th>
                   </tr>
                 </thead>
@@ -2884,22 +2891,22 @@
           html += `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="px-4 py-2 font-bold text-slate-700 whitespace-nowrap">${row.warehouse}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
               <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
               <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
               <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
               <td class="px-4 py-2 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
             </tr>`;
         });
         html += `
                 <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
                   <td class="px-4 py-2.5">TOTAL</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
                   <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
                   <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
                   <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
                   <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
                 </tr>
                 </tbody>
@@ -2940,11 +2947,19 @@
           hour: '2-digit', minute: '2-digit'
         });
 
+        var isDark = document.documentElement.classList.contains('dark');
+        var shBg = isDark ? '#1e293b' : '#ffffff';
+        var shText = isDark ? '#f1f5f9' : '#0f172a';
+        var shAccent = isDark ? '#60a5fa' : '#2563eb';
+        var shMuted = isDark ? '#94a3b8' : '#64748b';
+        var shBorder = isDark ? '#334155' : '#1e293b';
+        var shFooterBorder = isDark ? '#334155' : '#e2e8f0';
+
         var headerHtml = `
-          <div style="padding:20px 28px 14px;border-bottom:2px solid #1e293b;">
-            <div style="font-size:28px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;text-transform:uppercase;">PT. TRIDAYA SINERGI INDONESIA</div>
-            <div style="font-size:18px;font-weight:700;color:#2563eb;letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">Sales & Distribution Division</div>
-            <div style="font-size:16px;color:#64748b;font-weight:500;margin-top:5px;">${tglStr}</div>
+          <div style="padding:20px 28px 14px;border-bottom:2px solid ${shBorder};background:${shBg};">
+            <div style="font-size:28px;font-weight:900;color:${shText};letter-spacing:-0.5px;text-transform:uppercase;">PT. TRIDAYA SINERGI INDONESIA</div>
+            <div style="font-size:18px;font-weight:700;color:${shAccent};letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">Sales & Distribution Division</div>
+            <div style="font-size:16px;color:${shMuted};font-weight:500;margin-top:5px;">${tglStr}</div>
           </div>`;
 
         var clone = content.cloneNode(true);
@@ -2953,7 +2968,7 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:3000px;margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:3000px;margin:0;padding:0;background:${shBg};font-family:Arial,sans-serif;">
             <style>
               #sh-overlay-content, #sh-overlay-content * { overflow:visible !important; }
               #sh-overlay-content .max-w-7xl { max-width:none !important; }
@@ -2962,6 +2977,11 @@
               #sh-overlay-content #sales-hub-kpis .text-lg { font-size:24px !important; }
               #sh-overlay-content .text-xs { font-size:24px !important; }
               #sh-overlay-content .text-sm { font-size:28px !important; }
+              #sh-overlay-content #sales-hub-periods table { font-size:36px !important; }
+              #sh-overlay-content #sales-hub-periods td,
+              #sh-overlay-content #sales-hub-periods th { padding:20px 18px !important; }
+              #sh-overlay-content #sales-hub-periods .mt-0\.5 { margin-top:28px !important; }
+              #sh-overlay-content #sales-hub-snapshot-cards .py-3 { padding-top:18px !important; padding-bottom:26px !important; }
               #sh-overlay-content .text-base { font-size:30px !important; }
               #sh-overlay-content .text-lg { font-size:24px !important; }
               #sh-overlay-content td, #sh-overlay-content th { padding:14px 12px !important; }
@@ -2977,8 +2997,8 @@
               #sales-hub-snapshots { padding-top:40px !important; }
             </style>
             ${headerHtml}
-            <div id="sh-overlay-content" style="margin:0;padding:20px 28px;">${clone.innerHTML}</div>
-            <div style="text-align:center;padding:16px 32px 22px;font-size:16px;color:#94a3b8;font-weight:600;border-top:1px solid #e2e8f0;">
+            <div id="sh-overlay-content" style="margin:0;padding:20px 28px;background:${shBg};">${clone.innerHTML}</div>
+            <div style="text-align:center;padding:16px 32px 22px;font-size:16px;color:#94a3b8;font-weight:600;border-top:1px solid ${shFooterBorder};background:${shBg};">
               Powered by ATR built by SND Support &middot; PT. Tridaya Sinergi Indonesia
             </div>
           </div>`;
@@ -2990,7 +3010,7 @@
         await new Promise(r => setTimeout(r, 100));
 
         const canvas = await html2canvas(card.firstElementChild, {
-          scale: 3, useCORS: true, logging: false, backgroundColor: '#ffffff',
+          scale: 3, useCORS: true, logging: false, backgroundColor: shBg,
           allowTaint: false
         });
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -3046,11 +3066,19 @@
           day: 'numeric', month: 'long', year: 'numeric'
         }).replace(/\s/g, '_');
 
+        var isDark = document.documentElement.classList.contains('dark');
+        var shBg = isDark ? '#1e293b' : '#ffffff';
+        var shText = isDark ? '#f1f5f9' : '#0f172a';
+        var shAccent = isDark ? '#60a5fa' : '#2563eb';
+        var shMuted = isDark ? '#94a3b8' : '#64748b';
+        var shBorder = isDark ? '#334155' : '#1e293b';
+        var shFooterBorder = isDark ? '#334155' : '#e2e8f0';
+
         var headerHtml = `
-          <div style="padding:20px 28px 14px;border-bottom:2px solid #1e293b;">
-            <div style="font-size:28px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;text-transform:uppercase;">PT. TRIDAYA SINERGI INDONESIA</div>
-            <div style="font-size:18px;font-weight:700;color:#2563eb;letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">Sales & Distribution Division</div>
-            <div style="font-size:16px;color:#64748b;font-weight:500;margin-top:5px;">${tglStr}</div>
+          <div style="padding:20px 28px 14px;border-bottom:2px solid ${shBorder};background:${shBg};">
+            <div style="font-size:28px;font-weight:900;color:${shText};letter-spacing:-0.5px;text-transform:uppercase;">PT. TRIDAYA SINERGI INDONESIA</div>
+            <div style="font-size:18px;font-weight:700;color:${shAccent};letter-spacing:0.2em;text-transform:uppercase;margin-top:4px;">Sales & Distribution Division</div>
+            <div style="font-size:16px;color:${shMuted};font-weight:500;margin-top:5px;">${tglStr}</div>
           </div>`;
 
         var clone = content.cloneNode(true);
@@ -3059,7 +3087,7 @@
 
         var card = document.getElementById('sh-screenshot-card');
         var wrapperHtml = `
-          <div style="width:3000px;margin:0;padding:0;background:#ffffff;font-family:Arial,sans-serif;">
+          <div style="width:3000px;margin:0;padding:0;background:${shBg};font-family:Arial,sans-serif;">
             <style>
               #sh-overlay-content, #sh-overlay-content * { overflow:visible !important; }
               #sh-overlay-content .max-w-7xl { max-width:none !important; }
@@ -3068,6 +3096,11 @@
               #sh-overlay-content #sales-hub-kpis .text-lg { font-size:24px !important; }
               #sh-overlay-content .text-xs { font-size:24px !important; }
               #sh-overlay-content .text-sm { font-size:28px !important; }
+              #sh-overlay-content #sales-hub-periods table { font-size:36px !important; }
+              #sh-overlay-content #sales-hub-periods td,
+              #sh-overlay-content #sales-hub-periods th { padding:20px 18px !important; }
+              #sh-overlay-content #sales-hub-periods .mt-0\.5 { margin-top:28px !important; }
+              #sh-overlay-content #sales-hub-snapshot-cards .py-3 { padding-top:18px !important; padding-bottom:26px !important; }
               #sh-overlay-content .text-base { font-size:30px !important; }
               #sh-overlay-content .text-lg { font-size:24px !important; }
               #sh-overlay-content td, #sh-overlay-content th { padding:14px 12px !important; }
@@ -3083,8 +3116,8 @@
               #sales-hub-snapshots { padding-top:40px !important; }
             </style>
             ${headerHtml}
-            <div id="sh-overlay-content" style="margin:0;padding:20px 28px;">${clone.innerHTML}</div>
-            <div style="text-align:center;padding:16px 32px 22px;font-size:16px;color:#94a3b8;font-weight:600;border-top:1px solid #e2e8f0;">
+            <div id="sh-overlay-content" style="margin:0;padding:20px 28px;background:${shBg};">${clone.innerHTML}</div>
+            <div style="text-align:center;padding:16px 32px 22px;font-size:16px;color:#94a3b8;font-weight:600;border-top:1px solid ${shFooterBorder};background:${shBg};">
               Powered by ATR built by SND Support &middot; PT. Tridaya Sinergi Indonesia
             </div>
           </div>`;
@@ -3095,7 +3128,7 @@
         await new Promise(r => setTimeout(r, 100));
 
         const canvas = await html2canvas(card.firstElementChild, {
-          scale: 4, useCORS: true, logging: false, backgroundColor: '#ffffff',
+          scale: 4, useCORS: true, logging: false, backgroundColor: shBg,
           allowTaint: false
         });
 
