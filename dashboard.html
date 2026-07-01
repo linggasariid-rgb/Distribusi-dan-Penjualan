@@ -366,6 +366,7 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="sales-hub-snapshot-cards"></div>
         </div>
+        <div id="sales-hub-daily-comparison" class="space-y-3"></div>
       </div>
     </div>
 
@@ -3440,7 +3441,8 @@ TANGGAL  Jumlah
     function renderSalesHub(data) {
       renderSalesHubKPIs(data.kpis);
       renderSalesHubPeriods(data.currentMonth, data.previousMonth);
-      renderSalesHubSnapshots(data.dailyComparison);
+      renderSalesHubSnapshots(data.dateSnapshots);
+      renderDailyComparison(data.dailyComparison);
     }
 
     function renderSalesHubKPIs(kpis) {
@@ -3539,10 +3541,77 @@ TANGGAL  Jumlah
         renderSalesHubTable(previous.label, previous.data);
     }
 
-    function renderSalesHubSnapshots(dailyData) {
+    function renderSalesHubSnapshots(snapshots) {
       const container = document.getElementById('sales-hub-snapshot-cards');
-      if (!dailyData || dailyData.length === 0) {
+      if (!snapshots || snapshots.length === 0) {
         container.innerHTML = '<div class="col-span-full text-center text-slate-400 font-medium py-8">Belum ada data harian</div>';
+        return;
+      }
+      let html = '';
+      snapshots.forEach(function(snap) {
+        let grandTotals = { stokis: 0, masterStokis: 0, karyawan: 0, tsiApps: 0, msi: 0, total: 0 };
+        snap.data.forEach(function(r) {
+          grandTotals.stokis += r.stokis;
+          grandTotals.masterStokis += r.masterStokis;
+          grandTotals.karyawan += r.karyawan;
+          grandTotals.tsiApps += r.tsiApps;
+          grandTotals.msi += r.msi;
+          grandTotals.total += r.total;
+        });
+
+        html += `
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
+              <h4 class="text-sm font-extrabold text-blue-700 uppercase tracking-tight">${snap.date}</h4>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
+                    <th class="px-4 py-2.5">Cabang</th>
+                    <th class="px-4 py-2.5 text-right">MST</th>
+                    <th class="px-4 py-2.5 text-right">MSI</th>
+                    <th class="px-4 py-2.5 text-right">STK</th>
+                    <th class="px-4 py-2.5 text-right">Karyawan</th>
+                    <th class="px-4 py-2.5 text-right">APPS</th>
+                    <th class="px-4 py-2.5 text-right bg-blue-50 text-blue-800">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">`;
+        snap.data.forEach(function(row) {
+          html += `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="px-4 py-2 font-bold text-slate-700 whitespace-nowrap">${row.warehouse}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
+              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
+              <td class="px-4 py-2 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
+            </tr>`;
+        });
+        html += `
+                <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
+                  <td class="px-4 py-2.5">TOTAL</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
+                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
+                  <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderDailyComparison(dailyData) {
+      const container = document.getElementById('sales-hub-daily-comparison');
+      if (!dailyData || dailyData.length === 0) {
+        container.innerHTML = '';
         return;
       }
       var grandCurrent = 0, grandPrevious = 0, grandDelta = 0;
@@ -3551,15 +3620,12 @@ TANGGAL  Jumlah
         grandPrevious += d.previous;
         grandDelta += d.delta;
       });
-      var trendIcon = grandDelta >= 0
-        ? '<i class="fas fa-arrow-up text-emerald-500 mr-1"></i>'
-        : '<i class="fas fa-arrow-down text-red-500 mr-1"></i>';
 
       let html = `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
             <h3 class="text-base font-extrabold text-slate-700 uppercase tracking-tight">Perbandingan Harian</h3>
-            <span class="text-xs font-bold text-slate-500">${trendIcon} Bulan Berjalan vs Bulan Lalu</span>
+            <span class="text-xs font-bold text-slate-500">Bulan Berjalan vs Bulan Lalu</span>
           </div>
           <div class="overflow-x-auto table-container" style="max-height:420px;overflow-y:auto;">
             <table class="w-full text-sm text-left border-collapse">
