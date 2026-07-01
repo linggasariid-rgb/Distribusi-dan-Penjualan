@@ -1454,25 +1454,41 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
       }
     });
 
-    function sumRange(month, year, endDay) {
-      var result = {};
-      Object.keys(dailyAll).forEach(function(dk) {
-        var dt = new Date(dk + 'T00:00:00');
-        if (dt.getMonth() === month && dt.getFullYear() === year && dt.getDate() <= endDay) {
-          var branches = dailyAll[dk] || {};
-          Object.keys(branches).forEach(function(b) {
-            if (!result[b]) result[b] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0, MSI:0 };
-            ['MST','STK','KARYAWAN','TSIAPPS','MSI'].forEach(function(t) {
-              result[b][t] = (result[b][t] || 0) + (branches[b][t] || 0);
-            });
+    // Single pass: hitung daily totals & branch totals per bulan
+    var currentData = {}, previousData = {};
+    var currentDaily = {}, previousDaily = {};
+    var prevMonthLastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
+
+    Object.keys(dailyAll).forEach(function(dk) {
+      var dt = new Date(dk + 'T00:00:00');
+      var m = dt.getMonth(), y = dt.getFullYear(), day = dt.getDate();
+      var branches = dailyAll[dk] || {};
+      var dayTotal = 0;
+
+      Object.keys(branches).forEach(function(b) {
+        var t = branches[b];
+        var sum = (t['STK'] || 0) + (t['MST'] || 0) + (t['KARYAWAN'] || 0) + (t['TSIAPPS'] || 0) + (t['MSI'] || 0);
+        dayTotal += sum;
+
+        if (m === currentMonth && y === currentYear && day <= currDayNum) {
+          if (!currentData[b]) currentData[b] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0, MSI:0 };
+          ['MST','STK','KARYAWAN','TSIAPPS','MSI'].forEach(function(tc) {
+            currentData[b][tc] = (currentData[b][tc] || 0) + (branches[b][tc] || 0);
+          });
+        }
+        if (m === prevMonth && y === prevYear && day <= currDayNum) {
+          if (!previousData[b]) previousData[b] = { MST:0, STK:0, KARYAWAN:0, TSIAPPS:0, MSI:0 };
+          ['MST','STK','KARYAWAN','TSIAPPS','MSI'].forEach(function(tc) {
+            previousData[b][tc] = (previousData[b][tc] || 0) + (branches[b][tc] || 0);
           });
         }
       });
-      return result;
-    }
 
-    var currentData = sumRange(currentMonth, currentYear, currDayNum);
-    var previousData = sumRange(prevMonth, prevYear, currDayNum);
+      if (m === currentMonth && y === currentYear && day <= currDayNum)
+        currentDaily[day] = (currentDaily[day] || 0) + Math.round(dayTotal);
+      if (m === prevMonth && y === prevYear && day <= currDayNum)
+        previousDaily[day] = (previousDaily[day] || 0) + Math.round(dayTotal);
+    });
 
     var branchSet = {};
     Object.keys(currentData).forEach(function(b) { branchSet[b] = true; });
@@ -1527,29 +1543,7 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
       dateSnapshots.push({ date: label, data: buildSnapshotTable(branchData) });
     });
 
-    // Daily comparison: per-day current month vs previous month
-    function getDailyTotals(month, year) {
-      var result = {};
-      Object.keys(dailyAll).forEach(function(dk) {
-        var dt = new Date(dk + 'T00:00:00');
-        if (dt.getMonth() === month && dt.getFullYear() === year) {
-          var day = dt.getDate();
-          var branches = dailyAll[dk] || {};
-          var total = 0;
-          Object.keys(branches).forEach(function(b) {
-            var t = branches[b];
-            total += (t['STK'] || 0) + (t['MST'] || 0) + (t['KARYAWAN'] || 0) + (t['TSIAPPS'] || 0) + (t['MSI'] || 0);
-          });
-          result[day] = Math.round(total);
-        }
-      });
-      return result;
-    }
-    var currentDaily = getDailyTotals(currentMonth, currentYear);
-    var previousDaily = getDailyTotals(prevMonth, prevYear);
-
     var dailyComparison = [];
-    var prevMonthLastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
     for (var d = 1; d <= currDayNum; d++) {
       var cur = currentDaily[d] || 0;
       var prev = (d <= prevMonthLastDay) ? (previousDaily[d] || 0) : 0;
