@@ -1472,8 +1472,7 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
     }
 
     var currentData = sumRange(currentMonth, currentYear, currDayNum);
-    var prevLastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
-    var previousData = sumRange(prevMonth, prevYear, prevLastDay);
+    var previousData = sumRange(prevMonth, prevYear, currDayNum);
 
     var branchSet = {};
     Object.keys(currentData).forEach(function(b) { branchSet[b] = true; });

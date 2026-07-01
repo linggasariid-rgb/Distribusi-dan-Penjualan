@@ -3445,7 +3445,7 @@ TANGGAL  Jumlah
 
     function renderSalesHubKPIs(kpis) {
       const container = document.getElementById('sales-hub-kpis');
-      const deltaClass = kpis.delta >= 0 ? 'text-emerald-600' : 'text-red-600';
+      const deltaClass = kpis.delta >= 0 ? 'text-blue-600' : 'text-red-600';
 
       container.innerHTML = `
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
@@ -3456,7 +3456,7 @@ TANGGAL  Jumlah
           <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Bulan Lalu</h4>
           <div class="text-lg font-black text-slate-700">${kpis.previousTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-emerald-500">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 ${kpis.delta >= 0 ? 'border-l-blue-500' : 'border-l-red-400'}">
           <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Selisih M-1</h4>
           <div class="text-lg font-black ${deltaClass}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
         </div>
@@ -3573,7 +3573,7 @@ TANGGAL  Jumlah
               </thead>
               <tbody class="divide-y divide-slate-100">`;
       dailyData.forEach(function(d) {
-        var deltaClass = d.delta >= 0 ? 'text-emerald-600' : 'text-red-600';
+        var deltaClass = d.delta >= 0 ? 'text-blue-600' : 'text-red-600';
         var arrow = d.delta >= 0 ? '▲' : '▼';
         html += `
                 <tr class="hover:bg-slate-50 transition-colors">
@@ -3588,7 +3588,7 @@ TANGGAL  Jumlah
                   <td class="px-5 py-3 whitespace-nowrap">TOTAL</td>
                   <td class="px-5 py-3 text-right text-blue-700">${grandCurrent.toLocaleString('id-ID')}</td>
                   <td class="px-5 py-3 text-right text-slate-600">${grandPrevious.toLocaleString('id-ID')}</td>
-                  <td class="px-5 py-3 text-right font-black bg-blue-50 ${grandDelta >= 0 ? 'text-emerald-600' : 'text-red-600'}">${grandDelta >= 0 ? '▲' : '▼'} ${Math.abs(grandDelta).toLocaleString('id-ID')}</td>
+                  <td class="px-5 py-3 text-right font-black bg-blue-50 ${grandDelta >= 0 ? 'text-blue-600' : 'text-red-600'}">${grandDelta >= 0 ? '▲' : '▼'} ${Math.abs(grandDelta).toLocaleString('id-ID')}</td>
                 </tr>
               </tbody>
             </table>
