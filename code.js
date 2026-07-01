@@ -1528,6 +1528,40 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
       dateSnapshots.push({ date: label, data: buildSnapshotTable(branchData) });
     });
 
+    // Daily comparison: per-day current month vs previous month
+    function getDailyTotals(month, year) {
+      var result = {};
+      Object.keys(dailyAll).forEach(function(dk) {
+        var dt = new Date(dk + 'T00:00:00');
+        if (dt.getMonth() === month && dt.getFullYear() === year) {
+          var day = dt.getDate();
+          var branches = dailyAll[dk] || {};
+          var total = 0;
+          Object.keys(branches).forEach(function(b) {
+            var t = branches[b];
+            total += (t['STK'] || 0) + (t['MST'] || 0) + (t['KARYAWAN'] || 0) + (t['TSIAPPS'] || 0) + (t['MSI'] || 0);
+          });
+          result[day] = Math.round(total);
+        }
+      });
+      return result;
+    }
+    var currentDaily = getDailyTotals(currentMonth, currentYear);
+    var previousDaily = getDailyTotals(prevMonth, prevYear);
+
+    var dailyComparison = [];
+    var prevMonthLastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
+    for (var d = 1; d <= currDayNum; d++) {
+      var cur = currentDaily[d] || 0;
+      var prev = (d <= prevMonthLastDay) ? (previousDaily[d] || 0) : 0;
+      dailyComparison.push({
+        date: String(d).padStart(2, '0') + '/' + String(currentMonth + 1).padStart(2, '0'),
+        current: cur,
+        previous: prev,
+        delta: cur - prev
+      });
+    }
+
     var currentLabel = monthNames[currentMonth] + ' ' + currentYear;
     var prevLabel = monthNames[prevMonth] + ' ' + prevYear;
 
@@ -1538,7 +1572,8 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
         previousMonth: { label: prevLabel, data: previousTable },
         kpis: { delta: delta, growthPct: growthPct, currentTotal: currentTotal, previousTotal: previousTotal },
         dateSnapshots: dateSnapshots,
-        branches: allBranches
+        branches: allBranches,
+        dailyComparison: dailyComparison
       }
     };
 
