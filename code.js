@@ -885,6 +885,7 @@ function savePenerimaanPabrik(data) {
 
     sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, 3).setValues(rowsToAdd);
 
+    CacheService.getScriptCache().remove('sd_Penerimaan');
     return { status: "success", message: `Data penerimaan pabrik berhasil disimpan (${rowsToAdd.length} baris).` };
   } catch (e) {
     Logger.log(e);
@@ -930,6 +931,7 @@ function saveDistribusi(data) {
 
     sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, 4).setValues(rowsToAdd);
 
+    CacheService.getScriptCache().remove('sd_Distribusi');
     return { status: "success", message: `Data distribusi berhasil disimpan (${rowsToAdd.length} baris).` };
   } catch (e) {
     Logger.log(e);

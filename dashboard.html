@@ -1190,7 +1190,7 @@ TANGGAL  Jumlah
         pageIcon.className = "fas fa-chart-line";
         branchFilter.classList.remove('hidden');
         if (menuSalesDash) menuSalesDash.className = activeMenuClass;
-        if (!gSalesData) loadSalesData();
+        loadSalesData();
       }
       else if (menuName === 'sales-hub') {
         document.getElementById('sales-hub-view').classList.remove('hidden');
