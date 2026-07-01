@@ -79,6 +79,32 @@ function filterBranchListByWHP(branches, userWHP) {
   });
 }
 
+/**
+ * Helper: baca data sheet dengan cache (5 menit TTL).
+ * Mengurangi pembacaan ulang sheet yang sama antar fungsi.
+ */
+function getSheetDataCached(sheetName) {
+  var cache = CacheService.getScriptCache();
+  var key = 'sd_' + sheetName.replace(/[^a-zA-Z0-9]/g, '_');
+  var cached = cache.get(key);
+  if (cached) {
+    try {
+      var parsed = JSON.parse(cached);
+      if (parsed && parsed.length > 0) return parsed;
+    } catch(e) {}
+  }
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet) throw new Error("Sheet '" + sheetName + "' tidak ditemukan.");
+  var data = sheet.getDataRange().getValues();
+  try {
+    cache.put(key, JSON.stringify(data), 300);
+  } catch(e) {
+    // Data terlalu besar untuk cache — fallback without caching
+  }
+  return data;
+}
+
 function getDistributionData(userWHP) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -88,8 +114,8 @@ function getDistributionData(userWHP) {
     if (!salesSheet || !stockSheet) throw new Error("Sheet Penjualan atau Stock tidak ditemukan.");
 
     const productList = Object.keys(CONFIG.PRODUCT_INFO);
-    const salesData = salesSheet.getDataRange().getValues();
-    const stockData = stockSheet.getDataRange().getValues();
+    const salesData = getSheetDataCached("Update-Penjualan WHO");
+    const stockData = getSheetDataCached("Update-STOCK");
     
     let salesHeader = salesData[0].map(h => String(h).replace(/\s+/g, '').toUpperCase());
     let stockHeader = stockData[0].map(h => String(h).replace(/\s+/g, '').toUpperCase());
@@ -546,7 +572,7 @@ function getBestProductsData(filterMonth) {
     const sheet = ss.getSheetByName("Update-Penjualan WHO");
     if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
 
-    const data = sheet.getDataRange().getValues();
+    const data = getSheetDataCached("Update-Penjualan WHO");
     const headers = data[0].map(h => String(h).trim().toUpperCase());
     const rows = data.slice(1);
 
@@ -609,7 +635,7 @@ function getBestProductsMonths() {
     const sheet = ss.getSheetByName("Update-Penjualan WHO");
     if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
 
-    const data = sheet.getDataRange().getValues();
+    const data = getSheetDataCached("Update-Penjualan WHO");
     const headers = data[0].map(h => String(h).trim().toUpperCase());
     const tglIdx = headers.findIndex(h => h.replace(/\s+/g, '') === 'TANGGAL');
     if (tglIdx === -1) return { status: "success", data: [] };
@@ -664,7 +690,7 @@ function getSalesDailyReport(dayFilter, filterMonth, startMonth, userWHP) {
     const sheet = ss.getSheetByName("Update-Penjualan WHO");
     if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
 
-    const data = sheet.getDataRange().getValues();
+    const data = getSheetDataCached("Update-Penjualan WHO");
     const headers = data[0].map(h => String(h).trim().toUpperCase());
     const rows = data.slice(1);
 
@@ -823,6 +849,98 @@ function updateStockSheet(transactionData, type, branch) {
 /**
  * Helper untuk membersihkan angka dari string (menghapus titik ribuan)
  */
+function savePenerimaanPabrik(data) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName("Penerimaan");
+    if (!sheet) {
+      sheet = ss.insertSheet("Penerimaan");
+      sheet.appendRow(["TANGGAL", "GUDANG", "JUMLAH"]);
+    }
+
+    const sourceHeader = data[0].map(h => String(h).trim().toUpperCase());
+    const sourceRows = data.slice(1);
+
+    const tglIdx = sourceHeader.findIndex(h => h.includes('TANGGAL'));
+    const gudangIdx = sourceHeader.findIndex(h => h.includes('GUDANG'));
+    const jumlahIdx = sourceHeader.findIndex(h => h.includes('JUMLAH'));
+
+    if (tglIdx === -1 || gudangIdx === -1 || jumlahIdx === -1) {
+      throw new Error("Header harus mengandung: TANGGAL, GUDANG, JUMLAH. Ditemukan: " + sourceHeader.join(", "));
+    }
+
+    const rowsToAdd = [];
+    sourceRows.forEach(row => {
+      const tgl = row[tglIdx] ? String(row[tglIdx]).trim() : '';
+      const gudang = row[gudangIdx] ? String(row[gudangIdx]).trim() : '';
+      const jumlah = row[jumlahIdx] !== undefined && row[jumlahIdx] !== '' ? Number(String(row[jumlahIdx]).replace(/\./g, '')) || 0 : 0;
+      if (tgl && gudang) {
+        rowsToAdd.push([tgl, gudang.toUpperCase(), jumlah]);
+      }
+    });
+
+    if (rowsToAdd.length === 0) {
+      throw new Error("Tidak ada baris data valid untuk disimpan.");
+    }
+
+    sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, 3).setValues(rowsToAdd);
+
+    return { status: "success", message: `Data penerimaan pabrik berhasil disimpan (${rowsToAdd.length} baris).` };
+  } catch (e) {
+    Logger.log(e);
+    return { status: "error", message: e.toString() };
+  }
+}
+
+function saveDistribusi(data) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName("Distribusi");
+    if (!sheet) {
+      sheet = ss.insertSheet("Distribusi");
+      sheet.appendRow(["TANGGAL", "GUDANG", "CABANG", "JUMLAH"]);
+    }
+
+    const sourceHeader = data[0].map(h => String(h).trim().toUpperCase());
+    const sourceRows = data.slice(1);
+
+    const tglIdx = sourceHeader.findIndex(h => h.includes('TANGGAL'));
+    const gudangIdx = sourceHeader.findIndex(h => h.includes('GUDANG'));
+    const cabangIdx = sourceHeader.findIndex(h => h.includes('CABANG'));
+    const jumlahIdx = sourceHeader.findIndex(h => h.includes('JUMLAH'));
+
+    if (tglIdx === -1 || gudangIdx === -1 || cabangIdx === -1 || jumlahIdx === -1) {
+      throw new Error("Header harus mengandung: TANGGAL, GUDANG, CABANG, JUMLAH. Ditemukan: " + sourceHeader.join(", "));
+    }
+
+    const rowsToAdd = [];
+    sourceRows.forEach(row => {
+      const tgl = row[tglIdx] ? String(row[tglIdx]).trim() : '';
+      const gudang = row[gudangIdx] ? String(row[gudangIdx]).trim() : '';
+      const cabang = row[cabangIdx] ? String(row[cabangIdx]).trim() : '';
+      const jumlah = row[jumlahIdx] !== undefined && row[jumlahIdx] !== '' ? Number(String(row[jumlahIdx]).replace(/\./g, '')) || 0 : 0;
+      if (tgl && gudang && cabang) {
+        rowsToAdd.push([tgl, gudang.toUpperCase(), cabang.toUpperCase(), jumlah]);
+      }
+    });
+
+    if (rowsToAdd.length === 0) {
+      throw new Error("Tidak ada baris data valid untuk disimpan.");
+    }
+
+    sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, 4).setValues(rowsToAdd);
+
+    return { status: "success", message: `Data distribusi berhasil disimpan (${rowsToAdd.length} baris).` };
+  } catch (e) {
+    Logger.log(e);
+    return { status: "error", message: e.toString() };
+  }
+}
+
+function getBerandaData() {
+  return getSalesDashboardData("ALL", "ALL", "");
+}
+
 function cleanNum(val) {
   if (typeof val === 'number') return val;
   if (!val || val === '-') return 0;
@@ -889,7 +1007,7 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
     }
 
     // 2. Proses Data Penjualan
-    const salesData = salesSheet.getDataRange().getValues();
+    const salesData = getSheetDataCached("Update-Penjualan WHO");
     const salesHeader = salesData.shift();
 
     // Indeks Kolom (A=0, B=1, D=3, AH=33)
@@ -959,7 +1077,7 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
 
     // 3. Proses Distribusi (Bulan Berjalan & Split Gudang)
     let distBDG = 0, distTSM = 0;
-    const distRows = distSheet.getDataRange().getValues();
+    const distRows = getSheetDataCached("Distribusi");
     distRows.shift();
     distRows.forEach(row => {
       const tglRaw = row[0]; // Kolom A: Tanggal
@@ -978,7 +1096,7 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
 
     // 4. Proses Penerimaan (Bulan Berjalan & Split Gudang)
     let recBDG = 0, recTSM = 0;
-    const recRows = recSheet.getDataRange().getValues();
+    const recRows = getSheetDataCached("Penerimaan");
     recRows.shift();
     recRows.forEach(row => {
       const tglRaw = row[0]; // Kolom A: Tanggal
@@ -1028,8 +1146,8 @@ function getControlPointData() {
     if (!bizSheet) return { error: "Sheet 'BIZ' tidak ditemukan!" };
     if (!stockSheet) return { error: "Sheet 'Update-STOCK' tidak ditemukan!" };
 
-    var bizData = bizSheet.getDataRange().getValues();
-    var stockData = stockSheet.getDataRange().getValues();
+    var bizData = getSheetDataCached("BIZ");
+    var stockData = getSheetDataCached("Update-STOCK");
 
     if (stockData.length < 2) return { error: "Data Update-STOCK kosong." };
 
@@ -1247,13 +1365,13 @@ function getControlPointData() {
   }
 }
 
-function getSalesHubData(userWHP, currDateStr, prevDateStr) {
+function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName("Update-Penjualan WHO");
     if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
 
-    const data = sheet.getDataRange().getValues();
+    const data = getSheetDataCached("Update-Penjualan WHO");
     const rows = data.slice(1);
 
     const colBranch = 1;
@@ -1278,14 +1396,20 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
     var prevYear = prevDate.getFullYear();
     var prevDayNum = prevDate.getDate();
 
-    // Tentukan 3 tanggal snapshot (current, M-1, M-2) dengan day = currDayNum
+    // Gunakan backdate untuk snapshot jika ada, otherwise pakai currDate
+    var backDate = parseYMD(backdateStr) || currDate;
+    var snapMonth = backDate.getMonth();
+    var snapYear = backDate.getFullYear();
+    var snapDay = backDate.getDate();
+
+    // Tentukan 3 tanggal snapshot (current, M-1, M-2) dengan day = snapDay
     var snapDates = [];
     for (var sm = 0; sm < 3; sm++) {
-      var m = currentMonth - sm;
-      var y = currentYear;
+      var m = snapMonth - sm;
+      var y = snapYear;
       if (m < 0) { m += 12; y--; }
       var maxD = new Date(y, m + 1, 0).getDate();
-      var d = Math.min(currDayNum, maxD);
+      var d = Math.min(snapDay, maxD);
       snapDates.push(new Date(y, m, d));
     }
 
@@ -1346,9 +1470,13 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr) {
     }
 
     var currentData = sumRange(currentMonth, currentYear, currDayNum);
-    var previousData = sumRange(prevMonth, prevYear, prevDayNum);
+    var prevLastDay = new Date(prevYear, prevMonth + 1, 0).getDate();
+    var previousData = sumRange(prevMonth, prevYear, prevLastDay);
 
-    var allBranches = Object.keys(currentData).sort();
+    var branchSet = {};
+    Object.keys(currentData).forEach(function(b) { branchSet[b] = true; });
+    Object.keys(previousData).forEach(function(b) { branchSet[b] = true; });
+    var allBranches = Object.keys(branchSet).sort();
     var snapshotBranches = Object.keys(snapshotBranchSet).sort();
 
     function buildTable(dataMap) {

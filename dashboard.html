@@ -63,6 +63,77 @@
     </div>
 
     <!-- Main Content Views -->
+    <div id="beranda-view" class="hidden">
+      <div class="space-y-6">
+        <div class="flex items-center gap-4 mb-2">
+          <select id="beranda-month-select" class="px-4 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"></select>
+          <button onclick="loadBeranda()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-sync-alt mr-2"></i> Muat Ulang</button>
+        </div>
+
+        <div id="beranda-kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-chart-line text-lg"></i></div>
+              <div>
+                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Penjualan</p>
+                <p class="text-xs text-slate-500" id="beranda-penjualan-periode">Bulan Ini</p>
+              </div>
+            </div>
+            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-penjualan-value">—</p>
+            <p class="text-[10px] text-slate-400 mt-1" id="beranda-penjualan-growth"></p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="fas fa-truck-loading text-lg"></i></div>
+              <div>
+                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Distribusi</p>
+                <p class="text-xs text-slate-500">Bulan Ini</p>
+              </div>
+            </div>
+            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-distribusi-value">—</p>
+            <p class="text-[10px] text-slate-400 mt-1" id="beranda-distribusi-detail"></p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fas fa-factory text-lg"></i></div>
+              <div>
+                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Penerimaan</p>
+                <p class="text-xs text-slate-500">Bulan Ini</p>
+              </div>
+            </div>
+            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-penerimaan-value">—</p>
+            <p class="text-[10px] text-slate-400 mt-1" id="beranda-penerimaan-detail"></p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-calendar-day text-lg"></i></div>
+              <div>
+                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Penjualan Hari Ini</p>
+                <p class="text-xs text-slate-500">Tanggal Terakhir</p>
+              </div>
+            </div>
+            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-today-value">—</p>
+            <p class="text-[10px] text-slate-400 mt-1" id="beranda-today-label"></p>
+          </div>
+        </div>
+
+        <div id="beranda-comparison" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-slate-700 mb-4"><i class="fas fa-balance-scale mr-2 text-blue-600"></i>Perbandingan Distribusi vs Penerimaan per Gudang</h3>
+          <div id="beranda-comparison-content" class="text-xs text-slate-500">Memuat data...</div>
+        </div>
+
+        <div id="beranda-quick-actions" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h3 class="text-sm font-bold text-slate-700 mb-4"><i class="fas fa-bolt mr-2 text-amber-500"></i>Aksi Cepat</h3>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="switchMenu('penjualan')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-file-invoice-dollar mr-2"></i>Input Penjualan</button>
+            <button onclick="switchMenu('penerimaan-pabrik')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-factory mr-2"></i>Penerimaan Pabrik</button>
+            <button onclick="switchMenu('input-distribusi')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-arrow-right-arrow-left mr-2"></i>Input Distribusi</button>
+            <button onclick="switchMenu('distribusi')" class="bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-truck-loading mr-2"></i>Dashboard Distribusi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="distribution-view">
       <!-- Loader -->
       <div id="loader" class="flex flex-col items-center justify-center py-20">
@@ -286,7 +357,13 @@
         <div class="grid grid-cols-1 gap-6" id="sales-hub-periods"></div>
         <!-- Date Snapshots -->
         <div id="sales-hub-snapshots" class="space-y-3">
-          <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider">Penjualan Harian</h3>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider">Penjualan Harian</h3>
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-amber-500"></i>Backdate</label>
+              <input type="date" id="sh-backdate" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" onchange="loadSalesHubData()">
+            </div>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="sales-hub-snapshot-cards"></div>
         </div>
       </div>
@@ -317,7 +394,7 @@
     </div>
 
     <!-- Kartu Laporan (tersembunyi, untuk screenshot) -->
-    <div id="cp-report-card" style="position:fixed;left:-9999px;top:0;width:480px;background:#fff;padding:16px;font-family:sans-serif;border-radius:12px;"></div>
+    <div id="cp-report-card" style="position:fixed;left:-9999px;top:0;width:800px;background:#fff;padding:16px;font-family:sans-serif;border-radius:12px;"></div>
 
     <!-- Screenshot card SalesHub (tersembunyi) -->
     <div id="sh-screenshot-card" style="display:none;"></div>
@@ -448,6 +525,117 @@
         <div id="penerimaan-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
         <div class="mt-6 hidden" id="penerimaan-submit-container">
            <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitData('penerimaan')"><i class="fas fa-save mr-2"></i> Simpan & Tambahkan Stok Cabang</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Penerimaan Pabrik View -->
+    <div id="penerimaan-pabrik-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Penerimaan dari Pabrik</h2>
+        <p class="text-xs text-slate-500 mb-6">Pilih Gudang, atur Tanggal (otomatis hari ini), lalu paste Jumlah dari Excel.</p>
+        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-6 text-xs text-emerald-800">
+          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Cara Input:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Pilih <b>Gudang</b> tujuan.</li>
+            <li><b>Tanggal</b> otomatis terisi hari ini, bisa diubah jika perlu.</li>
+            <li>Copy kolom <b>Jumlah</b> dari Excel, paste ke kotak di bawah.</li>
+            <li>Atau paste <b>TANGGAL + Jumlah</b> (2 kolom) jika tanggal per baris berbeda.</li>
+          </ol>
+        </div>
+
+        <div class="mb-4 flex flex-col sm:flex-row gap-4">
+          <select id="penerimaan-pabrik-gudang-select" class="w-full sm:w-72 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <option value="">-- Pilih Gudang --</option>
+            <option value="GUDANG BANDUNG">Gudang Bandung</option>
+            <option value="GUDANG TASIKMALAYA">Gudang Tasikmalaya</option>
+          </select>
+          <input type="date" id="penerimaan-pabrik-tanggal" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
+
+        <textarea id="penerimaan-pabrik-paste-area" class="w-full h-32 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste Jumlah dari Excel di sini...
+Bisa juga paste TANGGAL + Jumlah (2 kolom).
+
+Contoh (Jumlah saja):
+5000
+3000
+2000
+
+Atau (TANGGAL + Jumlah):
+TANGGAL  Jumlah
+01/06/2026  5000
+02/06/2026  3000"></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPastePabrik()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('penerimaan-pabrik-paste-area').value=''; document.getElementById('penerimaan-pabrik-preview').innerHTML=''; document.getElementById('penerimaan-pabrik-submit-container').classList.add('hidden'); pastedDataCache['penerimaan_pabrik'] = null;" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="penerimaan-pabrik-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="penerimaan-pabrik-submit-container">
+           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitDataPabrik()"><i class="fas fa-save mr-2"></i> Simpan Data Penerimaan Pabrik</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Distribusi -->
+    <div id="input-distribusi-view" class="hidden">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Distribusi</h2>
+        <p class="text-xs text-slate-500 mb-6">Pilih Gudang & Cabang, atur Tanggal (otomatis hari ini), lalu paste data dari Excel.</p>
+        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-6 text-xs text-emerald-800">
+          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Cara Input:</p>
+          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+            <li>Pilih <b>Gudang</b> tujuan dan <b>Cabang</b> tujuan.</li>
+            <li><b>Tanggal</b> otomatis terisi hari ini, bisa diubah jika perlu.</li>
+            <li>Copy kolom <b>Jumlah</b> dari Excel, paste ke kotak di bawah.</li>
+            <li>Atau paste <b>TANGGAL + Jumlah</b> (2 kolom) jika tanggal per baris berbeda.</li>
+          </ol>
+        </div>
+
+        <div class="mb-4 flex flex-col sm:flex-row gap-4">
+          <select id="distribusi-gudang-select" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <option value="">-- Pilih Gudang --</option>
+            <option value="GUDANG BANDUNG">Gudang Bandung</option>
+            <option value="GUDANG TASIKMALAYA">Gudang Tasikmalaya</option>
+          </select>
+          <select id="distribusi-cabang-select" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <option value="">-- Pilih Cabang --</option>
+            <option value="BANDUNG">Bandung</option>
+            <option value="PURWAKARTA">Purwakarta</option>
+            <option value="KARAWANG">Karawang</option>
+            <option value="SUKABUMI">Sukabumi</option>
+            <option value="BOGOR">Bogor</option>
+            <option value="TANGERANG">Tangerang</option>
+            <option value="SERANG">Serang</option>
+            <option value="TASIKMALAYA">Tasikmalaya</option>
+            <option value="GARUT">Garut</option>
+            <option value="CIREBON">Cirebon</option>
+          </select>
+          <input type="date" id="distribusi-tanggal" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+        </div>
+
+        <textarea id="distribusi-paste-area" class="w-full h-32 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste Jumlah dari Excel di sini...
+Bisa juga paste TANGGAL + Jumlah (2 kolom).
+
+Contoh (Jumlah saja):
+5000
+3000
+2000
+
+Atau (TANGGAL + Jumlah):
+TANGGAL  Jumlah
+01/06/2026  5000
+02/06/2026  3000"></textarea>
+        
+        <div class="mt-4 flex gap-3">
+          <button onclick="processPasteDistribusi()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button onclick="document.getElementById('distribusi-paste-area').value=''; document.getElementById('distribusi-preview').innerHTML=''; document.getElementById('distribusi-submit-container').classList.add('hidden'); pastedDataCache['distribusi'] = null;" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        
+        <div id="distribusi-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div class="mt-6 hidden" id="distribusi-submit-container">
+           <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-blue-400 disabled:cursor-wait" onclick="submitDataDistribusi()"><i class="fas fa-save mr-2"></i> Simpan Data Distribusi</button>
         </div>
       </div>
     </div>
@@ -690,16 +878,133 @@
       return null;
     }
     
+    function initBerandaMonths() {
+      const select = document.getElementById('beranda-month-select');
+      select.innerHTML = '';
+      const now = new Date();
+      for (let i = -2; i <= 0; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const label = d.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+        const val = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = label;
+        if (i === 0) opt.selected = true;
+        select.appendChild(opt);
+      }
+    }
+
+    function loadBeranda() {
+      const dateObj = new Date();
+      const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('header-today-date').innerText = dateObj.toLocaleDateString('id-ID', dateOptions);
+      initBerandaMonths();
+      const container = document.getElementById('beranda-kpis');
+      document.getElementById('beranda-penjualan-value').textContent = 'Memuat...';
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          if (resp.status === 'success') {
+            renderBeranda(resp.data);
+          } else {
+            document.getElementById('beranda-penjualan-value').textContent = 'Gagal';
+          }
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('beranda-penjualan-value').textContent = 'Error';
+        })
+        .getBerandaData();
+    }
+
+    function formatNumber(n) {
+      return Number(n).toLocaleString('id-ID');
+    }
+
+    function renderBeranda(data) {
+      const k = data.kpis;
+      const bulanNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+      document.getElementById('beranda-penjualan-value').textContent = formatNumber(k.monthly);
+      const growth = k.growth;
+      const growEl = document.getElementById('beranda-penjualan-growth');
+      if (growth >= 0) {
+        growEl.innerHTML = '<span class="text-emerald-600 font-bold">+' + formatNumber(growth) + '</span> <span class="text-slate-400">dari bulan lalu (' + formatNumber(k.lastMonth) + ')</span>';
+      } else {
+        growEl.innerHTML = '<span class="text-red-600 font-bold">' + formatNumber(growth) + '</span> <span class="text-slate-400">dari bulan lalu (' + formatNumber(k.lastMonth) + ')</span>';
+      }
+
+      const distTotal = (k.distBDG || 0) + (k.distTSM || 0);
+      document.getElementById('beranda-distribusi-value').textContent = formatNumber(distTotal);
+      document.getElementById('beranda-distribusi-detail').innerHTML = 'BDG: ' + formatNumber(k.distBDG) + ' | TSM: ' + formatNumber(k.distTSM);
+
+      const recTotal = (k.recBDG || 0) + (k.recTSM || 0);
+      document.getElementById('beranda-penerimaan-value').textContent = formatNumber(recTotal);
+      document.getElementById('beranda-penerimaan-detail').innerHTML = 'BDG: ' + formatNumber(k.recBDG) + ' | TSM: ' + formatNumber(k.recTSM);
+
+      document.getElementById('beranda-today-value').textContent = formatNumber(k.today);
+      document.getElementById('beranda-today-label').textContent = 'Penjualan pada hari terakhir';
+
+      // Comparison table
+      let html = '<table class="w-full text-left border-collapse"><thead class="bg-slate-50"><tr class="text-[10px] uppercase tracking-wider text-slate-500">';
+      html += '<th class="px-3 py-2 font-bold border border-slate-200">Gudang</th>';
+      html += '<th class="px-3 py-2 font-bold border border-slate-200 text-right">Distribusi</th>';
+      html += '<th class="px-3 py-2 font-bold border border-slate-200 text-right">Penerimaan</th>';
+      html += '<th class="px-3 py-2 font-bold border border-slate-200 text-right">Selisih</th>';
+      html += '</tr></thead><tbody>';
+      ['BANDUNG', 'TASIKMALAYA'].forEach(function(g) {
+        const dist = g === 'BANDUNG' ? k.distBDG : k.distTSM;
+        const rec = g === 'BANDUNG' ? k.recBDG : k.recTSM;
+        const selisih = rec - dist;
+        const cls = selisih >= 0 ? 'text-emerald-600' : 'text-red-600';
+        html += '<tr class="hover:bg-slate-50">';
+        html += '<td class="px-3 py-2 border border-slate-200 font-semibold">Gudang ' + g + '</td>';
+        html += '<td class="px-3 py-2 border border-slate-200 text-right">' + formatNumber(dist) + '</td>';
+        html += '<td class="px-3 py-2 border border-slate-200 text-right">' + formatNumber(rec) + '</td>';
+        html += '<td class="px-3 py-2 border border-slate-200 text-right font-bold ' + cls + '">' + formatNumber(selisih) + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('beranda-comparison-content').innerHTML = html;
+    }
+
+    function toggleMenuGroup(el) {
+      const subMenu = el.parentElement.querySelector('.sub-menu');
+      const arrow = el.querySelector('.fa-chevron-right');
+      if (!subMenu) return;
+      const isHidden = subMenu.classList.toggle('hidden');
+      arrow.classList.toggle('rotate-90', !isHidden);
+    }
+
+    function expandParentGroup(menuName) {
+      const menuEl = document.getElementById('menu-' + menuName);
+      if (!menuEl) return;
+      const subMenu = menuEl.closest('.sub-menu');
+      if (!subMenu) return;
+      const parentGroup = subMenu.closest('.menu-group');
+      if (!parentGroup) return;
+      const toggleLink = parentGroup.querySelector('a[onclick*="toggleMenuGroup"]');
+      if (toggleLink) {
+        const sub = parentGroup.querySelector('.sub-menu');
+        const arrow = toggleLink.querySelector('.fa-chevron-right');
+        if (sub && sub.classList.contains('hidden')) {
+          sub.classList.remove('hidden');
+          if (arrow) arrow.classList.add('rotate-90');
+        }
+      }
+    }
+
     function switchMenu(menuName) {
       var role = sessionStorage.getItem('user_role') || 'admin';
       var restricted = { super_admin: 0, admin_whp: 1, admin: 1 };
       var menuAccess = {
+        'beranda': 'admin',
         'distribusi': 'admin',
         'stok': 'admin',
         'sales-dashboard': 'super_admin',
         'penjualan': 'super_admin',
         'penjualan-who': 'super_admin',
         'penerimaan': 'super_admin',
+        'penerimaan-pabrik': 'super_admin',
+        'input-distribusi': 'super_admin',
         'best-products': 'super_admin',
         'daily-report': 'super_admin',
         'sales-per-date': 'super_admin',
@@ -721,6 +1026,7 @@
       const penjualanView = document.getElementById('penjualan-view');
       const penjualanWhoView = document.getElementById('penjualan-who-view');
       const penerimaanView = document.getElementById('penerimaan-view');
+      const penerimaanPabrikView = document.getElementById('penerimaan-pabrik-view');
       const salesDashboardView = document.getElementById('sales-dashboard-view');
       const bestProductsView = document.getElementById('best-products-view');
       const dailyReportView = document.getElementById('daily-report-view');
@@ -728,12 +1034,15 @@
       const controlPointView = document.getElementById('control-point-view');
       const inputStokBizView = document.getElementById('input-stok-biz-view');
       const inputStokExcelView = document.getElementById('input-stok-excel-view');
+      const inputDistribusiView = document.getElementById('input-distribusi-view');
+      const berandaView = document.getElementById('beranda-view');
       
       const menuDist = document.getElementById('menu-distribusi');
       const menuStok = document.getElementById('menu-stok');
       const menuPenjualan = document.getElementById('menu-penjualan');
       const menuPenjualanWHO = document.getElementById('menu-penjualan-who');
       const menuPenerimaan = document.getElementById('menu-penerimaan');
+      const menuPenerimaanPabrik = document.getElementById('menu-penerimaan-pabrik');
       const menuSalesDash = document.getElementById('menu-sales-dashboard');
       const menuBestProducts = document.getElementById('menu-best-products');
       const menuDailyReport = document.getElementById('menu-daily-report');
@@ -742,6 +1051,8 @@
       const menuInputStokBiz = document.getElementById('menu-input-stok-biz');
       const menuInputStokExcel = document.getElementById('menu-input-stok-excel');
       const menuSalesHub = document.getElementById('menu-sales-hub');
+      const menuInputDistribusi = document.getElementById('menu-input-distribusi');
+      const menuBeranda = document.getElementById('menu-beranda');
       
       const pageTitle = document.getElementById('page-title');
       const pageIcon = document.getElementById('page-icon');
@@ -755,6 +1066,7 @@
       penjualanView.classList.add('hidden');
       penjualanWhoView.classList.add('hidden');
       penerimaanView.classList.add('hidden');
+      penerimaanPabrikView.classList.add('hidden');
       salesDashboardView.classList.add('hidden');
       bestProductsView.classList.add('hidden');
       dailyReportView.classList.add('hidden');
@@ -762,6 +1074,8 @@
       controlPointView.classList.add('hidden');
       inputStokBizView.classList.add('hidden');
       inputStokExcelView.classList.add('hidden');
+      inputDistribusiView.classList.add('hidden');
+      berandaView.classList.add('hidden');
       document.getElementById('sales-hub-view').classList.add('hidden');
       branchFilter.classList.add('hidden');
       if (summarySection) {
@@ -777,6 +1091,7 @@
       if(menuPenjualan) menuPenjualan.className = defaultMenuClass;
       if(menuPenjualanWHO) menuPenjualanWHO.className = defaultMenuClass;
       if(menuPenerimaan) menuPenerimaan.className = defaultMenuClass;
+      if(menuPenerimaanPabrik) menuPenerimaanPabrik.className = defaultMenuClass;
       if(menuSalesDash) menuSalesDash.className = defaultMenuClass;
       if(menuBestProducts) menuBestProducts.className = defaultMenuClass;
       if(menuDailyReport) menuDailyReport.className = defaultMenuClass;
@@ -785,6 +1100,8 @@
       if(menuInputStokBiz) menuInputStokBiz.className = defaultMenuClass;
       if(menuInputStokExcel) menuInputStokExcel.className = defaultMenuClass;
       if(menuSalesHub) menuSalesHub.className = defaultMenuClass;
+      if(menuInputDistribusi) menuInputDistribusi.className = defaultMenuClass;
+      if(menuBeranda) menuBeranda.className = defaultMenuClass;
 
       // Tampilkan View & Aktifkan Menu sesuai Pilihan
       if (menuName === 'stok') {
@@ -813,6 +1130,13 @@
         pageTitle.innerText = "Input Penerimaan (WH)";
         pageIcon.className = "fas fa-box-open";
         if (menuPenerimaan) menuPenerimaan.className = activeMenuClass;
+      }
+      else if (menuName === 'penerimaan-pabrik') {
+        penerimaanPabrikView.classList.remove('hidden');
+        pageTitle.innerText = "Penerimaan Pabrik";
+        pageIcon.className = "fas fa-factory";
+        if (menuPenerimaanPabrik) menuPenerimaanPabrik.className = activeMenuClass;
+        initPenerimaanPabrik();
       }
       else if (menuName === 'best-products') {
         bestProductsView.classList.remove('hidden');
@@ -875,6 +1199,20 @@
         if (menuSalesHub) menuSalesHub.className = activeMenuClass;
         initSalesHubDates();
       }
+      else if (menuName === 'beranda') {
+        berandaView.classList.remove('hidden');
+        pageTitle.innerText = "Beranda";
+        pageIcon.className = "fas fa-home";
+        if (menuBeranda) menuBeranda.className = activeMenuClass;
+        loadBeranda();
+      }
+      else if (menuName === 'input-distribusi') {
+        inputDistribusiView.classList.remove('hidden');
+        pageTitle.innerText = "Input Distribusi";
+        pageIcon.className = "fas fa-arrow-right-arrow-left";
+        if (menuInputDistribusi) menuInputDistribusi.className = activeMenuClass;
+        initInputDistribusi();
+      }
       else { // 'distribusi'
         distView.style.display = 'block';
         pageTitle.innerText = "Dashboard Distribusi";
@@ -887,6 +1225,7 @@
         }
         if (menuDist) menuDist.className = activeMenuClass;
       }
+      expandParentGroup(menuName);
     }
 
     function refreshData() {
@@ -1577,7 +1916,8 @@
           </tr>`;
       });
       html += `</tbody></table>`;
-      document.getElementById('sales-ranking-content').innerHTML = html;
+      var el = document.getElementById('sales-ranking-content');
+      if (el) el.innerHTML = html;
     }
 
     function clearPenjualan() {
@@ -1712,6 +2052,352 @@
                 button.innerHTML = originalButtonText;
             })
             .savePastedData(dataToSubmit, type, branchSelect.value, subType);
+    }
+
+    function initPenerimaanPabrik() {
+      const tglInput = document.getElementById('penerimaan-pabrik-tanggal');
+      if (tglInput && !tglInput.value) {
+        const today = new Date();
+        tglInput.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      }
+    }
+
+    function processPastePabrik() {
+      const gudang = document.getElementById('penerimaan-pabrik-gudang-select').value;
+      if (!gudang) {
+        alert('Silakan pilih Gudang terlebih dahulu.');
+        return;
+      }
+
+      const text = document.getElementById('penerimaan-pabrik-paste-area').value.trim();
+      const container = document.getElementById('penerimaan-pabrik-preview');
+      const submitContainer = document.getElementById('penerimaan-pabrik-submit-container');
+
+      pastedDataCache['penerimaan_pabrik'] = null;
+
+      if (!text) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste data terlebih dahulu.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      let data = rows.map(row => row.split('\t'));
+
+      if (data.length < 2 && data[0].length > 1) {
+        // Header-only detection
+      }
+      if (data.length < 1) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Data kosong.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const firstRow = data[0].map(h => String(h).trim().toUpperCase());
+      const hasTglHeader = firstRow.some(h => h.includes('TANGGAL'));
+      const hasJumlahHeader = firstRow.some(h => h.includes('JUMLAH'));
+
+      let startRow = 0;
+      let colCount = data[0].length;
+
+      // Deteksi header
+      if (hasTglHeader || hasJumlahHeader) {
+        startRow = 1;
+      }
+
+      const dataRows = data.slice(startRow);
+      if (dataRows.length === 0) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Tidak ada baris data setelah header.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      // Tentukan format: apakah TANGGAL+Jumlah (2 kolom) atau Jumlah saja (1 kolom)
+      const isTwoCols = colCount >= 2 && !hasTglHeader;
+      const hasTglCol = hasTglHeader && hasJumlahHeader;
+
+      // Jika header 2 kolom (TANGGAL, JUMLAH), pakai tanggal dari data
+      // Jika 1 kolom saja (JUMLAH), pakai tanggal dari date picker
+      const defaultTgl = document.getElementById('penerimaan-pabrik-tanggal').value;
+
+      if (!defaultTgl && !hasTglCol) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Isi Tanggal terlebih dahulu, atau paste dengan format TANGGAL + Jumlah.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      // Simpan data yang sudah diproses
+      const processedData = [];
+      // Header buatan untuk preview + backend
+      processedData.push(['TANGGAL', 'GUDANG', 'JUMLAH']);
+
+      dataRows.forEach(row => {
+        let tgl, jumlah;
+        if (hasTglCol) {
+          tgl = String(row[0] || '').trim();
+          jumlah = row[1] !== undefined ? String(row[1]).trim() : '';
+        } else if (colCount >= 2 && !hasTglHeader) {
+          // Data mentah: kolom pertama bisa TANGGAL atau Jumlah
+          tgl = String(row[0] || '').trim();
+          jumlah = row[1] !== undefined ? String(row[1]).trim() : '';
+        } else {
+          tgl = defaultTgl;
+          jumlah = String(row[0] || '').trim();
+        }
+
+        if (!tgl && !jumlah) return;
+        if (!jumlah) return;
+
+        // Format tanggal DD/MM/YYYY jika dalam format YYYY-MM-DD (dari date picker)
+        let tglDisplay = tgl;
+        if (tgl.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          const p = tgl.split('-');
+          tglDisplay = p[2] + '/' + p[1] + '/' + p[0];
+        } else if (tgl.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+          tglDisplay = tgl;
+        }
+
+        processedData.push([tglDisplay, gudang, jumlah]);
+      });
+
+      if (processedData.length < 2) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Tidak ada baris data valid.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      pastedDataCache['penerimaan_pabrik'] = processedData;
+
+      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
+      let htmlBody = '<tbody class="divide-y divide-slate-100">';
+
+      processedData.forEach((row, i) => {
+        if (i === 0) {
+          row.forEach((c) => tableHTML += `<th class="px-4 py-3 font-bold border border-slate-200 whitespace-nowrap">${c}</th>`);
+          tableHTML += '</tr></thead>';
+        } else {
+          htmlBody += '<tr class="hover:bg-slate-50">';
+          row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap">${c}</td>`);
+          htmlBody += '</tr>';
+        }
+      });
+
+      htmlBody += '</tbody></table>';
+      container.innerHTML = tableHTML + htmlBody;
+      submitContainer.classList.remove('hidden');
+    }
+
+    function submitDataPabrik() {
+      const dataToSubmit = pastedDataCache['penerimaan_pabrik'];
+      const button = document.querySelector('#penerimaan-pabrik-submit-container button');
+      const originalButtonText = button.innerHTML;
+
+      if (!dataToSubmit || dataToSubmit.length < 2) {
+        alert('Tidak ada data. Silakan proses data terlebih dahulu.');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...';
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = response.message;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
+
+            document.getElementById('penerimaan-pabrik-paste-area').value = '';
+            document.getElementById('penerimaan-pabrik-preview').innerHTML = '';
+            document.getElementById('penerimaan-pabrik-submit-container').classList.add('hidden');
+            pastedDataCache['penerimaan_pabrik'] = null;
+
+            showConfirmModal('Data berhasil disimpan. Muat ulang dashboard sekarang?', function() {
+              loadData();
+              switchMenu('distribusi');
+            });
+          } else {
+            alert('Gagal: ' + response.message);
+          }
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .withFailureHandler(function(error) {
+          alert('Gagal terhubung ke server: ' + error.message);
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .savePenerimaanPabrik(dataToSubmit);
+    }
+
+    function initInputDistribusi() {
+      const tglInput = document.getElementById('distribusi-tanggal');
+      if (tglInput && !tglInput.value) {
+        const today = new Date();
+        tglInput.value = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      }
+    }
+
+    function processPasteDistribusi() {
+      const gudang = document.getElementById('distribusi-gudang-select').value;
+      if (!gudang) {
+        alert('Silakan pilih Gudang terlebih dahulu.');
+        return;
+      }
+      const cabang = document.getElementById('distribusi-cabang-select').value;
+      if (!cabang) {
+        alert('Silakan pilih Cabang terlebih dahulu.');
+        return;
+      }
+
+      const text = document.getElementById('distribusi-paste-area').value.trim();
+      const container = document.getElementById('distribusi-preview');
+      const submitContainer = document.getElementById('distribusi-submit-container');
+
+      pastedDataCache['distribusi'] = null;
+
+      if (!text) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste data terlebih dahulu.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const rows = text.split('\n').filter(row => row.trim() !== '');
+      let data = rows.map(row => row.split('\t'));
+
+      if (data.length < 1) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Data kosong.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const firstRow = data[0].map(h => String(h).trim().toUpperCase());
+      const hasTglHeader = firstRow.some(h => h.includes('TANGGAL'));
+      const hasJumlahHeader = firstRow.some(h => h.includes('JUMLAH'));
+
+      let startRow = 0;
+      let colCount = data[0].length;
+
+      if (hasTglHeader || hasJumlahHeader) {
+        startRow = 1;
+      }
+
+      const dataRows = data.slice(startRow);
+      if (dataRows.length === 0) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Tidak ada baris data setelah header.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const hasTglCol = hasTglHeader && hasJumlahHeader;
+      const defaultTgl = document.getElementById('distribusi-tanggal').value;
+
+      if (!defaultTgl && !hasTglCol) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Isi Tanggal terlebih dahulu, atau paste dengan format TANGGAL + Jumlah.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      const processedData = [];
+      processedData.push(['TANGGAL', 'GUDANG', 'CABANG', 'JUMLAH']);
+
+      dataRows.forEach(row => {
+        let tgl, jumlah;
+        if (hasTglCol) {
+          tgl = String(row[0] || '').trim();
+          jumlah = row[1] !== undefined ? String(row[1]).trim() : '';
+        } else if (colCount >= 2 && !hasTglHeader) {
+          tgl = String(row[0] || '').trim();
+          jumlah = row[1] !== undefined ? String(row[1]).trim() : '';
+        } else {
+          tgl = defaultTgl;
+          jumlah = String(row[0] || '').trim();
+        }
+
+        if (!tgl && !jumlah) return;
+        if (!jumlah) return;
+
+        let tglDisplay = tgl;
+        if (tgl.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          const p = tgl.split('-');
+          tglDisplay = p[2] + '/' + p[1] + '/' + p[0];
+        } else if (tgl.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+          tglDisplay = tgl;
+        }
+
+        processedData.push([tglDisplay, gudang, cabang, jumlah]);
+      });
+
+      if (processedData.length < 2) {
+        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Tidak ada baris data valid.</p>';
+        submitContainer.classList.add('hidden');
+        return;
+      }
+
+      pastedDataCache['distribusi'] = processedData;
+
+      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
+      let htmlBody = '<tbody class="divide-y divide-slate-100">';
+
+      processedData.forEach((row, i) => {
+        if (i === 0) {
+          row.forEach((c) => tableHTML += `<th class="px-4 py-3 font-bold border border-slate-200 whitespace-nowrap">${c}</th>`);
+          tableHTML += '</tr></thead>';
+        } else {
+          htmlBody += '<tr class="hover:bg-slate-50">';
+          row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap">${c}</td>`);
+          htmlBody += '</tr>';
+        }
+      });
+
+      htmlBody += '</tbody></table>';
+      container.innerHTML = tableHTML + htmlBody;
+      submitContainer.classList.remove('hidden');
+    }
+
+    function submitDataDistribusi() {
+      const dataToSubmit = pastedDataCache['distribusi'];
+      const button = document.querySelector('#distribusi-submit-container button');
+      const originalButtonText = button.innerHTML;
+
+      if (!dataToSubmit || dataToSubmit.length < 2) {
+        alert('Tidak ada data. Silakan proses data terlebih dahulu.');
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...';
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.status === 'success') {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = response.message;
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
+
+            document.getElementById('distribusi-paste-area').value = '';
+            document.getElementById('distribusi-preview').innerHTML = '';
+            document.getElementById('distribusi-submit-container').classList.add('hidden');
+            pastedDataCache['distribusi'] = null;
+
+            showConfirmModal('Data berhasil disimpan. Muat ulang dashboard sekarang?', function() {
+              loadData();
+              switchMenu('distribusi');
+            });
+          } else {
+            alert('Gagal: ' + response.message);
+          }
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .withFailureHandler(function(error) {
+          alert('Gagal terhubung ke server: ' + error.message);
+          button.disabled = false;
+          button.innerHTML = originalButtonText;
+        })
+        .saveDistribusi(dataToSubmit);
     }
 
     function processPasteWHO() {
@@ -2670,7 +3356,7 @@
       const jam = new Date().toLocaleTimeString('id-ID', {
         hour: '2-digit', minute: '2-digit'
       });
-      const teks = 'Terlampir hasil Control Point BIZ dan Stok EXCEL ' + tgl + ' pukul ' + jam;
+      const teks = 'Terlampir hasil Control Point BIZ dan Stok Excel ' + tgl + ' pukul ' + jam;
       navigator.clipboard.writeText(teks).then(() => {
         showToast('Teks WA tersalin!');
       });
@@ -2680,6 +3366,7 @@
     function initSalesHubDates() {
       var endInput = document.getElementById('sh-end-date');
       var prevInput = document.getElementById('sh-prev-date');
+      var backdateInput = document.getElementById('sh-backdate');
       if (!endInput || endInput.value) return;
 
       var now = new Date();
@@ -2687,6 +3374,7 @@
       var m = String(now.getMonth() + 1).padStart(2, '0');
       var d = String(now.getDate()).padStart(2, '0');
       endInput.value = y + '-' + m + '-' + d;
+      if (backdateInput) backdateInput.value = y + '-' + m + '-' + d;
       syncPrevDate();
     }
 
@@ -2721,6 +3409,7 @@
 
       var currDate = document.getElementById('sh-end-date').value;
       var prevDate = document.getElementById('sh-prev-date').value;
+      var backDate = document.getElementById('sh-backdate') ? document.getElementById('sh-backdate').value : '';
 
       google.script.run
         .withSuccessHandler(function(resp) {
@@ -2745,7 +3434,7 @@
           document.getElementById('sales-hub-kpis').innerHTML =
             '<div class="col-span-full bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 font-bold">Gagal: ' + err.message + '</div>';
         })
-        .getSalesHubData(getUserWHP(), currDate, prevDate);
+        .getSalesHubData(getUserWHP(), currDate, prevDate, backDate);
     }
 
     function renderSalesHub(data) {

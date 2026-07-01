@@ -171,6 +171,25 @@
     .dark #cp-report-card div[style*="background:#f0fdf4"] { background: #064e3b !important; }
     .dark #cp-report-card div[style*="background:#fef2f2"] { background: #450a0a !important; }
     .dark #cp-report-card div[style*="background:#fff5f5"] { background: #450a0a !important; }
+    .dark #cp-report-card div[style*="background:#f8fafc"] { background: #334155 !important; }
+    .dark #cp-report-card div[style*="background:#fff"] { background: #1e293b !important; }
+    .dark #cp-report-card div[style*="color:#1e293b"] { color: #f1f5f9 !important; }
+    .dark #cp-report-card div[style*="color:#374151"] { color: #cbd5e1 !important; }
+    .dark #cp-report-card div[style*="color:#64748b"] { color: #94a3b8 !important; }
+    .dark #cp-report-card div[style*="color:#991b1b"] { color: #fca5a5 !important; }
+    .dark #cp-report-card div[style*="color:#dc2626"] { color: #f87171 !important; }
+    .dark #cp-report-card div[style*="color:#16a34a"] { color: #4ade80 !important; }
+    .dark #cp-report-card div[style*="color:#ef4444"] { color: #fca5a5 !important; }
+    .dark #cp-report-card div[style*="color:#15803d"] { color: #4ade80 !important; }
+    .dark #cp-report-card div[style*="color:#94a3b8"] { color: #64748b !important; }
+    .dark #cp-report-card div[style*="border:1px solid #fecaca"],
+    .dark #cp-report-card div[style*="border-top:1px solid #fecaca"] { border-color: #7f1d1d !important; }
+    .dark #cp-report-card div[style*="border:1px solid #fee2e2"] { border-color: #334155 !important; }
+    .dark #cp-report-card div[style*="border:1px solid #bbf7d0"] { border-color: #15803d !important; }
+    .dark #cp-report-card div[style*="border-top:1px solid #f1f5f9"] { border-color: #334155 !important; }
+    .dark #cp-report-card div[style*="border-bottom:2px solid #1e293b"] { border-bottom-color: #475569 !important; }
+    .dark #cp-report-card div[style*="border-left:3px solid #22c55e"] { border-left-color: #16a34a !important; }
+    .dark #cp-report-card div[style*="border-left:3px solid #ef4444"] { border-left-color: #dc2626 !important; }
     .dark .sticky.bg-slate-100 { background-color: var(--bg-table-header) !important; }
     .dark .sticky.left-0.bg-white { background-color: var(--bg-card) !important; }
     .dark .bg-slate-100\/50 { background-color: rgba(30,41,59,0.5) !important; }
@@ -214,58 +233,101 @@
     
     <div class="px-4 py-3 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Menu Utama</div>
     <nav class="flex-1 px-3 space-y-1 overflow-y-auto text-sm">
-      <a href="#" id="menu-sales-dashboard" onclick="switchMenu('sales-dashboard'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-chart-line w-5 text-center"></i>
-        Report Penjualan
+      <!-- Beranda -->
+      <a href="#" id="menu-beranda" onclick="switchMenu('beranda'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
+        <i class="fas fa-home w-5 text-center"></i>
+        Beranda
       </a>
-      <a href="#" id="menu-distribusi" onclick="switchMenu('distribusi'); return false;" class="flex items-center gap-3 px-3 py-2.5 bg-blue-600/10 text-blue-500 rounded-lg font-bold border border-blue-500/20 transition-all">
+
+      <!-- Menu Input -->
+      <div class="menu-group">
+        <a href="#" onclick="toggleMenuGroup(this); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
+          <i class="fas fa-chevron-right w-3 text-center transition-transform duration-200"></i>
+          <i class="fas fa-edit w-5 text-center"></i>
+          Input
+        </a>
+        <div class="sub-menu hidden ml-4 space-y-0.5 mt-0.5">
+          <a href="#" id="menu-penjualan-who" onclick="switchMenu('penjualan-who'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-file-invoice w-4 text-center"></i>
+            Penjualan WHO
+          </a>
+          <a href="#" id="menu-penjualan" onclick="switchMenu('penjualan'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-file-invoice-dollar w-4 text-center"></i>
+            Input Penjualan
+          </a>
+          <a href="#" id="menu-input-stok-biz" onclick="switchMenu('input-stok-biz'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-database w-4 text-center"></i>
+            Input Stok BIZ
+          </a>
+          <a href="#" id="menu-input-stok-excel" onclick="switchMenu('input-stok-excel'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-file-excel w-4 text-center"></i>
+            Input Stok Excel
+          </a>
+          <a href="#" id="menu-penerimaan" onclick="switchMenu('penerimaan'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-box-open w-4 text-center"></i>
+            Input Penerimaan
+          </a>
+          <a href="#" id="menu-penerimaan-pabrik" onclick="switchMenu('penerimaan-pabrik'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-factory w-4 text-center"></i>
+            Penerimaan Pabrik
+          </a>
+          <a href="#" id="menu-input-distribusi" onclick="switchMenu('input-distribusi'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-arrow-right-arrow-left w-4 text-center"></i>
+            Input Distribusi
+          </a>
+        </div>
+      </div>
+
+      <!-- Distribusi -->
+      <a href="#" id="menu-distribusi" onclick="switchMenu('distribusi'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
         <i class="fas fa-truck-loading w-5 text-center"></i>
         Distribusi
       </a>
+
+      <!-- Menu Laporan -->
+      <div class="menu-group">
+        <a href="#" onclick="toggleMenuGroup(this); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
+          <i class="fas fa-chevron-right w-3 text-center transition-transform duration-200"></i>
+          <i class="fas fa-chart-bar w-5 text-center"></i>
+          Laporan
+        </a>
+        <div class="sub-menu hidden ml-4 space-y-0.5 mt-0.5">
+          <a href="#" id="menu-sales-dashboard" onclick="switchMenu('sales-dashboard'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-chart-line w-4 text-center"></i>
+            Report Penjualan
+          </a>
+          <a href="#" id="menu-control-point" onclick="switchMenu('control-point'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-balance-scale w-4 text-center"></i>
+            Stok BIZ vs Excel
+          </a>
+          <a href="#" id="menu-daily-report" onclick="switchMenu('daily-report'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-calendar-week w-4 text-center"></i>
+            Laporan Harian
+          </a>
+          <a href="#" id="menu-sales-per-date" onclick="switchMenu('sales-per-date'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm" data-role="super_admin">
+            <i class="fas fa-calendar-day w-4 text-center"></i>
+            Penjualan Pertanggal
+          </a>
+          <a href="#" id="menu-sales-hub" onclick="switchMenu('sales-hub'); return false;" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300 text-sm">
+            <i class="fas fa-chart-bar w-4 text-center"></i>
+            Perbandingan Penjualan
+          </a>
+        </div>
+      </div>
+
+      <!-- Ringkasan Stok -->
       <a href="#" id="menu-stok" onclick="switchMenu('stok'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
         <i class="fas fa-boxes w-5 text-center"></i>
         Ringkasan Stok
       </a>
-      <a href="#" id="menu-penjualan" onclick="switchMenu('penjualan'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-file-invoice-dollar w-5 text-center"></i>
-        Input Penjualan
-      </a>
-      <a href="#" id="menu-penjualan-who" onclick="switchMenu('penjualan-who'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-file-invoice w-5 text-center"></i>
-        Penjualan WHO
-      </a>
-      <a href="#" id="menu-control-point" onclick="switchMenu('control-point'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-balance-scale w-5 text-center"></i>
-        Stok BIZ vs Excel
-      </a>
-      <a href="#" id="menu-input-stok-biz" onclick="switchMenu('input-stok-biz'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-database w-5 text-center"></i>
-        Input Stok BIZ
-      </a>
-      <a href="#" id="menu-input-stok-excel" onclick="switchMenu('input-stok-excel'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-file-excel w-5 text-center"></i>
-        Input Stok Excel
-      </a>
+
+      <!-- Best Produk -->
       <a href="#" id="menu-best-products" onclick="switchMenu('best-products'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
         <i class="fas fa-trophy w-5 text-center"></i>
         Best Produk
       </a>
-      <a href="#" id="menu-daily-report" onclick="switchMenu('daily-report'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-calendar-week w-5 text-center"></i>
-        Laporan Harian
-      </a>
-      <a href="#" id="menu-sales-per-date" onclick="switchMenu('sales-per-date'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-calendar-day w-5 text-center"></i>
-        Penjualan Pertanggal
-      </a>
-      <a href="#" id="menu-sales-hub" onclick="switchMenu('sales-hub'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300">
-        <i class="fas fa-chart-bar w-5 text-center"></i>
-        Perbandingan Penjualan
-      </a>
-      <a href="#" id="menu-penerimaan" onclick="switchMenu('penerimaan'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors text-slate-300" data-role="super_admin">
-        <i class="fas fa-box-open w-5 text-center"></i>
-        Input Penerimaan
-      </a>
+
+      <!-- Pengaturan -->
       <a href="#" onclick="alert('Modul sedang di kembangkan oleh Angga SND Support'); return false;" class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-800 hover:text-white rounded-lg font-medium transition-colors cursor-not-allowed text-slate-500" title="Modul Akan Datang">
         <i class="fas fa-cog w-5 text-center"></i>
         Pengaturan
@@ -316,7 +378,7 @@
             document.getElementById('main-content').classList.remove('hidden');
             applyTheme();
             applyRoleFilter();
-            if (resp.role === 'super_admin') switchMenu('sales-dashboard');
+            switchMenu('beranda');
           } else {
             errEl.textContent = resp.message;
             errEl.classList.remove('hidden');
@@ -361,13 +423,22 @@
         }
       });
 
+      document.querySelectorAll('nav .menu-group').forEach(function(group) {
+        var visibleItems = group.querySelectorAll('.sub-menu > a:not([style*="display: none"])');
+        if (visibleItems.length === 0) {
+          group.style.display = 'none';
+        } else {
+          group.style.removeProperty('display');
+        }
+      });
+
       var menuSH = document.getElementById('menu-sales-hub');
       if (menuSH) {
         if (role === 'admin_whp') menuSH.style.display = 'none';
         else menuSH.style.removeProperty('display');
       }
 
-      if (role !== 'super_admin') switchMenu('distribusi');
+      if (role !== 'super_admin') switchMenu('beranda');
     }
 
     (function() {
