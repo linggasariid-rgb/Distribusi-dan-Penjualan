@@ -1431,7 +1431,7 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
 
     // Tentukan 3 tanggal snapshot (current, M-1, M-2) dengan day = snapDay
     var snapDates = [];
-    for (var sm = 0; sm < 3; sm++) {
+    for (var sm = 0; sm < 2; sm++) {
       var m = snapMonth - sm;
       var y = snapYear;
       if (m < 0) { m += 12; y--; }
