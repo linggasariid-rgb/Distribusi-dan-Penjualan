@@ -1079,36 +1079,55 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
 
     // 3. Proses Distribusi (Bulan Berjalan & Split Gudang)
     let distBDG = 0, distTSM = 0;
-    const distRows = getSheetDataCached("Distribusi");
-    distRows.shift();
-    distRows.forEach(row => {
-      const tglRaw = row[0]; // Kolom A: Tanggal
-      const cabangDist = String(row[2] || '').toUpperCase().trim(); // Kolom C: Nama Cabang
+    var distTotalRows = 0, distSameMonth = 0, distGudangBDG = 0, distGudangTSM = 0;
+    try {
+      const distSheet = ss.getSheetByName("Distribusi");
+      if (distSheet) {
+        const distRows = distSheet.getDataRange().getValues();
+        distTotalRows = distRows.length;
+        distRows.shift();
+        distRows.forEach(row => {
+          const tglRaw = row[0];
+          const cabangDist = String(row[2] || '').toUpperCase().trim();
+          const gudang = String(row[1]).toUpperCase();
+          const qty = cleanNum(row[3]);
 
-      if (isSameMonth(tglRaw, now)) {
-        // Filter WHO untuk Distribusi
-        if (filterWHO !== "ALL" && !allowedBranches.some(b => cabangDist.includes(b))) return;
+          if (isSameMonth(tglRaw, now)) {
+            distSameMonth++;
+            if (filterWHO !== "ALL" && !allowedBranches.some(b => cabangDist.includes(b))) return;
 
-        const gudang = String(row[1]).toUpperCase();
-        const qty = cleanNum(row[3]);
-        if (gudang.includes("BANDUNG")) distBDG += qty;
-        else if (gudang.includes("TASIK")) distTSM += qty;
+            if (gudang.includes("BANDUNG")) { distBDG += qty; distGudangBDG++; }
+            else if (gudang.includes("TASIK")) { distTSM += qty; distGudangTSM++; }
+          }
+        });
       }
-    });
+    } catch(e) {
+      Logger.log('Distribusi sheet error: ' + e);
+    }
 
     // 4. Proses Penerimaan (Bulan Berjalan & Split Gudang)
     let recBDG = 0, recTSM = 0;
-    const recRows = getSheetDataCached("Penerimaan");
-    recRows.shift();
-    recRows.forEach(row => {
-      const tglRaw = row[0]; // Kolom A: Tanggal
-      if (isSameMonth(tglRaw, now)) {
-        const gudang = String(row[1]).toUpperCase();
-        const qty = cleanNum(row[2]);
-        if (gudang.includes("BANDUNG")) recBDG += qty;
-        else if (gudang.includes("TASIK")) recTSM += qty;
+    var recTotalRows = 0, recSameMonth = 0;
+    try {
+      const recSheet = ss.getSheetByName("Penerimaan");
+      if (recSheet) {
+        const recRows = recSheet.getDataRange().getValues();
+        recTotalRows = recRows.length;
+        recRows.shift();
+        recRows.forEach(row => {
+          const tglRaw = row[0];
+          const gudang = String(row[1]).toUpperCase();
+          const qty = cleanNum(row[2]);
+          if (isSameMonth(tglRaw, now)) {
+            recSameMonth++;
+            if (gudang.includes("BANDUNG")) recBDG += qty;
+            else if (gudang.includes("TASIK")) recTSM += qty;
+          }
+        });
       }
-    });
+    } catch(e) {
+      Logger.log('Penerimaan sheet error: ' + e);
+    }
 
     const ranking = Object.keys(branchMap)
       .map(name => ({ branch: name, total: branchMap[name] }))
@@ -1131,6 +1150,12 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
         dailyTrend: {
           labels: sortedDays.map(t => Utilities.formatDate(new Date(Number(t)), "GMT+7", "dd/MM")),
           values: sortedDays.map(k => dailyMap[k])
+        },
+        _debug: {
+          distTotalRows, distSameMonth, distGudangBDG, distGudangTSM,
+          recTotalRows, recSameMonth,
+          effFilterWHO,
+          filterWHO: filterWHO
         }
       }
     };

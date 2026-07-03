@@ -352,7 +352,7 @@
           </button>
         </div>
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="sales-hub-kpis"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="sales-hub-kpis"></div>
         <!-- Period Tables -->
         <div class="grid grid-cols-1 gap-6" id="sales-hub-periods"></div>
         <!-- Date Snapshots -->
@@ -366,7 +366,7 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="sales-hub-snapshot-cards"></div>
         </div>
-        <div id="sales-hub-daily-comparison" class="space-y-3"></div>
+        <div id="sales-hub-daily-comparison" class="space-y-3 hidden"></div>
       </div>
     </div>
 
@@ -392,6 +392,23 @@
       <div id="cp-summary-bar" class="gap-2 mb-6 flex-wrap" style="display:none;"></div>
 
       <div id="cp-dashboard-content" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+
+    <!-- Chat AI View -->
+    <div id="chat-ai-view" class="hidden">
+      <div class="mb-4">
+        <h2 class="text-xl font-bold text-slate-800">Chat AI - Asisten Penjualan</h2>
+        <p class="text-xs text-slate-500 mt-1">Tanya seputar data penjualan: dashboard, produk terlaris, laporan harian, perbandingan penjualan.</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col" style="height:65vh;">
+        <div id="chat-ai-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+        <div class="border-t border-slate-200 p-3 flex gap-2">
+          <input type="text" id="chat-ai-input" placeholder="Tulis pertanyaan..." class="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" onkeydown="if(event.key==='Enter') sendChatAI();">
+          <button onclick="sendChatAI()" id="btn-chat-ai-send" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Kartu Laporan (tersembunyi, untuk screenshot) -->
@@ -1033,6 +1050,7 @@ TANGGAL  Jumlah
       const dailyReportView = document.getElementById('daily-report-view');
       const salesPerDateView = document.getElementById('sales-per-date-view');
       const controlPointView = document.getElementById('control-point-view');
+      const chatAiView = document.getElementById('chat-ai-view');
       const inputStokBizView = document.getElementById('input-stok-biz-view');
       const inputStokExcelView = document.getElementById('input-stok-excel-view');
       const inputDistribusiView = document.getElementById('input-distribusi-view');
@@ -1049,6 +1067,7 @@ TANGGAL  Jumlah
       const menuDailyReport = document.getElementById('menu-daily-report');
       const menuSalesPerDate = document.getElementById('menu-sales-per-date');
       const menuControlPoint = document.getElementById('menu-control-point');
+      const menuChatAi = document.getElementById('menu-chat-ai');
       const menuInputStokBiz = document.getElementById('menu-input-stok-biz');
       const menuInputStokExcel = document.getElementById('menu-input-stok-excel');
       const menuSalesHub = document.getElementById('menu-sales-hub');
@@ -1073,6 +1092,7 @@ TANGGAL  Jumlah
       dailyReportView.classList.add('hidden');
       salesPerDateView.classList.add('hidden');
       controlPointView.classList.add('hidden');
+      chatAiView.classList.add('hidden');
       inputStokBizView.classList.add('hidden');
       inputStokExcelView.classList.add('hidden');
       inputDistribusiView.classList.add('hidden');
@@ -1098,6 +1118,7 @@ TANGGAL  Jumlah
       if(menuDailyReport) menuDailyReport.className = defaultMenuClass;
       if(menuSalesPerDate) menuSalesPerDate.className = defaultMenuClass;
       if(menuControlPoint) menuControlPoint.className = defaultMenuClass;
+      if(menuChatAi) menuChatAi.className = defaultMenuClass;
       if(menuInputStokBiz) menuInputStokBiz.className = defaultMenuClass;
       if(menuInputStokExcel) menuInputStokExcel.className = defaultMenuClass;
       if(menuSalesHub) menuSalesHub.className = defaultMenuClass;
@@ -1213,6 +1234,12 @@ TANGGAL  Jumlah
         pageIcon.className = "fas fa-arrow-right-arrow-left";
         if (menuInputDistribusi) menuInputDistribusi.className = activeMenuClass;
         initInputDistribusi();
+      }
+      else if (menuName === 'chat-ai') {
+        chatAiView.classList.remove('hidden');
+        pageTitle.innerText = "Chat AI";
+        pageIcon.className = "fas fa-comment-dots";
+        if (menuChatAi) menuChatAi.className = activeMenuClass;
       }
       else { // 'distribusi'
         distView.style.display = 'block';
@@ -1359,6 +1386,7 @@ TANGGAL  Jumlah
           if (resp.status === "success") {
             gSalesData = true;
             const d = resp.data;
+            if (d._debug) console.log("SalesDashboard _debug:", JSON.stringify(d._debug));
             
             // Update KPI Cards
             document.getElementById('sales-last-month').innerText = d.kpis.lastMonth.toLocaleString('id-ID') + " Bks";
@@ -3363,6 +3391,63 @@ TANGGAL  Jumlah
       });
     }
 
+    // ──── CHAT AI ───────────────────────────────────────────────────────────
+    let chatAiHistory = [];
+
+    function renderChatBubble(role, text) {
+      const box = document.getElementById('chat-ai-messages');
+      const isUser = role === 'user';
+      const bubble = document.createElement('div');
+      bubble.className = isUser ? 'flex justify-end' : 'flex justify-start';
+      bubble.innerHTML = '<div class="max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ' +
+        (isUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-800') + '">' +
+        text.replace(/\n/g, '<br>') + '</div>';
+      box.appendChild(bubble);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendChatAI() {
+      const input = document.getElementById('chat-ai-input');
+      const btn = document.getElementById('btn-chat-ai-send');
+      const pesan = input.value.trim();
+      if (!pesan) return;
+
+      renderChatBubble('user', pesan);
+      chatAiHistory.push({ role: 'user', text: pesan });
+      input.value = '';
+      btn.disabled = true;
+
+      const box = document.getElementById('chat-ai-messages');
+      const loadingBubble = document.createElement('div');
+      loadingBubble.id = 'chat-ai-loading';
+      loadingBubble.className = 'flex justify-start';
+      loadingBubble.innerHTML = '<div class="bg-slate-100 text-slate-500 rounded-2xl px-4 py-2.5 text-sm"><div class="inline-block animate-spin rounded-full h-3 w-3 border-2 border-slate-400 border-t-transparent mr-1"></div>Mengetik...</div>';
+      box.appendChild(loadingBubble);
+      box.scrollTop = box.scrollHeight;
+
+      const riwayat = chatAiHistory.slice(-10);
+
+      google.script.run
+        .withSuccessHandler(function(resp) {
+          btn.disabled = false;
+          const loading = document.getElementById('chat-ai-loading');
+          if (loading) loading.remove();
+          if (resp.status === 'error') {
+            renderChatBubble('model', 'Maaf, AI sedang sibuk. Coba lagi sebentar lagi.');
+            return;
+          }
+          renderChatBubble('model', resp.message);
+          chatAiHistory.push({ role: 'model', text: resp.message });
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          const loading = document.getElementById('chat-ai-loading');
+          if (loading) loading.remove();
+          renderChatBubble('model', 'Maaf, AI sedang sibuk. Coba lagi sebentar lagi.');
+        })
+        .chatWithSalesAI(pesan, riwayat, getUserWHP());
+    }
+
     // ──── SALESHUB ──────────────────────────────────────────────────────────
     function initSalesHubDates() {
       var endInput = document.getElementById('sh-end-date');
@@ -3450,21 +3535,21 @@ TANGGAL  Jumlah
       const deltaClass = kpis.delta >= 0 ? 'text-blue-600' : 'text-red-600';
 
       container.innerHTML = `
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Bulan Berjalan</h4>
-          <div class="text-lg font-black text-blue-700">${kpis.currentTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
+        <div class="bg-blue-50/50 p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
+          <h4 class="text-[13px] font-bold text-slate-500 uppercase mb-1">Bulan Berjalan</h4>
+          <div class="text-2xl font-black text-blue-700">${kpis.currentTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-sm font-medium">Bks</span></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-slate-400">
-          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Bulan Lalu</h4>
-          <div class="text-lg font-black text-slate-700">${kpis.previousTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
+        <div class="bg-slate-50 p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-slate-400">
+          <h4 class="text-[13px] font-bold text-slate-500 uppercase mb-1">Bulan Lalu</h4>
+          <div class="text-2xl font-black text-slate-700">${kpis.previousTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-sm font-medium">Bks</span></div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 ${kpis.delta >= 0 ? 'border-l-blue-500' : 'border-l-red-400'}">
-          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Selisih M-1</h4>
-          <div class="text-lg font-black ${deltaClass}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
+        <div class="${kpis.delta >= 0 ? 'bg-emerald-50/50' : 'bg-red-50/50'} p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 ${kpis.delta >= 0 ? 'border-l-blue-500' : 'border-l-red-400'}">
+          <h4 class="text-[13px] font-bold text-slate-500 uppercase mb-1">Selisih M-1</h4>
+          <div class="text-2xl font-black ${deltaClass}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
         </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-violet-500">
-          <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-1">Penjualan Hari Ini</h4>
-          <div class="text-lg font-black text-violet-700">${kpis.todayTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-xs font-medium">Bks</span></div>
+        <div class="bg-violet-50/50 p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-violet-500">
+          <h4 class="text-[13px] font-bold text-slate-500 uppercase mb-1">Penjualan Hari Ini</h4>
+          <div class="text-2xl font-black text-violet-700">${kpis.todayTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-sm font-medium">Bks</span></div>
         </div>
       `;
     }
@@ -3491,14 +3576,14 @@ TANGGAL  Jumlah
           <div class="overflow-x-auto table-container">
             <table class="w-full text-sm text-left border-collapse">
               <thead>
-                <tr class="bg-slate-100 text-slate-900 text-sm font-black uppercase tracking-wider border-b-2 border-slate-300">
-                  <th class="px-5 py-3 whitespace-nowrap">Warehouse</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">MST</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">MSI</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">STK</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">Karyawan</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">APPS</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap bg-blue-50 text-blue-800">Total</th>
+                <tr class="text-slate-900 text-sm font-black uppercase tracking-wider border-b-2 border-slate-300">
+                  <th class="px-5 py-3 whitespace-nowrap bg-blue-100">Warehouse</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-green-100">MST</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-green-100">MSI</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-green-100">STK</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-green-100">Karyawan</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-green-100">APPS</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap bg-orange-400 text-white">Total</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">`;
@@ -3506,27 +3591,28 @@ TANGGAL  Jumlah
       if (!hasData) {
         html += '<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data</td></tr>';
       } else {
-        data.forEach(function(row) {
+        data.forEach(function(row, i) {
+          var bgClass = i % 2 === 0 ? 'bg-white hover:bg-slate-50' : 'bg-slate-50 hover:bg-slate-100';
           html += `
-            <tr class="hover:bg-slate-50 transition-colors">
+            <tr class="${bgClass} transition-colors">
               <td class="px-5 py-3 font-bold text-slate-800 whitespace-nowrap">${row.warehouse}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
-              <td class="px-5 py-3 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
-              <td class="px-5 py-3 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
+              <td class="px-5 py-3 text-right font-bold text-slate-900">${formatNum(row.masterStokis)}</td>
+              <td class="px-5 py-3 text-right font-bold text-slate-900">${formatNum(row.msi)}</td>
+              <td class="px-5 py-3 text-right font-bold text-slate-900">${formatNum(row.stokis)}</td>
+              <td class="px-5 py-3 text-right font-bold text-slate-900">${formatNum(row.karyawan)}</td>
+              <td class="px-5 py-3 text-right font-bold text-slate-900">${formatNum(row.tsiApps)}</td>
+              <td class="px-5 py-3 text-right font-black text-slate-900">${formatNum(row.total)}</td>
             </tr>`;
         });
         html += `
-                <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
+                <tr class="bg-[#ccff00] font-black text-slate-900 border-t-2 border-slate-300">
                   <td class="px-4 py-2.5">TOTAL</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
-                  <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.stokis)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.karyawan)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.tsiApps)}</td>
+                  <td class="px-4 py-2.5 text-right font-black text-slate-900">${formatNum(grandTotals.total)}</td>
                 </tr>`;
       }
 
@@ -3567,38 +3653,39 @@ TANGGAL  Jumlah
             <div class="overflow-x-auto">
               <table class="w-full text-xs text-left border-collapse">
                 <thead>
-                  <tr class="bg-slate-100 text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
-                    <th class="px-4 py-2.5">Cabang</th>
-                    <th class="px-4 py-2.5 text-right">MST</th>
-                    <th class="px-4 py-2.5 text-right">MSI</th>
-                    <th class="px-4 py-2.5 text-right">STK</th>
-                    <th class="px-4 py-2.5 text-right">Karyawan</th>
-                    <th class="px-4 py-2.5 text-right">APPS</th>
-                    <th class="px-4 py-2.5 text-right bg-blue-50 text-blue-800">Total</th>
+                  <tr class="text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
+                    <th class="px-4 py-2.5 bg-blue-100">Cabang</th>
+                    <th class="px-4 py-2.5 text-right bg-green-100">MST</th>
+                    <th class="px-4 py-2.5 text-right bg-green-100">MSI</th>
+                    <th class="px-4 py-2.5 text-right bg-green-100">STK</th>
+                    <th class="px-4 py-2.5 text-right bg-green-100">Karyawan</th>
+                    <th class="px-4 py-2.5 text-right bg-green-100">APPS</th>
+                    <th class="px-4 py-2.5 text-right bg-orange-400 text-white">Total</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">`;
-        snap.data.forEach(function(row) {
+        snap.data.forEach(function(row, i) {
+          var bgClass = i % 2 === 0 ? 'bg-white hover:bg-slate-50' : 'bg-slate-50 hover:bg-slate-100';
           html += `
-            <tr class="hover:bg-slate-50 transition-colors">
+            <tr class="${bgClass} transition-colors">
               <td class="px-4 py-2 font-bold text-slate-700 whitespace-nowrap">${row.warehouse}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.masterStokis)}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.msi)}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.stokis)}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.karyawan)}</td>
-              <td class="px-4 py-2 text-right font-bold text-blue-600">${formatNum(row.tsiApps)}</td>
-              <td class="px-4 py-2 text-right font-black text-blue-700 bg-blue-50/30">${formatNum(row.total)}</td>
+              <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.masterStokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.msi)}</td>
+              <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.stokis)}</td>
+              <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.karyawan)}</td>
+              <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.tsiApps)}</td>
+              <td class="px-4 py-2 text-right font-black text-slate-900">${formatNum(row.total)}</td>
             </tr>`;
         });
         html += `
-                <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
+                <tr class="bg-[#ccff00] font-black text-slate-900 border-t-2 border-slate-300">
                   <td class="px-4 py-2.5">TOTAL</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.masterStokis)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.msi)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.stokis)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.karyawan)}</td>
-                  <td class="px-4 py-2.5 text-right text-blue-600">${formatNum(grandTotals.tsiApps)}</td>
-                  <td class="px-4 py-2.5 text-right font-black text-blue-700 bg-blue-50">${formatNum(grandTotals.total)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.masterStokis)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.msi)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.stokis)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.karyawan)}</td>
+                  <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.tsiApps)}</td>
+                  <td class="px-4 py-2.5 text-right font-black text-slate-900">${formatNum(grandTotals.total)}</td>
                 </tr>
                 </tbody>
               </table>
