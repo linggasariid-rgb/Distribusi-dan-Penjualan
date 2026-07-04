@@ -10,24 +10,36 @@ Google Apps Script web app untuk monitoring distribusi, penjualan, dan stok wila
 - **Input Data** — Form paste Excel untuk: Penjualan WHO, Penjualan, Penerimaan, Penerimaan Pabrik, Distribusi, Stok BIZ, Stok Excel
 - **Laporan Harian** — Rekap penjualan per hari dengan filter hari
 - **Penjualan Pertanggal** — Rekap per tanggal dalam satu bulan
-- **SalesHub** — Perbandingan penjualan antar periode dengan antarmuka modern (KPI card berwarna dinamis, pola tabel zebra striping yang lembut, dan custom highlight baris total)
+- **SalesHub** — Perbandingan penjualan antar periode dengan antarmuka modern (KPI card berwarna dinamis, pola tabel zebra striping yang lembut, custom highlight baris total, dan tabel perbandingan harian bulan berjalan vs bulan lalu)
 - **Best Produk** — Ranking produk terlaris per bulan
 - **Ringkasan Stok** — Status stok terkini semua cabang
+- **Chat AI** — Asisten penjualan berbasis Gemini AI untuk tanya jawab data penjualan
 - **Login & Role** — Super Admin / Admin WHP dengan akses terbatas per area
 - **Dark Mode** — Toggle tema gelap/terang
-- **Export** — Screenshot (PNG) & PDF
+- **Export** — Screenshot (PNG) & PDF (mendukung dark/light mode)
 
 ## Teknologi
 
 - **Backend:** Google Apps Script (V8 runtime)
 - **Frontend:** Vanilla JS, Tailwind CSS, Chart.js, html2canvas, jsPDF
+- **AI:** Google Gemini API (Chat AI asisten penjualan)
 - **Deployment:** clasp (Command Line Apps Script Projects)
 
 ## Struktur File
 
 | File | Deskripsi |
 |------|-----------|
-| `code.gs` / `code.js` | Backend logic (duplikat, keduanya di-deploy) |
+| `Main.js` | Entry point (`doGet`, `include`) |
+| `Config.js` | Konfigurasi produk, spreadsheet, dan mapping WHP |
+| `DataAccess.js` | Layer akses data dengan caching |
+| `Auth.js` | Autentikasi dan manajemen sesi (`loginUser`) |
+| `Distribution.js` | Logika data distribusi & sisa hari stok |
+| `Sales.js` | Data penjualan (dashboard, harian, sales hub, best produk) |
+| `ControlPoint.js` | Perbandingan stok BIZ vs Update-STOCK |
+| `DataEntry.js` | Form input & paste Excel (semua tipe data) |
+| `Gemini.js` | Integrasi Gemini AI untuk Chat AI asisten penjualan |
+| `Diagnostics.js` | Utility diagnostic cache |
+| `code.gs` / `code.js` | Backend legacy (duplikat, keduanya di-deploy) |
 | `index.html` | Halaman utama (login, sidebar, routing) |
 | `dashboard.html` | Semua konten dashboard (include via `<?!= include('dashboard'); ?>`) |
 | `appsscript.json` | Konfigurasi project Apps Script |
@@ -36,7 +48,7 @@ Google Apps Script web app untuk monitoring distribusi, penjualan, dan stok wila
 ## Setup
 
 1. Clone repo dan buka di [clasp](https://github.com/google/clasp)
-2. Edit `SPREADSHEET_ID` di `code.gs` sesuai ID Google Sheet Anda
+2. Edit `SPREADSHEET_ID` di `Config.js` sesuai ID Google Sheet Anda
 3. Pastikan sheet berikut ada di spreadsheet:
    - `Update-Penjualan WHO`
    - `Update-STOCK`
@@ -47,7 +59,7 @@ Google Apps Script web app untuk monitoring distribusi, penjualan, dan stok wila
 
 ## Konfigurasi Produk
 
-Daftar produk, ukuran karton (ctn), target stok, alias, dan mapping WHP dikelola di objek `CONFIG.PRODUCT_INFO` dalam `code.gs`.
+Daftar produk, ukuran karton (ctn), target stok, alias, dan mapping WHP dikelola di objek `CONFIG.PRODUCT_INFO` dalam `Config.js`.
 
 ## Login
 
