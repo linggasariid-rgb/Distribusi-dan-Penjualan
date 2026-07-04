@@ -3,12 +3,17 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-try { require('dotenv').config(); } catch (_) {}
+try { require('dotenv').config({ quiet: true }); } catch (_) {}
 
-const SPREADSHEET_ID = process.env.SPREADSHEET_ID || '1znxLIojUXuPNjL9O2b3l_knG6cgY0sSVmTeKh78Dwbw';
-const SUPABASE_URL = process.env.SUPABASE_URL || 'REMOVED_URL';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || 'REMOVED_SECRET';
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const SERVICE_ACCOUNT_PATH = process.env.SERVICE_ACCOUNT_PATH || 'service-account.json';
+
+if (!SPREADSHEET_ID || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error('FATAL: SPREADSHEET_ID, SUPABASE_URL, dan SUPABASE_SERVICE_KEY harus di-set di .env (lihat .env.example)');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
@@ -23,6 +28,28 @@ const PRODUCTS = [
   'SK','SNN ORG','SNN Mind','SNN Menthol','SPW','SP','KMK','KOOR','SSE','HU'
 ];
 
+// Alias kolom produk (nama header yang beda dari key resmi), sinkron dengan
+// worker/src/config.js CONFIG.PRODUCT_INFO[key].alias
+const PRODUCT_ALIAS = { 'SNN Menthol': 'SNNM', 'KOOR': 'KO' };
+
+// Cocokkan header kolom produk secara case-insensitive + trim, dengan fallback alias.
+// Mengembalikan array {key, col} hanya untuk produk yang kolomnya benar-benar ketemu.
+function findProductColumns(headers) {
+  const normalized = headers.map(h => String(h || '').trim().toUpperCase().replace(/\s+/g, ' '));
+  const found = [];
+  for (const key of PRODUCTS) {
+    const candidates = [key.toUpperCase()];
+    if (PRODUCT_ALIAS[key]) candidates.push(PRODUCT_ALIAS[key].toUpperCase());
+    let idx = -1;
+    for (const cand of candidates) {
+      idx = normalized.indexOf(cand);
+      if (idx >= 0) break;
+    }
+    if (idx >= 0) found.push({ key, col: idx });
+  }
+  return found;
+}
+
 const BIZ_PRODUCT_MAP = {
   'Sin Platinum Special': 'SPS TSI', 'Sin Kujang Mas': 'SKM TSI',
   'Sinergi Mind': 'SM', 'Sin Provost 19': 'SP19 TSI',
@@ -36,14 +63,29 @@ const BIZ_PRODUCT_MAP = {
   'SIN Precision': 'SP', 'SIN Encode': 'SSE',
 };
 
+const MONTH_MAP = {
+  jan:'01',feb:'02',mar:'03',apr:'04',mei:'05',jun:'06',jul:'07',
+  ags:'08',sep:'09',okt:'10',nov:'11',des:'12',
+};
+
 function parseDate(str) {
   if (!str || str === '-') return null;
   if (typeof str === 'number') {
     return new Date((str - 25569) * 86400 * 1000).toISOString().split('T')[0];
   }
-  const parts = String(str).split('/');
-  if (parts.length === 3 && parts[2].length === 4) {
-    return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+  const s = String(str).trim();
+  // DD/MM/YYYY or DD/MM/YY
+  const slashMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (slashMatch) {
+    let y = slashMatch[3];
+    if (y.length === 2) y = '20' + y;
+    return `${y}-${slashMatch[2].padStart(2,'0')}-${slashMatch[1].padStart(2,'0')}`;
+  }
+  // DD MMM YY (e.g., "02 Jan 26", "03 Jul 26")
+  const textMatch = s.match(/^(\d{1,2})\s+(\w{3})\s+(\d{2})$/);
+  if (textMatch) {
+    const m = MONTH_MAP[textMatch[2].toLowerCase()];
+    if (m) return `20${textMatch[3]}-${m}-${textMatch[1].padStart(2,'0')}`;
   }
   return null;
 }
@@ -51,7 +93,8 @@ function parseDate(str) {
 function parseNum(v) {
   if (v === '-' || v === '' || v === null || v === undefined) return 0;
   if (typeof v === 'number') return Math.round(v);
-  return parseInt(String(v).replace(/\./g,''), 10) || 0;
+  const s = String(v).trim().replace(/\./g,'');
+  return parseInt(s, 10) || 0;
 }
 
 function getBizCabang(row) {
@@ -71,12 +114,18 @@ async function migratePenjualanWho() {
   if (!rows || rows.length < 2) { console.log('  kosong'); return; }
 
   const headers = rows[0];
-  const productCols = PRODUCTS.map(p => headers.indexOf(p)).filter(i => i >= 0);
+  const productCols = findProductColumns(headers);
   if (productCols.length === 0) {
     console.log('  Tidak ada kolom produk yang cocok!');
     console.log('  Headers:', headers.join(', '));
     return;
   }
+  // Cari kolom JUMLAH lewat nama header (trim+uppercase), BUKAN r[r.length-1] --
+  // sebagian baris di sheet punya kolom lebih banyak dari header (trailing cell
+  // kosong ikut terbawa), jadi r.length-1 sering nyasar ke sel kosong setelah
+  // JUMLAH, bukan ke JUMLAH itu sendiri (bug nyata: ribuan baris Feb/Mar/Apr
+  // punya jumlah=0 padahal kolom JUMLAH aslinya terisi).
+  const jumlahCol = headers.findIndex(h => String(h || '').trim().toUpperCase() === 'JUMLAH');
 
   const batch = [];
   for (let i = 1; i < rows.length; i++) {
@@ -85,13 +134,13 @@ async function migratePenjualanWho() {
     const tanggal = parseDate(r[3]);
     if (!tanggal) continue;
     const products = {};
-    productCols.forEach(idx => { products[headers[idx]] = parseNum(r[idx]); });
+    productCols.forEach(({ key, col }) => { products[key] = parseNum(r[col]); });
+    const jumlah = jumlahCol >= 0 ? parseNum(r[jumlahCol]) : Object.values(products).reduce((s, v) => s + v, 0);
     batch.push({
       bulan: (r[0] || '').toUpperCase(),
-      cabang: (r[1] || '').toUpperCase(),
+      cabang: (r[1] || '').toUpperCase().trim(),
       tipe_customer: r[2] || '',
-      tanggal, products,
-      jumlah: parseNum(r[r.length - 1]),
+      tanggal, products, jumlah,
     });
   }
   if (batch.length === 0) { console.log('  tidak ada data valid'); return; }
@@ -112,15 +161,15 @@ async function migrateStock() {
   if (!rows || rows.length < 2) { console.log('  kosong'); return; }
 
   const headers = rows[0];
-  const productCols = PRODUCTS.map(p => headers.indexOf(p)).filter(i => i >= 0);
+  const productCols = findProductColumns(headers);
 
   let count = 0;
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i];
     const cabang = (r[0] || '').trim().toUpperCase();
-    if (!cabang || cabang === 'TOTAL' || cabang.includes('WHP')) continue;
+    if (!cabang || cabang === 'TOTAL') continue;
     const products = {};
-    productCols.forEach(idx => { products[headers[idx]] = parseNum(r[idx]); });
+    productCols.forEach(({ key, col }) => { products[key] = parseNum(r[col]); });
     const { error } = await supabase.from('stock').upsert(
       { cabang, products },
       { onConflict: 'cabang', ignoreDuplicates: false }
@@ -246,17 +295,32 @@ async function seedBranches() {
   const existingNames = new Set((existing || []).map(b => b.name));
   const missing = [...allCabang].filter(c => !existingNames.has(c)).sort();
 
-  if (missing.length === 0) { console.log('  Semua cabang sudah ada'); return; }
-  console.log('  Cabang baru:', missing);
+  if (missing.length === 0) {
+    console.log('  Semua cabang sudah ada');
+  } else {
+    console.log('  Cabang baru:', missing);
+    for (const name of missing) {
+      const isGudang = name.startsWith('GUDANG ');
+      const whp = isGudang ? name.replace('GUDANG ', '') : (name === 'BANYUMAS' ? 'BANDUNG' : 'BANDUNG');
+      const { error } = await supabase.from('branches').insert({
+        name, whp, is_full_time: false, lead_time: isGudang ? 1 : 3, is_active: true,
+      });
+      if (error) console.error(`  Error ${name}:`, error.message);
+      else console.log(`  + ${name} (whp: ${whp})`);
+    }
+  }
 
-  for (const name of missing) {
-    const isGudang = name.startsWith('GUDANG ');
-    const whp = isGudang ? name.replace('GUDANG ', '') : (name === 'BANYUMAS' ? 'BANDUNG' : 'BANDUNG');
+  // Pseudo-cabang gudang pusat (WHP) -- perlu ada di tabel `branches` supaya baris stok
+  // WHP BANDUNG/WHP TASIKMALAYA bisa disimpan di tabel `stock` (ada FK stock.cabang -> branches.name).
+  // is_full_time:true (gudang buka tiap hari), bukan cabang penjualan biasa.
+  for (const name of ['WHP BANDUNG', 'WHP TASIKMALAYA']) {
+    if (existingNames.has(name)) continue;
+    const whp = name.replace('WHP ', '');
     const { error } = await supabase.from('branches').insert({
-      name, whp, is_full_time: false, lead_time: isGudang ? 1 : 3, is_active: true,
+      name, whp, is_full_time: true, lead_time: 0, is_active: true,
     });
     if (error) console.error(`  Error ${name}:`, error.message);
-    else console.log(`  + ${name} (whp: ${whp})`);
+    else console.log(`  + ${name} (whp: ${whp}, gudang pusat)`);
   }
 }
 
@@ -271,4 +335,10 @@ async function main() {
   console.log('\n=== SELESAI ===');
 }
 
-main().catch(err => { console.error('\nFATAL:', err.message); process.exit(1); });
+module.exports = { seedBranches, migratePenjualanWho, migrateStock, migrateDistribusi, migratePenerimaan, migrateBiz, main, findProductColumns, parseDate, parseNum, sheets, SPREADSHEET_ID, supabase };
+
+// Hanya jalankan main() otomatis kalau file ini dieksekusi langsung (`node migrate.js`),
+// bukan saat di-require sebagai modul (mis. untuk menjalankan satu fungsi migrasi saja).
+if (require.main === module) {
+  main().catch(err => { console.error('\nFATAL:', err.message); process.exit(1); });
+}

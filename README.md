@@ -1,66 +1,84 @@
 # Dashboard Distribusi & Penjualan — PT. Tridaya Sinergi Indonesia
 
-Google Apps Script web app untuk monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
+Dashboard monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
 
 ## Fitur
 
-- **Dashboard Distribusi** — Monitoring sisa hari stok per produk per cabang, filter by WHP (Bandung/Tasikmalaya)
-- **Sales Dashboard** — KPI penjualan (bulan lalu, berjalan, growth, harian), ranking cabang, tren harian, perbandingan distribusi & penerimaan per gudang
-- **Control Point** — Perbandingan stok BIZ (SAP) vs Update-STOCK (Excel) per cabang
-- **Input Data** — Form paste Excel untuk: Penjualan WHO, Penjualan, Penerimaan, Penerimaan Pabrik, Distribusi, Stok BIZ, Stok Excel
-- **Laporan Harian** — Rekap penjualan per hari dengan filter hari
-- **Penjualan Pertanggal** — Rekap per tanggal dalam satu bulan
-- **SalesHub** — Perbandingan penjualan antar periode dengan antarmuka modern (KPI card berwarna dinamis, pola tabel zebra striping yang lembut, custom highlight baris total, dan tabel perbandingan harian bulan berjalan vs bulan lalu)
-- **Best Produk** — Ranking produk terlaris per bulan
-- **Ringkasan Stok** — Status stok terkini semua cabang
-- **Chat AI** — Asisten penjualan berbasis Gemini AI untuk tanya jawab data penjualan
-- **Login & Role** — Super Admin / Admin WHP dengan akses terbatas per area
+- **Dashboard Distribusi** — Monitoring sisa hari stok per produk per cabang, filter by WHP
+- **Sales Dashboard** — KPI penjualan, ranking cabang, tren harian
+- **Control Point** — Perbandingan stok BIZ (SAP) vs Update-STOCK (Excel)
+- **Input Data** — Form paste Excel untuk semua tipe data
+- **Laporan Harian & Penjualan Pertanggal** — Rekap penjualan
+- **SalesHub** — Perbandingan penjualan antar periode
+- **Best Produk** — Ranking produk terlaris
+- **Ringkasan Stok** — Status stok terkini
+- **Chat AI** — Asisten penjualan berbasis Gemini AI
+- **Login & Role** — Super Admin / Admin WHP
 - **Dark Mode** — Toggle tema gelap/terang
-- **Export** — Screenshot (PNG) & PDF (mendukung dark/light mode)
+- **Export** — Screenshot (PNG) & PDF
 
 ## Teknologi
 
-- **Backend:** Google Apps Script (V8 runtime)
-- **Frontend:** Vanilla JS, Tailwind CSS, Chart.js, html2canvas, jsPDF
-- **AI:** Google Gemini API (Chat AI asisten penjualan)
-- **Deployment:** clasp (Command Line Apps Script Projects)
+| Layer | Teknologi |
+|-------|-----------|
+| Frontend | Cloudflare Pages, Vanilla JS, Tailwind CSS, Chart.js |
+| Backend | Cloudflare Workers (API), Google Apps Script (legacy) |
+| Database | Supabase (PostgreSQL) |
+| AI | Google Gemini API |
+| Migration | Node.js script (`migrate.js`) |
 
 ## Struktur File
 
 | File | Deskripsi |
 |------|-----------|
-| `Main.js` | Entry point (`doGet`, `include`) |
-| `Config.js` | Konfigurasi produk, spreadsheet, dan mapping WHP |
-| `DataAccess.js` | Layer akses data dengan caching |
-| `Auth.js` | Autentikasi dan manajemen sesi (`loginUser`) |
-| `Distribution.js` | Logika data distribusi & sisa hari stok |
-| `Sales.js` | Data penjualan (dashboard, harian, sales hub, best produk) |
-| `ControlPoint.js` | Perbandingan stok BIZ vs Update-STOCK |
-| `DataEntry.js` | Form input & paste Excel (semua tipe data) |
-| `Gemini.js` | Integrasi Gemini AI untuk Chat AI asisten penjualan |
-| `Diagnostics.js` | Utility diagnostic cache |
-| `code.gs` / `code.js` | Backend legacy (duplikat, keduanya di-deploy) |
-| `index.html` | Halaman utama (login, sidebar, routing) |
-| `dashboard.html` | Semua konten dashboard (include via `<?!= include('dashboard'); ?>`) |
-| `appsscript.json` | Konfigurasi project Apps Script |
-| `.clasp.json` | Konfigurasi clasp deployment |
+| `worker/` | Cloudflare Workers API (pengganti GAS backend) |
+| `worker/src/index.js` | Entry point worker, routing |
+| `worker/src/routes/` | Handler per endpoint (beranda, sales-hub, dll) |
+| `worker/wrangler.toml` | Konfigurasi Cloudflare Workers |
+| `migrate.js` | Script migrasi Google Sheets → Supabase |
+| `Main.js` - `Sales.js` - dll | Backend GAS (legacy, masih dipakai) |
+| `index.html` | Halaman utama SPA (login, sidebar, routing, seluruh konten dashboard) |
+| `dashboard.html` | Salinan identik `index.html`, dijaga tetap sinkron -- keduanya harus selalu sama isinya |
+| `worker/rls-setup.sql` | Row Level Security policy untuk Supabase (jalankan sekali sebelum pakai anon key asli) |
 
-## Setup
+## Setup Cloudflare Workers
 
-1. Clone repo dan buka di [clasp](https://github.com/google/clasp)
-2. Edit `SPREADSHEET_ID` di `Config.js` sesuai ID Google Sheet Anda
-3. Pastikan sheet berikut ada di spreadsheet:
-   - `Update-Penjualan WHO`
-   - `Update-STOCK`
-   - `BIZ` (atau `.BIZ`)
-   - `Distribusi`
-   - `Penerimaan`
-4. Deploy sebagai Web App: `clasp push && clasp deploy`
+**Sebelum deploy pertama kali**, jalankan `worker/rls-setup.sql` sekali di Supabase SQL Editor (Project > SQL Editor) untuk mengaktifkan Row Level Security + policy yang dibutuhkan Worker. Ini WAJIB dilakukan sebelum mengisi `SUPABASE_ANON_KEY` dengan anon key asli, karena RLS yang aktif tanpa policy justru akan menolak semua akses.
 
-## Konfigurasi Produk
+```bash
+cd worker
+npx wrangler secret put SUPABASE_ANON_KEY    # isi anon/public key ASLI dari Supabase
+                                              # (Project Settings > API > Project API keys > anon/public)
+                                              # JANGAN isi service_role key -- itu membypass RLS sepenuhnya
+npx wrangler secret put GEMINI_API_KEY       # (opsional) untuk Chat AI
+npx wrangler deploy
+```
 
-Daftar produk, ukuran karton (ctn), target stok, alias, dan mapping WHP dikelola di objek `CONFIG.PRODUCT_INFO` dalam `Config.js`.
+Subdomain `workers.dev` untuk akun Cloudflare harus sudah terdaftar terlebih dahulu (Workers & Pages > buka sekali untuk auto-generate, atau `PUT /accounts/{id}/workers/subdomain` via API) sebelum `wrangler deploy` bisa publish ke `https://api-distribusi.<subdomain>.workers.dev`.
 
-## Login
+## Setup Migrasi Data
 
-Login menggunakan script function `loginUser(username, password)` — kredensial dan role disimpan di sheet terpisah dalam spreadsheet yang sama.
+```bash
+cp .env.example .env
+# isi .env dengan credentials
+node migrate.js
+```
+
+## Endpoints API (Workers)
+
+| Endpoint | Deskripsi |
+|----------|-----------|
+| `GET /api/beranda?whp=...&selWhp=...&branch=...` | Data KPI beranda (whp = pembatasan role, selWhp/branch = filter dropdown user) |
+| `GET /api/sales-hub?whp=...&currDate=...&prevDate=...&backDate=...` | Sales Hub |
+| `GET /api/sales-report?dayFilter=...&filterMonth=...&startMonth=...&whp=...` | Laporan harian/pertanggal |
+| `GET /api/best-products/months` | Daftar bulan tersedia |
+| `GET /api/best-products/data?month=...` | Ranking produk |
+| `GET /api/control-point` | Control Point BIZ vs Stock (termasuk konsolidasi Tasikmalaya & WHP Bandung) |
+| `GET /api/distribution?whp=...` | Data distribusi & sisa hari stok |
+| `POST /api/login` | Login (username, password) -- verifikasi server-side |
+| `POST /api/chat` | Chat AI (proxy ke Gemini) |
+| `POST /api/save/penjualan-who` | Simpan paste data Penjualan WHO |
+| `POST /api/save/distribusi` | Simpan input Distribusi |
+| `POST /api/save/penerimaan-pabrik` | Simpan input Penerimaan Pabrik |
+| `POST /api/save/stock` | Simpan/update paste data Update-STOCK |
+| `POST /api/save/biz` | Simpan paste data BIZ (SAP) |

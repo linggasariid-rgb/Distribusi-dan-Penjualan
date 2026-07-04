@@ -1,0 +1,11 @@
+name = "api-distribusi"
+main = "src/index.js"
+compatibility_date = "2026-07-04"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[vars]
+SUPABASE_URL = "REMOVED_URL"
+
+# Set secrets via: npx wrangler secret put SUPABASE_ANON_KEY
+# Set secrets via: npx wrangler secret put GEMINI_API_KEY

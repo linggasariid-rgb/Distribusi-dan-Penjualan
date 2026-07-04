@@ -1,3 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Distribusi - PT. Tridaya Sinergi Indonesia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .dark body, .dark .bg-slate-50 { background-color: #0f172a !important; }
+    .dark .bg-white { background-color: #1e293b !important; }
+    .dark .text-slate-900 { color: #f1f5f9 !important; }
+    .dark .text-slate-700 { color: #cbd5e1 !important; }
+    .dark .text-slate-500 { color: #94a3b8 !important; }
+    .dark .border-slate-100 { border-color: #334155 !important; }
+    .dark .border-slate-200 { border-color: #475569 !important; }
+    .dark .bg-slate-100 { background-color: #334155 !important; }
+    #login-overlay { display: flex; }
+    #login-overlay.hidden { display: none; }
+  </style>
+</head>
+<body class="bg-slate-50 overflow-x-hidden">
+  <!-- LOGIN MODAL -->
+  <div id="login-overlay" class="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <i class="fas fa-store text-white text-2xl"></i>
+        </div>
+        <h1 class="text-xl font-bold text-slate-800 dark:text-white">Dashboard Distribusi</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">PT. Tridaya Sinergi Indonesia</p>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Username</label>
+          <input id="login-user" type="text" autocomplete="username" placeholder="Masukkan username" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
+          <input id="login-pass" type="password" autocomplete="current-password" placeholder="Masukkan password" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        <div id="login-error" class="text-red-500 text-sm hidden"></div>
+        <button id="login-btn" onclick="doLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition-all text-sm shadow-lg hover:shadow-xl active:scale-[0.98]">
+          <i class="fas fa-sign-in-alt mr-2"></i>Masuk Dashboard
+        </button>
+      </div>
+      <p class="text-xs text-slate-400 text-center mt-4">Gunakan akun yang sudah didaftarkan</p>
+    </div>
+  </div>
+  <!-- SIDEBAR -->
+  <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white z-50 shadow-2xl -translate-x-full transition-transform duration-300 flex flex-col overflow-y-auto">
+    <div class="px-5 pt-5 pb-2 border-b border-slate-700">
+      <h2 class="text-sm font-black text-white uppercase tracking-wider">Menu</h2>
+      <div id="user-badge" class="mt-2 flex items-center gap-2 text-xs text-slate-400">
+        <i class="fas fa-user-circle text-blue-400"></i>
+        <span id="user-info-text"></span>
+      </div>
+    </div>
+    <nav class="flex-1 p-3 space-y-1 text-sm">
+      <!-- Dashboard utama -->
+      <div id="menu-beranda" onclick="switchMenu('beranda')" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
+        <i class="fas fa-home w-5 text-center"></i><span>Beranda</span>
+      </div>
+      <div id="menu-distribusi" onclick="switchMenu('distribusi')" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
+        <i class="fas fa-truck-loading w-5 text-center"></i><span>Distribusi</span>
+      </div>
+      <div id="menu-sales-dashboard" onclick="switchMenu('sales-dashboard')" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
+        <i class="fas fa-chart-line w-5 text-center"></i><span>Report Penjualan</span>
+      </div>
+      <div id="menu-sales-hub" onclick="switchMenu('sales-hub')" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
+        <i class="fas fa-store w-5 text-center"></i><span>Perbandingan Penjualan</span>
+      </div>
+
+      <!-- INPUT DATA Group -->
+      <div class="menu-group">
+        <a onclick="toggleMenuGroup(this)" class="flex items-center justify-between px-4 py-3 hover:bg-slate-800 rounded-xl cursor-pointer text-slate-400 hover:text-white transition-colors">
+          <span class="font-semibold text-xs uppercase tracking-wider"><i class="fas fa-keyboard mr-2"></i>INPUT DATA</span>
+          <i class="fas fa-chevron-right text-xs transition-transform duration-200"></i>
+        </a>
+        <div class="sub-menu hidden ml-4 space-y-1 mt-1">
+          <div id="menu-penjualan-who" onclick="switchMenu('penjualan-who')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-file-import w-4 text-center"></i><span>Input Penjualan</span>
+          </div>
+          <div id="menu-penerimaan-pabrik" onclick="switchMenu('penerimaan-pabrik')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-warehouse w-4 text-center"></i><span>Input Penerimaan</span>
+          </div>
+          <div id="menu-input-distribusi" onclick="switchMenu('input-distribusi')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-arrow-right-arrow-left w-4 text-center"></i><span>Input Distribusi</span>
+          </div>
+          <div id="menu-input-stok-biz" onclick="switchMenu('input-stok-biz')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-database w-4 text-center"></i><span>Input Stok BIZ</span>
+          </div>
+          <div id="menu-input-stok-excel" onclick="switchMenu('input-stok-excel')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-file-excel w-4 text-center"></i><span>Input Stok Excel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAPORAN Group -->
+      <div class="menu-group">
+        <a onclick="toggleMenuGroup(this)" class="flex items-center justify-between px-4 py-3 hover:bg-slate-800 rounded-xl cursor-pointer text-slate-400 hover:text-white transition-colors">
+          <span class="font-semibold text-xs uppercase tracking-wider"><i class="fas fa-chart-pie mr-2"></i>LAPORAN</span>
+          <i class="fas fa-chevron-right text-xs transition-transform duration-200"></i>
+        </a>
+        <div class="sub-menu hidden ml-4 space-y-1 mt-1">
+          <div id="menu-stok" onclick="switchMenu('stok')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-chart-bar w-4 text-center"></i><span>Ringkasan Stok</span>
+          </div>
+          <div id="menu-best-products" onclick="switchMenu('best-products')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-trophy w-4 text-center"></i><span>Best Products</span>
+          </div>
+          <div id="menu-daily-report" onclick="switchMenu('daily-report')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-calendar-day w-4 text-center"></i><span>Penjualan Harian</span>
+          </div>
+          <div id="menu-sales-per-date" onclick="switchMenu('sales-per-date')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-calendar-alt w-4 text-center"></i><span>Penjualan Pertanggal</span>
+          </div>
+          <div id="menu-control-point" onclick="switchMenu('control-point')" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-clipboard-check w-4 text-center"></i><span>Control Point</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat AI -->
+      <div id="menu-chat-ai" onclick="switchMenu('chat-ai')" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
+        <i class="fas fa-robot w-5 text-center"></i><span>Chat AI</span>
+      </div>
+    </nav>
+    <div class="p-4 border-t border-slate-700 space-y-2">
+      <button onclick="toggleTheme()" class="flex items-center gap-3 w-full px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-400 hover:text-white transition-all text-sm">
+        <i id="sidebar-theme-icon" class="fas fa-moon"></i>
+        <span>Tema</span>
+      </button>
+      <button onclick="doLogout()" class="flex items-center gap-3 w-full px-4 py-2.5 bg-red-900/30 hover:bg-red-800/50 rounded-xl text-red-400 hover:text-red-300 transition-all text-sm">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Keluar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main-content" class="min-h-screen transition-all duration-300">
     <div id="report-area" class="max-w-7xl mx-auto w-full bg-slate-50 p-1">
     <!-- Company Branding Header -->
     <div class="mb-8 px-1">
@@ -14,7 +161,7 @@
         </button>
         <h1 class="text-xl md:text-2xl font-extrabold text-blue-700 flex items-center gap-3">
         <div class="bg-blue-100 text-blue-600 p-3 rounded-xl"><i id="page-icon" class="fas fa-truck-loading"></i></div>
-        <span id="page-title">Dashboard Distribusi</span>
+        <span id="page-title">Distribusi</span>
         </h1>
       </div>
       <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -125,10 +272,10 @@
         <div id="beranda-quick-actions" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
           <h3 class="text-sm font-bold text-slate-700 mb-4"><i class="fas fa-bolt mr-2 text-amber-500"></i>Aksi Cepat</h3>
           <div class="flex flex-wrap gap-3">
-            <button onclick="switchMenu('penjualan')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-file-invoice-dollar mr-2"></i>Input Penjualan</button>
-            <button onclick="switchMenu('penerimaan-pabrik')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-factory mr-2"></i>Penerimaan Pabrik</button>
+            <button onclick="switchMenu('penjualan-who')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-file-invoice-dollar mr-2"></i>Input Penjualan</button>
+            <button onclick="switchMenu('penerimaan-pabrik')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-factory mr-2"></i>Input Penerimaan</button>
             <button onclick="switchMenu('input-distribusi')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-arrow-right-arrow-left mr-2"></i>Input Distribusi</button>
-            <button onclick="switchMenu('distribusi')" class="bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-truck-loading mr-2"></i>Dashboard Distribusi</button>
+            <button onclick="switchMenu('distribusi')" class="bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-truck-loading mr-2"></i>Distribusi</button>
           </div>
         </div>
       </div>
@@ -476,77 +623,6 @@
       </div>
     </div>
 
-    <!-- Penjualan View -->
-    <div id="penjualan-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Penjualan</h2>
-        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel Laporan Penjualan Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-xs text-blue-800">
-          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Panduan Input Data:</p>
-          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
-            <li>Pastikan Anda telah meng-<b>Unhide (tampilkan semua)</b> kolom di Excel Laporan Penjualan WHO Anda.</li>
-            <li>Pilih <b>Cabang</b> Anda dan <b>Tipe Laporan</b> (MST & STK / TsiApps / TsiEmployee) pada pilihan di bawah.</li>
-            <li>Block dan <i>Copy</i> (Salin) baris data dari <b>Kolom B sampai AF</b> (Kolom Tanggal sampai JUMLAH).</li>
-            <li><i>Paste</i> (Tempel) ke dalam kotak di bawah ini, lalu klik tombol <b>Proses & Preview Data</b>.</li>
-          </ol>
-        </div>
-        
-        <div class="mb-4 flex flex-col sm:flex-row gap-4">
-          <select id="penjualan-branch-select" class="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
-          <select id="penjualan-type-select" class="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" onchange="clearPenjualan()">
-            <option value="mst_stk">Tipe Laporan: MST & STK</option>
-            <option value="tsiapps">Tipe Laporan: TsiApps</option>
-            <option value="employee">Tipe Laporan: TsiEmployee</option>
-          </select>
-        </div>
-        
-        <textarea id="penjualan-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data Excel di sini..."></textarea>
-        
-        <div class="mt-4 flex gap-3">
-          <button onclick="processPaste('penjualan-paste-area', 'penjualan-preview')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button onclick="document.getElementById('penjualan-paste-area').value=''; document.getElementById('penjualan-preview').innerHTML=''; document.getElementById('penjualan-submit-container').classList.add('hidden');" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
-        </div>
-        
-        <div id="penjualan-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
-        <div class="mt-6 hidden" id="penjualan-submit-container">
-           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitData('penjualan')"><i class="fas fa-save mr-2"></i> Simpan & Potong Stok Cabang</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Penerimaan View -->
-    <div id="penerimaan-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Penerimaan (Barang Masuk)</h2>
-        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel Surat Jalan / Penerimaan Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-xs text-blue-800">
-          <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Panduan Input Data:</p>
-          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
-            <li>Pastikan Anda telah meng-<b>Unhide (tampilkan semua)</b> kolom di Excel Surat Jalan / Penerimaan Anda.</li>
-            <li>Pilih <b>Cabang</b> Anda pada menu pilihan di bawah.</li>
-            <li>Block dan <i>Copy</i> (Salin) baris data dari <b>Kolom B sampai AF</b> (Kolom Tanggal sampai JUMLAH).</li>
-            <li><i>Paste</i> (Tempel) ke dalam kotak di bawah ini, lalu klik tombol <b>Proses & Preview Data</b>.</li>
-          </ol>
-        </div>
-        
-        <div class="mb-4">
-          <select id="penerimaan-branch-select" class="w-full sm:w-64 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
-        </div>
-
-        <textarea id="penerimaan-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data Excel di sini..."></textarea>
-        
-        <div class="mt-4 flex gap-3">
-          <button onclick="processPaste('penerimaan-paste-area', 'penerimaan-preview')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button onclick="document.getElementById('penerimaan-paste-area').value=''; document.getElementById('penerimaan-preview').innerHTML=''; document.getElementById('penerimaan-submit-container').classList.add('hidden');" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
-        </div>
-        
-        <div id="penerimaan-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
-        <div class="mt-6 hidden" id="penerimaan-submit-container">
-           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" onclick="submitData('penerimaan')"><i class="fas fa-save mr-2"></i> Simpan & Tambahkan Stok Cabang</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Penerimaan Pabrik View -->
     <div id="penerimaan-pabrik-view" class="hidden">
       <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -694,6 +770,70 @@ TASIKMALAYA	4200000"></textarea>
   </div>
 
   <script>
+    // ──── GAS → WORKERS API BRIDGE ─────────────────────────────────────
+    // Replaces google.script.run with fetch() calls to Cloudflare Worker
+    (function(){
+      var BASE='https://api-distribusi.distribusi-tsi.workers.dev';
+      var READ={
+        getSalesHubData:{url:'/api/sales-hub',params:['whp','currDate','prevDate','backDate']},
+        getSalesDailyReport:{url:'/api/sales-report',params:['dayFilter','filterMonth','startMonth','whp']},
+        getBestProductsMonths:{url:'/api/best-products/months',params:[]},
+        getBestProductsData:{url:'/api/best-products/data',params:['month']},
+        getControlPointData:{url:'/api/control-point',params:[]},
+        getDistributionData:{url:'/api/distribution',params:['whp']},
+      };
+      var WRITE={
+        savePenerimaanPabrik:{url:'/api/save/penerimaan-pabrik',params:['data']},
+        saveDistribusi:{url:'/api/save/distribusi',params:['data']},
+        savePastedDataWHO:{url:'/api/save/penjualan-who',params:['data']},
+        savePastedDataBIZ:{url:'/api/save/biz',params:['data']},
+        savePastedDataUpdateStock:{url:'/api/save/stock',params:['data']},
+        chatWithSalesAI:{url:'/api/chat',params:['pesan','riwayat','userWHP']},
+        login:{url:'/api/login',params:['username','password']},
+      };
+      var BERANDA=['getBerandaData','getSalesDashboardData'];
+      var _s=null,_f=null;
+      function call(name,args){
+        var url=BASE;
+        var method='GET', body=null;
+        if(BERANDA.indexOf(name)>=0){
+          url+='/api/beranda';
+          if(name==='getSalesDashboardData'){
+            var bq=[];
+            if(args[2])bq.push('whp='+encodeURIComponent(args[2]));
+            if(args[0]&&args[0]!=='ALL')bq.push('selWhp='+encodeURIComponent(args[0]));
+            if(args[1]&&args[1]!=='ALL')bq.push('branch='+encodeURIComponent(args[1]));
+            if(bq.length)url+='?'+bq.join('&');
+          }
+        }else if(READ[name]){
+          var e=READ[name];url+=e.url;
+          var q=[];
+          for(var i=0;i<e.params.length;i++){if(i<args.length&&args[i]!=null&&args[i]!=='')q.push(encodeURIComponent(e.params[i])+'='+encodeURIComponent(args[i]));}
+          if(q.length)url+='?'+q.join('&');
+        }else if(WRITE[name]){
+          var w=WRITE[name];url+=w.url;method='POST';
+          var obj={};
+          for(var i=0;i<w.params.length;i++){if(i<args.length)obj[w.params[i]]=args[i];}
+          body=JSON.stringify(obj);
+        }else{if(_f)_f(new Error('Unknown: '+name));return;}
+        var opts={method:method};
+        if(body){opts.headers={'Content-Type':'application/json'};opts.body=body;}
+        fetch(url,opts).then(function(r){return r.json();}).then(function(d){
+          if(d&&(d.error||d.status==='error')){if(_f)_f(new Error(d.message||d.error));}
+          else{if(_s)_s(d);}
+        }).catch(function(err){if(_f)_f(err);});
+      }
+      var p=new Proxy({},{
+        get:function(t,name){
+          if(name==='withSuccessHandler')return function(fn){_s=fn;return p;};
+          if(name==='withFailureHandler')return function(fn){_f=fn;return p;};
+          return function(){call(name,arguments);};
+        }
+      });
+      if(typeof google==='undefined')window.google={};
+      google.script={run:p};
+    })();
+    if (typeof ChartDataLabels !== 'undefined' && Chart.register) Chart.register(ChartDataLabels);
     let gData = null;
     let gSalesData = null;
     let branchDays = {}; 
@@ -834,16 +974,9 @@ TASIKMALAYA	4200000"></textarea>
       let keys = Object.keys(gData.result).sort();
       select.innerHTML = '<option value="ALL">-- Tampilkan Semua Cabang --</option>';
       
-      const penSelect = document.getElementById('penjualan-branch-select');
-      const recSelect = document.getElementById('penerimaan-branch-select');
-      if (penSelect) penSelect.innerHTML = '<option value="">-- Pilih Cabang (Sesuai Login) --</option>';
-      if (recSelect) recSelect.innerHTML = '<option value="">-- Pilih Cabang (Sesuai Login) --</option>';
-
       keys.forEach(k => {
         select.add(new Option(gData.result[k].nama, k));
-        if (penSelect) penSelect.add(new Option(gData.result[k].nama, k));
-        if (recSelect) recSelect.add(new Option(gData.result[k].nama, k));
-        
+
         if (!branchDays[k]) branchDays[k] = 8;
         if (branchBuffers[k] === undefined) branchBuffers[k] = 4;
       });
@@ -1000,9 +1133,7 @@ TASIKMALAYA	4200000"></textarea>
         'distribusi': 'admin',
         'stok': 'admin',
         'sales-dashboard': 'super_admin',
-        'penjualan': 'super_admin',
         'penjualan-who': 'super_admin',
-        'penerimaan': 'super_admin',
         'penerimaan-pabrik': 'super_admin',
         'input-distribusi': 'super_admin',
         'best-products': 'super_admin',
@@ -1023,9 +1154,7 @@ TASIKMALAYA	4200000"></textarea>
 
       const distView = document.getElementById('distribution-view');
       const stockView = document.getElementById('stock-summary-view');
-      const penjualanView = document.getElementById('penjualan-view');
       const penjualanWhoView = document.getElementById('penjualan-who-view');
-      const penerimaanView = document.getElementById('penerimaan-view');
       const penerimaanPabrikView = document.getElementById('penerimaan-pabrik-view');
       const salesDashboardView = document.getElementById('sales-dashboard-view');
       const bestProductsView = document.getElementById('best-products-view');
@@ -1040,9 +1169,7 @@ TASIKMALAYA	4200000"></textarea>
       
       const menuDist = document.getElementById('menu-distribusi');
       const menuStok = document.getElementById('menu-stok');
-      const menuPenjualan = document.getElementById('menu-penjualan');
       const menuPenjualanWHO = document.getElementById('menu-penjualan-who');
-      const menuPenerimaan = document.getElementById('menu-penerimaan');
       const menuPenerimaanPabrik = document.getElementById('menu-penerimaan-pabrik');
       const menuSalesDash = document.getElementById('menu-sales-dashboard');
       const menuBestProducts = document.getElementById('menu-best-products');
@@ -1065,9 +1192,7 @@ TASIKMALAYA	4200000"></textarea>
       // Sembunyikan semua View terlebih dahulu
       distView.style.display = 'none';
       stockView.classList.add('hidden');
-      penjualanView.classList.add('hidden');
       penjualanWhoView.classList.add('hidden');
-      penerimaanView.classList.add('hidden');
       penerimaanPabrikView.classList.add('hidden');
       salesDashboardView.classList.add('hidden');
       bestProductsView.classList.add('hidden');
@@ -1091,9 +1216,7 @@ TASIKMALAYA	4200000"></textarea>
       const activeMenuClass = "flex items-center gap-4 px-4 py-3.5 bg-blue-600/10 text-blue-500 rounded-xl font-bold border border-blue-500/20 transition-all";
       if(menuDist) menuDist.className = defaultMenuClass;
       if(menuStok) menuStok.className = defaultMenuClass;
-      if(menuPenjualan) menuPenjualan.className = defaultMenuClass;
       if(menuPenjualanWHO) menuPenjualanWHO.className = defaultMenuClass;
-      if(menuPenerimaan) menuPenerimaan.className = defaultMenuClass;
       if(menuPenerimaanPabrik) menuPenerimaanPabrik.className = defaultMenuClass;
       if(menuSalesDash) menuSalesDash.className = defaultMenuClass;
       if(menuBestProducts) menuBestProducts.className = defaultMenuClass;
@@ -1117,27 +1240,15 @@ TASIKMALAYA	4200000"></textarea>
         if (!gData) loadData();
         else renderStockSummaryTable();
       } 
-      else if (menuName === 'penjualan') {
-        penjualanView.classList.remove('hidden');
-        pageTitle.innerText = "Input Penjualan";
-        pageIcon.className = "fas fa-file-invoice-dollar";
-        if (menuPenjualan) menuPenjualan.className = activeMenuClass;
-      }
       else if (menuName === 'penjualan-who') {
         penjualanWhoView.classList.remove('hidden');
-        pageTitle.innerText = "Penjualan WHO";
+        pageTitle.innerText = "Input Penjualan";
         pageIcon.className = "fas fa-file-invoice";
         if (menuPenjualanWHO) menuPenjualanWHO.className = activeMenuClass;
       }
-      else if (menuName === 'penerimaan') {
-        penerimaanView.classList.remove('hidden');
-        pageTitle.innerText = "Input Penerimaan (WH)";
-        pageIcon.className = "fas fa-box-open";
-        if (menuPenerimaan) menuPenerimaan.className = activeMenuClass;
-      }
       else if (menuName === 'penerimaan-pabrik') {
         penerimaanPabrikView.classList.remove('hidden');
-        pageTitle.innerText = "Penerimaan Pabrik";
+        pageTitle.innerText = "Input Penerimaan";
         pageIcon.className = "fas fa-factory";
         if (menuPenerimaanPabrik) menuPenerimaanPabrik.className = activeMenuClass;
         initPenerimaanPabrik();
@@ -1174,7 +1285,7 @@ TASIKMALAYA	4200000"></textarea>
       }
       else if (menuName === 'daily-report') {
         dailyReportView.classList.remove('hidden');
-        pageTitle.innerText = "Laporan Harian";
+        pageTitle.innerText = "Penjualan Harian";
         pageIcon.className = "fas fa-calendar-week";
         if (menuDailyReport) menuDailyReport.className = activeMenuClass;
         const drContent = document.getElementById('daily-report-content');
@@ -1225,7 +1336,7 @@ TASIKMALAYA	4200000"></textarea>
       }
       else { // 'distribusi'
         distView.style.display = 'block';
-        pageTitle.innerText = "Dashboard Distribusi";
+        pageTitle.innerText = "Distribusi";
         pageIcon.className = "fas fa-truck-loading";
         branchFilter.classList.remove('hidden');
         if (!gData) loadData();
@@ -1951,140 +2062,6 @@ TASIKMALAYA	4200000"></textarea>
       html += `</tbody></table>`;
       var el = document.getElementById('sales-ranking-content');
       if (el) el.innerHTML = html;
-    }
-
-    function clearPenjualan() {
-      document.getElementById('penjualan-paste-area').value = '';
-      document.getElementById('penjualan-preview').innerHTML = '';
-      document.getElementById('penjualan-submit-container').classList.add('hidden');
-      pastedDataCache['penjualan'] = null;
-    }
-
-    function processPaste(textareaId, previewId) {
-      const type = textareaId.split('-')[0]; // 'penjualan' or 'penerimaan'
-      const text = document.getElementById(textareaId).value.trim();
-      const container = document.getElementById(previewId);
-      const submitContainer = document.getElementById(type + '-submit-container');
-      
-      pastedDataCache[type] = null; // Clear cache on new process
-      
-      if (!text) {
-        container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste (tempel) data terlebih dahulu dari Excel.</p>';
-        if (submitContainer) submitContainer.classList.add('hidden');
-        return;
-      }
-
-      let subType = '';
-      if (type === 'penjualan') {
-         subType = document.getElementById('penjualan-type-select').value;
-      }
-
-      const predefinedHeaders = {
-        penjualan_mst_stk: ['TANGGAL', 'NO. PURCHASE ORDER', 'NO. FAKTUR PENJUALAN', 'NO. SURAT JALAN', 'Jam Print', 'NAMA PDM', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'Zona', 'JUMLAH'],
-        penjualan_tsiapps: ['TANGGAL', 'NO. ORDER MEMBER', 'NO. FAKTUR PENJUALAN', 'JAM PRINT', 'Nama', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'Ongkir', 'JUMLAH'],
-        penjualan_employee: ['TANGGAL', 'NO. ORDER MEMBER', 'NO. FAKTUR PENJUALAN', 'JAM PRINT', 'Nama', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'JUMLAH'],
-        penerimaan: ['TANGGAL', 'NO. PEMESANAN', 'NO. PENERIMAAN', 'NO. SURAT JALAN', 'JAM PRINT', 'Gudang', 'SPS TSI', 'SKM TSI', 'SM', 'SP19 TSI', 'SPF', 'SMM', 'ST', 'SSJ', 'STM', 'SKMF', 'SK', 'SNN Org', 'SNN MIND', 'SNNM', 'SPW', 'SP', 'KMK', 'KO', 'SSE', 'Madu', 'HU', 'Tools', 'ppn (12%)', 'Status', 'JUMLAH']
-      };
-
-      let headerKey = type === 'penjualan' ? `penjualan_${subType}` : 'penerimaan';
-
-      const rows = text.split('\n').filter(row => row.trim() !== '');
-      let dataForBackend = rows.map(row => row.split('\t'));
-
-      // Jika baris pertama yang dipaste adalah header dari excel, kita hapus agar tidak dobel
-      if (dataForBackend.length > 0 && String(dataForBackend[0][0]).toUpperCase().includes('TANGGAL')) {
-        dataForBackend.shift();
-      }
-
-      // Sisipkan header bawaan yang sudah di-setting
-      dataForBackend.unshift(predefinedHeaders[headerKey]);
-
-      const headerCols = dataForBackend[0].length;
-      // Standarisasi panjang baris (mencegah error karena excel memotong trailing tab)
-      dataForBackend = dataForBackend.map((row, index) => {
-        if (index === 0) return row;
-        let newRow = [...row];
-        while (newRow.length < headerCols) newRow.push('-');
-        return newRow.slice(0, headerCols);
-      });
-
-      // --- Basic Validation ---
-      if (dataForBackend.length < 2) {
-        container.innerHTML = `<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Error: Data yang di-paste minimal harus 2 baris (1 baris header dan 1 baris data).</p>`;
-        if (submitContainer) submitContainer.classList.add('hidden');
-        return;
-      }
-
-      pastedDataCache[type] = dataForBackend; // Store parsed data in cache
-
-      let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
-      let htmlBody = '<tbody class="divide-y divide-slate-100">';
-      
-      dataForBackend.forEach((row, i) => {
-        if (i === 0) {
-          row.forEach((c, j) => tableHTML += `<th class="px-4 py-3 font-bold border border-slate-200 whitespace-nowrap">${c || 'Kolom '+(j+1)}</th>`);
-          tableHTML += '</tr></thead>';
-        } else {
-          htmlBody += '<tr class="hover:bg-slate-50">';
-          row.forEach(c => htmlBody += `<td class="px-4 py-2 border border-slate-200 whitespace-nowrap">${c}</td>`);
-          htmlBody += '</tr>';
-        }
-      });
-      
-      htmlBody += '</tbody></table>';
-      container.innerHTML = tableHTML + htmlBody;
-      if (submitContainer) submitContainer.classList.remove('hidden');
-    }
-
-    function submitData(type) {
-        const dataToSubmit = pastedDataCache[type];
-        const button = document.querySelector(`#${type}-submit-container button`);
-        const branchSelect = document.getElementById(`${type}-branch-select`);
-        const originalButtonText = button.innerHTML;
-
-        if (!dataToSubmit || dataToSubmit.length < 2) {
-            alert('Tidak ada data untuk disimpan. Silakan proses data dari Excel terlebih dahulu.');
-            return;
-        }
-        
-        if (!branchSelect || !branchSelect.value) {
-            alert('PENTING: Silakan pilih Cabang terlebih dahulu di atas kotak input!');
-            return;
-        }
-
-        // Disable button and show loader
-        button.disabled = true;
-        button.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...`;
-        let subType = type === 'penjualan' ? document.getElementById('penjualan-type-select').value : '';
-
-        google.script.run
-            .withSuccessHandler(function(response) {
-                if (response.status === 'success') {
-                    const toast = document.getElementById('toast');
-                    toast.querySelector('span').innerText = response.message;
-                    toast.classList.remove('translate-y-32', 'opacity-0');
-                    setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
-
-                    document.getElementById(`${type}-paste-area`).value = '';
-                    document.getElementById(`${type}-preview`).innerHTML = '';
-                    document.getElementById(`${type}-submit-container`).classList.add('hidden');
-
-                    showConfirmModal('Data berhasil disimpan. Apakah Anda ingin memuat ulang data dashboard sekarang?', function() {
-                        loadData();
-                        switchMenu('distribusi');
-                    });
-                } else {
-                    alert('Terjadi kesalahan saat menyimpan: ' + response.message);
-                }
-                button.disabled = false;
-                button.innerHTML = originalButtonText;
-            })
-            .withFailureHandler(function(error) {
-                alert('Gagal terhubung ke server: ' + error.message);
-                button.disabled = false;
-                button.innerHTML = originalButtonText;
-            })
-            .savePastedData(dataToSubmit, type, branchSelect.value, subType);
     }
 
     function initPenerimaanPabrik() {
@@ -3971,10 +3948,79 @@ TASIKMALAYA	4200000"></textarea>
       return val > 0 ? val.toLocaleString('id-ID') : '<span class="text-slate-300">&ndash;</span>';
     }
 
+    function doLogin() {
+      var btn = document.getElementById('login-btn');
+      var errEl = document.getElementById('login-error');
+      var username = document.getElementById('login-user').value.trim().toLowerCase();
+      var password = document.getElementById('login-pass').value;
+      if (!username || !password) { alert('Isi username dan password'); return; }
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+      errEl.classList.add('hidden');
+      google.script.run.withSuccessHandler(function(res){
+        sessionStorage.setItem('user_whp', res.whp);
+        sessionStorage.setItem('user_role', res.role);
+        sessionStorage.setItem('user_name', res.name);
+        document.getElementById('login-overlay').classList.add('hidden');
+        updateUserBadge();
+        applyMenuRestrictions();
+        loadData();
+        switchMenu('distribusi');
+      }).withFailureHandler(function(err){
+        errEl.textContent = err.message || 'Login gagal'; errEl.classList.remove('hidden');
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Masuk Dashboard';
+      }).login(username, password);
+    }
+
+    function doLogout() {
+      sessionStorage.clear();
+      document.getElementById('login-overlay').classList.remove('hidden');
+      location.reload();
+    }
+
+    function updateUserBadge() {
+      var whp = sessionStorage.getItem('user_whp');
+      var role = sessionStorage.getItem('user_role');
+      var name = sessionStorage.getItem('user_name');
+      if (whp) {
+        var labels = { admin: 'Admin', admin_whp: 'Admin WHP', super_admin: 'Super Admin' };
+        var roleLabel = labels[role] || role;
+        document.getElementById('user-info-text').textContent = name + ' (' + roleLabel + ')';
+      }
+    }
+
+    function applyMenuRestrictions() {
+      var role = sessionStorage.getItem('user_role') || 'admin';
+      var superOnlyIds = ['menu-sales-dashboard','menu-penjualan-who','menu-penerimaan-pabrik','menu-input-distribusi','menu-best-products','menu-daily-report','menu-sales-per-date','menu-input-stok-excel'];
+      var isSuper = role === 'super_admin';
+      superOnlyIds.forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.style.display = isSuper ? '' : 'none';
+      });
+      var elSalesHub = document.getElementById('menu-sales-hub');
+      if (elSalesHub) elSalesHub.style.display = role === 'admin_whp' ? 'none' : '';
+    }
+
     window.onload = function() {
       initSidebarAutohide();
       applyTheme();
-      var role = sessionStorage.getItem('user_role') || 'admin';
-      if (role === 'super_admin') switchMenu('sales-dashboard');
+      var whp = sessionStorage.getItem('user_whp');
+      var role = sessionStorage.getItem('user_role');
+      if (whp && role) {
+        updateUserBadge();
+        applyMenuRestrictions();
+        document.getElementById('login-overlay').classList.add('hidden');
+        loadData();
+        switchMenu('distribusi');
+      }
+      document.getElementById('login-pass').addEventListener('keydown', function(e){
+        if (e.key === 'Enter') doLogin();
+      });
+      document.getElementById('login-user').addEventListener('keydown', function(e){
+        if (e.key === 'Enter') document.getElementById('login-pass').focus();
+      });
     };
   </script>
+    </div> <!-- /report-area -->
+  </div> <!-- /main-content -->
+</body>
+</html>
