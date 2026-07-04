@@ -1,0 +1,6 @@
+node_modules/
+service-account.json
+.env
+migrate_retry.js
+seed_cabang.js
+migrate_biz.js
