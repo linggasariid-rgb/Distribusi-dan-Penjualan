@@ -1,9 +1,13 @@
 import { CONFIG } from '../config.js';
 
 async function getLatestBizPeriod(db) {
+  // Urutkan by created_at, BUKAN by nama periode -- nama periode adalah teks bebas
+  // (mis. "March-2025", atau "unknown" kalau gagal terbaca), urutan abjadnya tidak
+  // mencerminkan urutan waktu sama sekali (mis. "unknown" > "March-2025" secara abjad
+  // padahal bukan periode yang lebih baru).
   const rows = await db.query('biz_stock', {
-    select: 'periode',
-    order: 'periode.desc',
+    select: 'periode,created_at',
+    order: 'created_at.desc',
     limit: 1,
   });
   return rows.length > 0 ? rows[0].periode : null;

@@ -28,6 +28,15 @@ export const CONFIG = {
     "WHP TASIKMALAYA": ["TASIKMALAYA", "GARUT", "CIREBON"],
   },
   IGNORE_BRANCHES: ["WHP BANDUNG", "WHP TASIKMALAYA", "TOTAL", "GRAND TOTAL", "TOTAL KESELURUHAN", "BANYUMAS"],
+  // Urutan baris PERSIS sama dengan sheet "Update-STOCK" (kolom A) -- dipakai menu
+  // "Input Stok Excel" karena user paste TANPA kolom cabang (cuma nilai kolom B-W),
+  // jadi baris ke-N hasil paste harus dipetakan secara posisional ke cabang ke-N di sini.
+  // ("TOTAL" sengaja tidak dimasukkan karena bukan cabang sungguhan.)
+  STOCK_SHEET_ROW_ORDER: [
+    "WHP BANDUNG", "WHP TASIKMALAYA", "BANDUNG", "TASIKMALAYA", "BOGOR",
+    "SERANG", "SUKABUMI", "KARAWANG", "GARUT", "PURWAKARTA",
+    "TANGERANG", "CIREBON", "BANYUMAS",
+  ],
   // Dipakai khusus di sales-report.js (Laporan Harian/Pertanggal) -- daftar berbeda dari IGNORE_BRANCHES,
   // sengaja tidak termasuk BANYUMAS, cocok dengan Sales.js legacy (matching by substring, bukan exact).
   IGNORE_BRANCHES_REPORT: ["WHP", "TOTAL", "GRAND TOTAL", "TOTAL KESELURUHAN"],
@@ -41,6 +50,17 @@ export const CONFIG = {
     "2026-03-21", "2026-03-22", "2026-04-03", "2026-04-05",
     "2026-05-01", "2026-05-14", "2026-05-27", "2026-05-31",
     "2026-06-01", "2026-06-16", "2026-08-17", "2026-08-25", "2026-12-25",
+  ],
+  // Urutan kolom PERSIS sama dengan sheet "BIZ" mulai kolom C (setelah No, Cabang) --
+  // dipakai menu "Input Stok BIZ" karena user paste TANPA baris header, jadi kolom
+  // ke-N (0-based, dimulai dari kolom ke-3 tiap baris) dipetakan ke nama produk ke-N di sini.
+  BIZ_SHEET_COLUMN_ORDER: [
+    "Sin Platinum Special", "Sin Kujang Mas", "Sinergi Mind", "Sin Provost 19",
+    "Sin Platinum Filter", "Sinergi Mind Menthol", "Sin Trust", "Sin Sapu Jagat",
+    "Sin Trust Menthol", "Sin Kujang Mas Filter", "Sin Krakatau", "Sin New Normal Org",
+    "Sin New Normal Mind", "Sin New Normal Menthol", "Kartu Hu", "Kartu Hu versi Baru",
+    "Kopi Mana Kopi", "Kopi Original", "Madu Natural", "SIN Precision White",
+    "SIN Precision", "SIN Encode", "SIN Precision White 3", "SIN Precision 3",
   ],
   BIZ_PRODUCT_MAP: {
     "Sin Platinum Special": "SPS TSI", "Sin Kujang Mas": "SKM TSI",

@@ -28,10 +28,6 @@ function parseNum(v) {
   return parseInt(String(v).trim().replace(/\./g,''), 10) || 0;
 }
 
-function rowSignature(row) {
-  return `${row.cabang}|${row.tanggal}|${row.tipe_customer}|${row.jumlah}|${JSON.stringify(row.products)}`;
-}
-
 export async function handle(db, body) {
   const data = body.data;
   if (!Array.isArray(data) || data.length < 2) {
@@ -44,6 +40,17 @@ export async function handle(db, body) {
   // baris yang dipaste user punya jumlah kolom lebih/kurang dari header (trailing cell
   // kosong/tambahan ikut kebawa saat copy-paste dari Excel).
   const jumlahCol = headers.findIndex(h => h.toUpperCase() === 'JUMLAH');
+
+  // Kalau tidak ada satupun kolom produk yang dikenali DAN tidak ada kolom JUMLAH --
+  // berarti baris pertama yang dipaste bukan header yang valid (nama kolom tidak cocok,
+  // atau header ikut kegeser/hilang). Tanpa pengecekan ini, semua baris tetap tersimpan
+  // dengan products={} dan jumlah=0 tanpa ada tanda error apapun ke user.
+  if (Object.keys(productCols).length === 0 && jumlahCol === -1) {
+    return {
+      status: 'error',
+      message: 'Header kolom produk tidak dikenali. Pastikan baris pertama yang dipaste adalah baris header asli dari Excel (nama kolom produk seperti SPS TSI, SKM TSI, dst, dan kolom JUMLAH), bukan baris data.',
+    };
+  }
 
   const rows = [];
   for (let i = 1; i < data.length; i++) {
@@ -72,35 +79,14 @@ export async function handle(db, body) {
     return { status: 'error', message: 'Tidak ada baris data valid' };
   }
 
-  // Proteksi submit ganda: buang baris yang isinya identik (cabang+tanggal+tipe+jumlah+products)
-  // dengan baris yang sudah ada di database, atau duplikat di dalam batch yang sama --
-  // mencegah data dobel kalau tombol simpan tidak sengaja tertekan dua kali.
-  const dates = [...new Set(rows.map(r => r.tanggal))].sort();
-  const existingRows = await db.query('penjualan_who', {
-    select: 'cabang,tanggal,tipe_customer,jumlah,products',
-    gte: { tanggal: dates[0] },
-    lte: { tanggal: dates[dates.length - 1] },
-  });
-  const seen = new Set(existingRows.map(rowSignature));
-
-  const rowsToInsert = [];
-  let skipped = 0;
-  for (const row of rows) {
-    const sig = rowSignature(row);
-    if (seen.has(sig)) { skipped++; continue; }
-    seen.add(sig);
-    rowsToInsert.push(row);
+  // TIDAK ada dedup berbasis nilai (cabang+tanggal+tipe+jumlah+products) di sini --
+  // baris dengan nilai identik adalah pola NORMAL di data ini (order standar dengan
+  // jumlah/produk yang sama berulang), jadi dedup begini akan salah membuang transaksi
+  // asli (insiden 2026-07-04: 4130 baris asli sempat terhapus karena disangka duplikat).
+  // Proteksi klik-ganda tombol Simpan sudah ditangani di frontend (tombol di-disable
+  // saat submit), jadi tidak perlu diulang di sini.
+  for (let i = 0; i < rows.length; i += 500) {
+    await db.request('POST', 'penjualan_who', { data: rows.slice(i, i + 500) });
   }
-
-  if (rowsToInsert.length === 0) {
-    return { status: 'error', message: `Semua ${rows.length} baris sudah pernah tersimpan sebelumnya (terdeteksi duplikat)` };
-  }
-
-  for (let i = 0; i < rowsToInsert.length; i += 500) {
-    await db.request('POST', 'penjualan_who', { data: rowsToInsert.slice(i, i + 500) });
-  }
-  const msg = skipped > 0
-    ? `${rowsToInsert.length} baris data penjualan WHO berhasil disimpan (${skipped} baris duplikat dilewati)`
-    : `${rowsToInsert.length} baris data penjualan WHO berhasil disimpan`;
-  return { status: 'success', message: msg };
+  return { status: 'success', message: `${rows.length} baris data penjualan WHO berhasil disimpan` };
 }
