@@ -1,2 +1,8 @@
-#login-overlay { display: flex; }
+#login-overlay {
+  display: flex;
+  background-image: url('../../images/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 #login-overlay.hidden { display: none; }
