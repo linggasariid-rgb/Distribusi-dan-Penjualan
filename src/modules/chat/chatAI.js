@@ -9,7 +9,7 @@ export function renderChatBubble(role, text) {
   const bubble = document.createElement('div');
   bubble.className = isUser ? 'flex justify-end' : 'flex justify-start';
   bubble.innerHTML = '<div class="max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ' +
-    (isUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-800') + '">' +
+    (isUser ? 'text-white' : 'text-slate-800') + '" style="' + (isUser ? 'background:var(--color-primary)' : 'background:var(--color-bg-alt)') + '">' +
     text.replace(/\n/g, '<br>') + '</div>';
   box.appendChild(bubble);
   box.scrollTop = box.scrollHeight;
@@ -30,7 +30,7 @@ export function sendChatAI() {
   const loadingBubble = document.createElement('div');
   loadingBubble.id = 'chat-ai-loading';
   loadingBubble.className = 'flex justify-start';
-  loadingBubble.innerHTML = '<div class="bg-slate-100 text-slate-500 rounded-2xl px-4 py-2.5 text-sm"><div class="inline-block animate-spin rounded-full h-3 w-3 border-2 border-slate-400 border-t-transparent mr-1"></div>Mengetik...</div>';
+  loadingBubble.innerHTML = '<div style="background:var(--color-bg-alt);color:var(--color-text-muted);border-radius:1rem;padding:0.625rem 1rem;font-size:0.875rem"><div class="inline-block animate-spin rounded-full h-3 w-3 border-2 mr-1" style="border-color:var(--color-text-muted) transparent var(--color-text-muted) transparent"></div>Mengetik...</div>';
   box.appendChild(loadingBubble);
   box.scrollTop = box.scrollHeight;
 

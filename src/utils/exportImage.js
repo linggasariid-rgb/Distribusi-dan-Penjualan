@@ -8,7 +8,8 @@ export function capturePivot(containerId, filename, btnSelector, callback) {
   const container = document.getElementById(containerId);
   const sidebar = document.getElementById('sidebar');
   const mainContent = document.getElementById('main-content');
-  const filterRow = container.closest('.space-y-6').querySelector('.flex');
+  const parentView = container.closest('[class*="space-y-"]');
+  const filterRow = parentView ? parentView.querySelector(':scope > div.flex') : null;
 
   const isSidebarOpen = sidebar.classList.contains('translate-x-0');
   const originalBtnText = btn.innerHTML;

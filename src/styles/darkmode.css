@@ -1,8 +1,55 @@
-.dark body, .dark .bg-slate-50 { background-color: #0f172a !important; }
-.dark .bg-white { background-color: #1e293b !important; }
-.dark .text-slate-900 { color: #f1f5f9 !important; }
-.dark .text-slate-700 { color: #cbd5e1 !important; }
-.dark .text-slate-500 { color: #94a3b8 !important; }
-.dark .border-slate-100 { border-color: #334155 !important; }
-.dark .border-slate-200 { border-color: #475569 !important; }
-.dark .bg-slate-100 { background-color: #334155 !important; }
+/* Dark mode handled via CSS variables in main.css
+   This file provides backwards compatibility for Tailwind dark class overrides */
+
+.dark .bg-slate-50,
+.dark .bg-surface {
+  background-color: var(--color-bg) !important;
+}
+
+.dark .bg-white,
+.dark .bg-surface-white {
+  background-color: var(--color-surface) !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: var(--color-text) !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .text-slate-400 {
+  color: var(--color-text-muted) !important;
+}
+
+.dark .border-slate-100 {
+  border-color: var(--color-border-light) !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-300 {
+  border-color: var(--color-border) !important;
+}
+
+.dark .bg-slate-100,
+.dark .bg-slate-50\/50 {
+  background-color: var(--color-bg-alt) !important;
+}
+
+/* --color-primary (#0F172A) invisible on dark bg → override to readable colors */
+.dark .badge-primary {
+  color: var(--color-text) !important;
+  background: var(--color-surface-hover) !important;
+}
+.dark .btn-outline:hover {
+  color: var(--color-text) !important;
+  border-color: var(--color-accent) !important;
+  background: var(--color-bg-alt) !important;
+}
+.dark [style*="color:var(--color-primary)"] {
+  color: var(--color-text) !important;
+}

@@ -6,7 +6,7 @@
   <title>Dashboard Distribusi - PT. Tridaya Sinergi Indonesia</title>
   <link rel="stylesheet" href="tailwind.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -15,73 +15,80 @@
   <link rel="stylesheet" href="src/styles/darkmode.css">
   <link rel="stylesheet" href="src/styles/layout.css">
 </head>
-<body class="bg-slate-50 overflow-x-hidden">
+<body class="overflow-x-hidden" style="background-color:var(--color-bg);color:var(--color-text)">
   <!-- LOGIN MODAL -->
-  <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center transition-all duration-300">
-    <div class="absolute inset-0 bg-slate-900/50"></div>
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 relative z-10">
+  <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center">
+    <div class="absolute inset-0" style="background:linear-gradient(135deg, rgba(34,197,94,0.88) 0%, rgba(15,23,42,0.97) 100%)"></div>
+    <div class="w-full max-w-md mx-4 p-8 relative z-10 animate-scale-in" style="background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:1.25rem;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
       <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center" style="background:linear-gradient(135deg,#22C55E,#16A34A);border-radius:1rem;box-shadow:0 4px 16px rgba(34,197,94,0.3)">
           <i class="fas fa-store text-white text-2xl"></i>
         </div>
-        <h1 class="text-xl font-bold text-slate-800 dark:text-white">Dashboard Distribusi</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">PT. Tridaya Sinergi Indonesia</p>
+        <h1 class="text-xl font-bold" style="color:var(--color-text)">Dashboard Distribusi</h1>
+        <p class="text-sm mt-1" style="color:var(--color-text-muted)">PT. Tridaya Sinergi Indonesia</p>
       </div>
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Username</label>
-          <input id="login-user" type="text" autocomplete="username" placeholder="Masukkan username" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+          <label class="label">Username</label>
+          <input id="login-user" type="text" autocomplete="username" placeholder="Masukkan username" class="input">
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Password</label>
-          <input id="login-pass" type="password" autocomplete="current-password" placeholder="Masukkan password" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+          <label class="label">Password</label>
+          <input id="login-pass" type="password" autocomplete="current-password" placeholder="Masukkan password" class="input">
         </div>
-        <div id="login-error" class="text-red-500 text-sm hidden"></div>
-        <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition-all text-sm shadow-lg hover:shadow-xl active:scale-[0.98]">
-          <i class="fas fa-sign-in-alt mr-2"></i>Masuk Dashboard
+        <div id="login-error" class="text-sm hidden" style="color:var(--color-danger)"></div>
+        <button id="login-btn" class="btn btn-primary w-full btn-lg">
+          <i class="fas fa-sign-in-alt"></i>Masuk Dashboard
         </button>
       </div>
-      <p class="text-xs text-slate-400 text-center mt-4">Gunakan akun yang sudah didaftarkan</p>
+      <p class="text-xs text-center mt-4" style="color:var(--color-text-muted)">Gunakan akun yang sudah didaftarkan</p>
     </div>
   </div>
   <!-- SIDEBAR -->
-  <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white z-50 shadow-2xl -translate-x-full transition-transform duration-300 flex flex-col overflow-y-auto">
-    <div class="px-5 pt-5 pb-2 border-b border-slate-700">
-      <h2 class="text-sm font-black text-white uppercase tracking-wider">Menu</h2>
-      <div id="user-badge" class="mt-2 flex items-center gap-2 text-xs text-slate-400">
-        <i class="fas fa-user-circle text-blue-400"></i>
+  <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 text-white z-50 -translate-x-full flex flex-col overflow-y-auto" style="background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);box-shadow:4px 0 32px rgba(0,0,0,0.2);transition:transform 300ms cubic-bezier(0.16,1,0.3,1)">
+    <div class="px-5 pt-5 pb-3" style="border-bottom:1px solid #1e293b">
+      <div class="flex items-center gap-3 mb-3">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#22C55E,#16A34A);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(34,197,94,0.3)">
+          <i class="fas fa-store text-white text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-extrabold text-white tracking-tight">TSI Dashboard</h2>
+          <p class="text-[10px]" style="color:#64748b">Sales & Distribution</p>
+        </div>
+      </div>
+      <div id="user-badge" class="flex items-center gap-2 text-xs" style="color:#64748b">
+        <i class="fas fa-user-circle" style="color:var(--color-accent)"></i>
         <span id="user-info-text"></span>
       </div>
     </div>
-    <nav class="flex-1 p-3 space-y-1 text-sm">
-      <!-- Dashboard utama -->
-      <div id="menu-beranda" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
-        <i class="fas fa-home w-5 text-center"></i><span>Beranda</span>
+    <nav class="flex-1 p-3 space-y-0.5 text-sm">
+      <div id="menu-beranda" class="sidebar-item-main">
+        <i class="fas fa-home w-5 text-center" style="font-size:0.9rem"></i><span>Beranda</span>
       </div>
-      <div id="menu-distribusi" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
-        <i class="fas fa-truck-loading w-5 text-center"></i><span>Distribusi</span>
+      <div id="menu-distribusi" class="sidebar-item-main">
+        <i class="fas fa-truck-loading w-5 text-center" style="font-size:0.9rem"></i><span>Distribusi</span>
       </div>
 
       <!-- INPUT Group -->
       <div class="menu-group">
-        <a data-action="toggle-menu-group" class="flex items-center justify-between px-4 py-3 hover:bg-slate-800 rounded-xl cursor-pointer text-slate-400 hover:text-white transition-colors">
-          <span class="font-semibold text-xs uppercase tracking-wider"><i class="fas fa-keyboard mr-2"></i>INPUT</span>
-          <i class="fas fa-chevron-right text-xs transition-transform duration-200"></i>
+        <a data-action="toggle-menu-group" class="sidebar-group-toggle">
+          <span class="font-bold text-[10px] uppercase tracking-widest"><i class="fas fa-keyboard mr-2" style="font-size:0.75rem"></i>INPUT</span>
+          <i class="fas fa-chevron-right text-[10px] transition-transform" style="transition:transform 200ms"></i>
         </a>
-        <div class="sub-menu hidden ml-4 space-y-1 mt-1">
-          <div id="menu-penerimaan-pabrik" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+        <div class="sub-menu hidden space-y-0.5 mt-0.5" style="margin-left:0.75rem">
+          <div id="menu-penerimaan-pabrik" class="sidebar-item-sub">
             <i class="fas fa-warehouse w-4 text-center"></i><span>Input Penerimaan</span>
           </div>
-          <div id="menu-input-distribusi" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-input-distribusi" class="sidebar-item-sub">
             <i class="fas fa-arrow-right-arrow-left w-4 text-center"></i><span>Input Distribusi</span>
           </div>
-          <div id="menu-input-stok-excel" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-input-stok-excel" class="sidebar-item-sub">
             <i class="fas fa-file-excel w-4 text-center"></i><span>Input Stok Excel</span>
           </div>
-          <div id="menu-input-stok-biz" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-input-stok-biz" class="sidebar-item-sub">
             <i class="fas fa-database w-4 text-center"></i><span>Input Stok BIZ</span>
           </div>
-          <div id="menu-penjualan-who" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-penjualan-who" class="sidebar-item-sub">
             <i class="fas fa-file-import w-4 text-center"></i><span>Input Penjualan</span>
           </div>
         </div>
@@ -89,264 +96,267 @@
 
       <!-- LAPORAN Group -->
       <div class="menu-group">
-        <a data-action="toggle-menu-group" class="flex items-center justify-between px-4 py-3 hover:bg-slate-800 rounded-xl cursor-pointer text-slate-400 hover:text-white transition-colors">
-          <span class="font-semibold text-xs uppercase tracking-wider"><i class="fas fa-chart-pie mr-2"></i>LAPORAN</span>
-          <i class="fas fa-chevron-right text-xs transition-transform duration-200"></i>
+        <a data-action="toggle-menu-group" class="sidebar-group-toggle">
+          <span class="font-bold text-[10px] uppercase tracking-widest"><i class="fas fa-chart-pie mr-2" style="font-size:0.75rem"></i>LAPORAN</span>
+          <i class="fas fa-chevron-right text-[10px] transition-transform" style="transition:transform 200ms"></i>
         </a>
-        <div class="sub-menu hidden ml-4 space-y-1 mt-1">
-          <div id="menu-sales-dashboard" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+        <div class="sub-menu hidden space-y-0.5 mt-0.5" style="margin-left:0.75rem">
+          <div id="menu-sales-dashboard" class="sidebar-item-sub">
             <i class="fas fa-chart-line w-4 text-center"></i><span>Report Penjualan</span>
           </div>
-          <div id="menu-sales-hub" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-sales-hub" class="sidebar-item-sub">
             <i class="fas fa-store w-4 text-center"></i><span>Perbandingan Penjualan</span>
           </div>
-          <div id="menu-daily-report" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-daily-report" class="sidebar-item-sub">
             <i class="fas fa-calendar-day w-4 text-center"></i><span>Penjualan Harian</span>
           </div>
-          <div id="menu-sales-per-date" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-sales-per-date" class="sidebar-item-sub">
             <i class="fas fa-calendar-alt w-4 text-center"></i><span>Penjualan Pertanggal</span>
           </div>
-          <div id="menu-stok" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-stok" class="sidebar-item-sub">
             <i class="fas fa-chart-bar w-4 text-center"></i><span>Ringkasan Stok</span>
           </div>
-          <div id="menu-control-point" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-control-point" class="sidebar-item-sub">
             <i class="fas fa-clipboard-check w-4 text-center"></i><span>Control Point</span>
           </div>
-          <div id="menu-best-products" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+          <div id="menu-best-products" class="sidebar-item-sub">
             <i class="fas fa-trophy w-4 text-center"></i><span>Best Produk</span>
           </div>
         </div>
       </div>
 
       <!-- Chat AI -->
-      <div id="menu-chat-ai" class="flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300 cursor-pointer">
-        <i class="fas fa-robot w-5 text-center"></i><span>Chat AI</span>
+      <div id="menu-chat-ai" class="sidebar-item-main mt-1">
+        <i class="fas fa-robot w-5 text-center" style="font-size:0.9rem"></i><span>Chat AI</span>
       </div>
     </nav>
-    <div class="p-4 border-t border-slate-700 space-y-2">
-      <button id="sidebar-theme-toggle" class="flex items-center gap-3 w-full px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-slate-400 hover:text-white transition-all text-sm">
-        <i id="sidebar-theme-icon" class="fas fa-moon"></i>
+    <div class="p-4 space-y-2" style="border-top:1px solid #1e293b">
+      <button id="sidebar-theme-toggle" class="sidebar-theme-btn">
+        <span id="sidebar-theme-icon" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
         <span>Tema</span>
       </button>
-      <button id="sidebar-logout-btn" class="flex items-center gap-3 w-full px-4 py-2.5 bg-red-900/30 hover:bg-red-800/50 rounded-xl text-red-400 hover:text-red-300 transition-all text-sm">
-        <i class="fas fa-sign-out-alt"></i>
+      <button id="sidebar-logout-btn" class="sidebar-logout-btn">
+        <i class="fas fa-sign-out-alt" style="font-size:0.85rem"></i>
         <span>Keluar</span>
       </button>
     </div>
   </div>
 
   <!-- MAIN CONTENT -->
-  <div id="main-content" class="min-h-screen transition-all duration-300">
-    <div id="report-area" class="max-w-7xl mx-auto w-full bg-slate-50 p-1">
+  <div id="main-content" class="min-h-screen" style="transition:margin-left 300ms cubic-bezier(0.16,1,0.3,1),background-color 300ms ease">
+    <div id="report-area" class="mx-auto w-full" style="max-width:1280px">
     <!-- Company Branding Header -->
-    <div class="mb-8 px-1">
-      <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase">PT. TRIDAYA SINERGI INDONESIA</h1>
-      <p class="text-blue-600 font-bold uppercase tracking-[0.2em] text-[9px] sm:text-[10px] mt-1">Sales & Distribution Division</p>
-      <div class="text-slate-400 text-[10px] font-medium mt-2 flex items-center gap-2"><i class="far fa-calendar-alt"></i> <span id="header-today-date"></span></div>
+    <div class="mb-6 px-1">
+      <div class="flex items-center gap-3 mb-1">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);flex-shrink:0"></div>
+        <h1 class="text-xl md:text-2xl font-extrabold tracking-tight" style="color:var(--color-text)">PT. TRIDAYA SINERGI INDONESIA</h1>
+      </div>
+      <p class="font-bold uppercase tracking-[0.2em] text-[10px]" style="color:var(--color-accent)">Sales & Distribution Division</p>
+      <div class="text-xs font-medium mt-2 flex items-center gap-2" style="color:var(--color-text-muted)"><i class="far fa-calendar-alt"></i> <span id="header-today-date"></span></div>
     </div>
 
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-      <div class="flex items-center gap-4 flex-shrink-0">
-        <button id="header-theme-toggle" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-2.5 rounded-xl transition-all active:scale-95" title="Ganti Tema">
-          <i id="header-theme-icon" class="fas fa-moon text-lg"></i>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 card p-5">
+      <div class="flex items-center gap-4 flex-shrink-0 w-full md:w-auto">
+        <button id="header-theme-toggle" class="btn-icon btn-ghost" title="Ganti Tema" style="flex-shrink:0">
+          <span id="header-theme-icon" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:var(--color-text-secondary)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
         </button>
-        <h1 class="text-xl md:text-2xl font-extrabold text-blue-700 flex items-center gap-3">
-        <div class="bg-blue-100 text-blue-600 p-3 rounded-xl"><i id="page-icon" class="fas fa-truck-loading"></i></div>
+        <h1 class="text-lg md:text-xl font-extrabold flex items-center gap-3" style="color:var(--color-text)">
+        <div style="background:var(--color-accent-light);color:var(--color-accent);padding:0.75rem;border-radius:0.75rem;display:flex"><i id="page-icon" class="fas fa-truck-loading"></i></div>
         <span id="page-title">Distribusi</span>
         </h1>
       </div>
       <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-        <select id="branchFilter" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56 transition-all">
+        <select id="branchFilter" class="input select" style="width:100%;min-width:14rem">
           <option value="ALL">-- Tampilkan Semua Cabang --</option>
         </select>
-        <select id="whpFilter" class="hidden px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-56 transition-all">
+        <select id="whpFilter" class="hidden input select" style="width:100%;min-width:14rem">
           <option value="ALL">-- Tampilkan Semua Area --</option>
         </select>
-        <button id="btn-refresh-data" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm shadow-blue-200 transition-all flex items-center justify-center gap-2 active:scale-95">
+        <button id="btn-refresh-data" class="btn btn-primary">
           <i class="fas fa-sync-alt"></i> Segarkan Data
         </button>
       </div>
     </div>
 
     <!-- Summary Section -->
-    <div id="summarySection" class="hidden grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <div id="summary-card-urgent" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 border-l-4 border-l-red-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group">
-        <div class="absolute -right-4 -top-4 text-red-50 opacity-50 group-hover:scale-110 transition-transform"><i class="fas fa-exclamation-triangle text-8xl"></i></div>
-        <div class="bg-red-50 text-red-500 p-4 rounded-full z-10 group-hover:bg-red-100 transition-colors"><i class="fas fa-store-alt-slash text-xl"></i></div>
-        <div class="z-10">
-          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Produk yang harus segera dikirim </h4>
-          <span class="text-2xl font-black text-slate-800" id="urgentCountModalTrigger">0</span>
+    <div id="summarySection" class="hidden grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+      <div id="summary-card-urgent" class="card card-gradient p-5 flex items-center gap-4 cursor-pointer group" style="border-left:4px solid var(--color-danger)">
+        <div class="absolute -right-4 -top-4 opacity-[0.08] group-hover:scale-110 transition-transform pointer-events-none"><i class="fas fa-exclamation-triangle" style="font-size:6rem;color:var(--color-danger)"></i></div>
+        <div style="background:var(--color-danger-light);color:var(--color-danger);padding:0.75rem;border-radius:9999px;position:relative;z-index:1"><i class="fas fa-store-alt-slash" style="font-size:1.125rem"></i></div>
+        <div style="position:relative;z-index:1">
+          <h4 class="badge badge-danger mb-1">Produk Mendesak</h4>
+          <span class="text-2xl font-black" id="urgentCountModalTrigger" style="color:var(--color-text)">0</span>
         </div>
       </div>
 
-      <div id="summary-card-whp-bandung" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 border-l-4 border-l-amber-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group">
-        <div class="absolute -right-4 -top-4 text-amber-50 opacity-50 group-hover:scale-110 transition-transform"><i class="fas fa-warehouse text-8xl"></i></div>
-        <div class="bg-amber-50 text-amber-600 p-4 rounded-full z-10 group-hover:bg-amber-100 transition-colors"><i class="fas fa-warehouse text-xl"></i></div>
-        <div class="z-10">
-          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Stok Kritis WHP Bandung</h4>
-          <span class="text-2xl font-black text-slate-800" id="whpBandungMinStockCount">0</span>
-          <span class="text-xs text-slate-500 font-semibold ml-1">Produk</span>
+      <div id="summary-card-whp-bandung" class="card card-gradient p-5 flex items-center gap-4 cursor-pointer group" style="border-left:4px solid var(--color-warning)">
+        <div class="absolute -right-4 -top-4 opacity-[0.08] group-hover:scale-110 transition-transform pointer-events-none"><i class="fas fa-warehouse" style="font-size:6rem;color:var(--color-warning)"></i></div>
+        <div style="background:var(--color-warning-light);color:var(--color-warning);padding:0.75rem;border-radius:9999px;position:relative;z-index:1"><i class="fas fa-warehouse" style="font-size:1.125rem"></i></div>
+        <div style="position:relative;z-index:1">
+          <h4 class="badge badge-accent mb-1">Stok Kritis WHP Bandung</h4>
+          <span class="text-2xl font-black" id="whpBandungMinStockCount" style="color:var(--color-text)">0</span>
+          <span class="text-xs font-semibold ml-1" style="color:var(--color-text-muted)">Produk</span>
         </div>
       </div>
 
-      <div id="summary-card-whp-tasikmalaya" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 border-l-4 border-l-orange-500 relative overflow-hidden cursor-pointer hover:shadow-md transition-all group">
-        <div class="absolute -right-4 -top-4 text-orange-50 opacity-50 group-hover:scale-110 transition-transform"><i class="fas fa-warehouse text-8xl"></i></div>
-        <div class="bg-orange-50 text-orange-600 p-4 rounded-full z-10 group-hover:bg-orange-100 transition-colors"><i class="fas fa-warehouse text-xl"></i></div>
-        <div class="z-10">
-          <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Stok Kritis WHP Tasikmalaya</h4>
-          <span class="text-2xl font-black text-slate-800" id="whpTasikmalayaMinStockCount">0</span>
-          <span class="text-xs text-slate-500 font-semibold ml-1">Produk</span>
+      <div id="summary-card-whp-tasikmalaya" class="card card-gradient p-5 flex items-center gap-4 cursor-pointer group" style="border-left:4px solid #ea580c">
+        <div class="absolute -right-4 -top-4 opacity-[0.08] group-hover:scale-110 transition-transform pointer-events-none"><i class="fas fa-warehouse" style="font-size:6rem;color:#ea580c"></i></div>
+        <div style="background:rgba(234,88,12,0.1);color:#ea580c;padding:0.75rem;border-radius:9999px;position:relative;z-index:1"><i class="fas fa-warehouse" style="font-size:1.125rem"></i></div>
+        <div style="position:relative;z-index:1">
+          <h4 class="badge mb-1" style="background:rgba(234,88,12,0.1);color:#ea580c">Stok Kritis WHP Tasikmalaya</h4>
+          <span class="text-2xl font-black" id="whpTasikmalayaMinStockCount" style="color:var(--color-text)">0</span>
+          <span class="text-xs font-semibold ml-1" style="color:var(--color-text-muted)">Produk</span>
         </div>
       </div>
     </div>
 
     <!-- Main Content Views -->
-    <div id="beranda-view" class="hidden">
-      <div class="space-y-6">
+    <div id="beranda-view" class="hidden animate-fade-in">
+      <div class="space-y-5">
         <div class="flex items-center gap-4 mb-2">
-          <select id="beranda-month-select" class="px-4 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"></select>
-          <button id="btn-beranda-reload" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-sync-alt mr-2"></i> Muat Ulang</button>
+          <select id="beranda-month-select" class="input select" style="width:auto;min-width:12rem"></select>
+          <button id="btn-beranda-reload" class="btn btn-primary btn-sm"><i class="fas fa-sync-alt mr-2"></i> Muat Ulang</button>
         </div>
 
         <div id="beranda-kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <div class="card p-5">
             <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-chart-line text-lg"></i></div>
+              <div style="width:2.75rem;height:2.75rem;border-radius:0.75rem;background:var(--color-info-light);color:var(--color-info);display:flex;align-items:center;justify-content:center"><i class="fas fa-chart-line" style="font-size:1.125rem"></i></div>
               <div>
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Penjualan</p>
-                <p class="text-xs text-slate-500" id="beranda-penjualan-periode">Bulan Ini</p>
+                <p class="badge" style="background:var(--color-info-light);color:var(--color-info)">Penjualan</p>
+                <p class="text-xs mt-0.5" style="color:var(--color-text-secondary)" id="beranda-penjualan-periode">Bulan Ini</p>
               </div>
             </div>
-            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-penjualan-value">—</p>
-            <p class="text-[10px] text-slate-400 mt-1" id="beranda-penjualan-growth"></p>
+            <p class="text-2xl font-black mt-3" id="beranda-penjualan-value" style="color:var(--color-text)">—</p>
+            <p class="text-[10px] mt-1" id="beranda-penjualan-growth" style="color:var(--color-text-muted)"></p>
           </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <div class="card p-5">
             <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="fas fa-truck-loading text-lg"></i></div>
+              <div style="width:2.75rem;height:2.75rem;border-radius:0.75rem;background:var(--color-success-light);color:var(--color-success);display:flex;align-items:center;justify-content:center"><i class="fas fa-truck-loading" style="font-size:1.125rem"></i></div>
               <div>
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Distribusi</p>
-                <p class="text-xs text-slate-500">Bulan Ini</p>
+                <p class="badge badge-success">Distribusi</p>
+                <p class="text-xs mt-0.5" style="color:var(--color-text-secondary)">Bulan Ini</p>
               </div>
             </div>
-            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-distribusi-value">—</p>
-            <p class="text-[10px] text-slate-400 mt-1" id="beranda-distribusi-detail"></p>
+            <p class="text-2xl font-black mt-3" id="beranda-distribusi-value" style="color:var(--color-text)">—</p>
+            <p class="text-[10px] mt-1" id="beranda-distribusi-detail" style="color:var(--color-text-muted)"></p>
           </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <div class="card p-5">
             <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fas fa-factory text-lg"></i></div>
+              <div style="width:2.75rem;height:2.75rem;border-radius:0.75rem;background:var(--color-info-light);color:var(--color-info);display:flex;align-items:center;justify-content:center"><i class="fas fa-factory" style="font-size:1.125rem"></i></div>
               <div>
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Penerimaan</p>
-                <p class="text-xs text-slate-500">Bulan Ini</p>
+                <p class="badge" style="background:var(--color-info-light);color:var(--color-info)">Penerimaan</p>
+                <p class="text-xs mt-0.5" style="color:var(--color-text-secondary)">Bulan Ini</p>
               </div>
             </div>
-            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-penerimaan-value">—</p>
-            <p class="text-[10px] text-slate-400 mt-1" id="beranda-penerimaan-detail"></p>
+            <p class="text-2xl font-black mt-3" id="beranda-penerimaan-value" style="color:var(--color-text)">—</p>
+            <p class="text-[10px] mt-1" id="beranda-penerimaan-detail" style="color:var(--color-text-muted)"></p>
           </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <div class="card p-5">
             <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-calendar-day text-lg"></i></div>
+              <div style="width:2.75rem;height:2.75rem;border-radius:0.75rem;background:var(--color-warning-light);color:var(--color-warning);display:flex;align-items:center;justify-content:center"><i class="fas fa-calendar-day" style="font-size:1.125rem"></i></div>
               <div>
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Penjualan Hari Ini</p>
-                <p class="text-xs text-slate-500">Tanggal Terakhir</p>
+                <p class="badge badge-accent">Penjualan Hari Ini</p>
+                <p class="text-xs mt-0.5" style="color:var(--color-text-secondary)">Tanggal Terakhir</p>
               </div>
             </div>
-            <p class="text-2xl font-black text-slate-800 mt-3" id="beranda-today-value">—</p>
-            <p class="text-[10px] text-slate-400 mt-1" id="beranda-today-label"></p>
+            <p class="text-2xl font-black mt-3" id="beranda-today-value" style="color:var(--color-text)">—</p>
+            <p class="text-[10px] mt-1" id="beranda-today-label" style="color:var(--color-text-muted)"></p>
           </div>
         </div>
 
-        <div id="beranda-comparison" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <h3 class="text-sm font-bold text-slate-700 mb-4"><i class="fas fa-balance-scale mr-2 text-blue-600"></i>Perbandingan Distribusi vs Penerimaan per Gudang</h3>
-          <div id="beranda-comparison-content" class="text-xs text-slate-500">Memuat data...</div>
+        <div id="beranda-comparison" class="card p-5">
+          <h3 class="text-sm font-bold mb-4" style="color:var(--color-text-secondary)"><i class="fas fa-balance-scale mr-2" style="color:var(--color-accent)"></i>Perbandingan Distribusi vs Penerimaan per Gudang</h3>
+          <div id="beranda-comparison-content" class="text-xs" style="color:var(--color-text-muted)">Memuat data...</div>
         </div>
 
-        <div id="beranda-quick-actions" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-          <h3 class="text-sm font-bold text-slate-700 mb-4"><i class="fas fa-bolt mr-2 text-amber-500"></i>Aksi Cepat</h3>
+        <div id="beranda-quick-actions" class="card p-5">
+          <h3 class="text-sm font-bold mb-4" style="color:var(--color-text-secondary)"><i class="fas fa-bolt mr-2" style="color:var(--color-warning)"></i>Aksi Cepat</h3>
           <div class="flex flex-wrap gap-3">
-            <button data-menu="penjualan-who" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-file-invoice-dollar mr-2"></i>Input Penjualan</button>
-            <button data-menu="penerimaan-pabrik" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-factory mr-2"></i>Input Penerimaan</button>
-            <button data-menu="input-distribusi" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-arrow-right-arrow-left mr-2"></i>Input Distribusi</button>
-            <button data-menu="distribusi" class="bg-slate-700 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-truck-loading mr-2"></i>Distribusi</button>
+            <button data-menu="penjualan-who" class="btn btn-primary"><i class="fas fa-file-invoice-dollar"></i>Input Penjualan</button>
+            <button data-menu="penerimaan-pabrik" class="btn btn-success"><i class="fas fa-factory"></i>Input Penerimaan</button>
+            <button data-menu="input-distribusi" class="btn btn-primary"><i class="fas fa-arrow-right-arrow-left"></i>Input Distribusi</button>
+            <button data-menu="distribusi" class="btn btn-ghost"><i class="fas fa-truck-loading"></i>Distribusi</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="distribution-view" class="hidden">
+    <div id="distribution-view" class="hidden animate-fade-in">
       <!-- Loader -->
       <div id="loader" class="flex flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 font-semibold animate-pulse">Antosan Sakedap...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-2" style="border-color:var(--color-primary) transparent var(--color-primary) transparent;border-width:3px;margin-bottom:1rem"></div>
+        <p class="font-semibold animate-pulse" style="color:var(--color-text-muted)">Antosan Sakedap...</p>
       </div>
       <!-- Content Area -->
-      <div id="content" class="space-y-8"></div>
+      <div id="content" class="space-y-6"></div>
     </div>
 
     <!-- Sales Dashboard View -->
-    <div id="sales-dashboard-view" class="hidden space-y-8">
+    <div id="sales-dashboard-view" class="hidden space-y-6 animate-fade-in">
       <!-- Sales Loader -->
       <div id="sales-loader" class="hidden flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 font-semibold animate-pulse">Antosan Sakedap...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-2" style="border-color:var(--color-primary) transparent var(--color-primary) transparent;border-width:3px;margin-bottom:1rem"></div>
+        <p class="font-semibold animate-pulse" style="color:var(--color-text-muted)">Antosan Sakedap...</p>
       </div>
 
-      <div id="sales-dashboard-content" class="space-y-8">
+      <div id="sales-dashboard-content" class="space-y-6">
         <!-- Export Tools -->
         <div class="flex justify-end">
-          <button id="btn-screenshot-sales-report" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
+          <button id="btn-screenshot-sales-report" class="btn btn-accent">
             <i class="fas fa-camera"></i> Ambil Screenshot Report
           </button>
         </div>
 
         <!-- Sales KPI Cards Row 1 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-400">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Penjualan Bulan Lalu</h4>
-            <div class="text-lg font-black text-slate-700" id="sales-last-month">0</div>
+          <div class="card p-5" style="border-left:4px solid var(--color-accent)">
+            <h4 class="badge badge-accent mb-2">Penjualan Bulan Lalu</h4>
+            <div class="text-xl font-black" id="sales-last-month" style="color:var(--color-text)">0</div>
           </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-600">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Penjualan Bulan Berjalan</h4>
-            <div class="text-lg font-black text-amber-700" id="sales-monthly">0</div>
+          <div class="card p-5" style="border-left:4px solid var(--color-accent)">
+            <h4 class="badge badge-accent mb-2">Penjualan Bulan Berjalan</h4>
+            <div class="text-xl font-black" id="sales-monthly" style="color:var(--color-accent)">0</div>
           </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-500">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1">Pertumbuhan (Growth)</h4>
-            <div class="text-lg font-black" id="sales-growth">0</div>
+          <div class="card p-5" style="border-left:4px solid var(--color-accent)">
+            <h4 class="badge badge-accent mb-2">Pertumbuhan (Growth)</h4>
+            <div class="text-xl font-black" id="sales-growth" style="color:var(--color-text)">0</div>
           </div>
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-amber-400">
-            <h4 class="text-[9px] font-bold text-slate-400 uppercase mb-1 text-amber-600">Terakhir Harian</h4>
-            <div class="text-lg font-black text-slate-700" id="sales-today">0</div>
+          <div class="card p-5" style="border-left:4px solid var(--color-accent)">
+            <h4 class="badge badge-accent mb-2">Terakhir Harian</h4>
+            <div class="text-xl font-black" id="sales-today" style="color:var(--color-text)">0</div>
           </div>
         </div>
 
         <!-- Distribution & Receipt Split Row -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-amber-50/50 p-5 rounded-2xl shadow-sm border border-amber-100">
-            <h4 class="text-[9px] font-bold text-amber-600 uppercase mb-1">Distribusi Gudang Bandung</h4>
-            <div class="text-lg font-black text-slate-800" id="dist-bdg">0</div>
+          <div class="card p-5" style="background:var(--color-accent-light);border-color:rgba(34,197,94,0.15)">
+            <h4 class="badge badge-accent mb-2">Distribusi Gudang Bandung</h4>
+            <div class="text-xl font-black" id="dist-bdg" style="color:var(--color-text)">0</div>
           </div>
-          <div class="bg-amber-50/50 p-5 rounded-2xl shadow-sm border border-amber-100">
-            <h4 class="text-[9px] font-bold text-amber-600 uppercase mb-1">Distribusi Gudang Tasikmalaya</h4>
-            <div class="text-lg font-black text-slate-800" id="dist-tsm">0</div>
+          <div class="card p-5" style="background:var(--color-accent-light);border-color:rgba(34,197,94,0.15)">
+            <h4 class="badge badge-accent mb-2">Distribusi Gudang Tasikmalaya</h4>
+            <div class="text-xl font-black" id="dist-tsm" style="color:var(--color-text)">0</div>
           </div>
-          <div class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h4 class="text-[9px] font-bold text-slate-500 uppercase mb-1">Penerimaan Gudang Bandung</h4>
-            <div class="text-lg font-black text-slate-800" id="rec-bdg">0</div>
+          <div class="card p-5">
+            <h4 class="badge mb-2" style="background:var(--color-bg-alt);color:var(--color-text-secondary)">Penerimaan Gudang Bandung</h4>
+            <div class="text-xl font-black" id="rec-bdg" style="color:var(--color-text)">0</div>
           </div>
-          <div class="bg-slate-50 p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h4 class="text-[9px] font-bold text-slate-500 uppercase mb-1">Penerimaan Gudang Tasikmalaya</h4>
-            <div class="text-lg font-black text-slate-800" id="rec-tsm">0</div>
+          <div class="card p-5">
+            <h4 class="badge mb-2" style="background:var(--color-bg-alt);color:var(--color-text-secondary)">Penerimaan Gudang Tasikmalaya</h4>
+            <div class="text-xl font-black" id="rec-tsm" style="color:var(--color-text)">0</div>
           </div>
         </div>
 
         <!-- Charts Section -->
         <div class="grid grid-cols-1 gap-6">
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="card p-6">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="font-bold text-slate-700 uppercase text-xs tracking-widest">Ranking Penjualan Cabang</h3>
-              <i class="fas fa-crown text-amber-500"></i>
+              <h3 class="font-bold uppercase text-xs tracking-widest" style="color:var(--color-text-secondary)">Ranking Penjualan Cabang</h3>
+              <i class="fas fa-crown" style="color:var(--color-accent)"></i>
             </div>
-            <div class="relative h-[500px]">
+            <div class="relative" style="height:500px">
               <canvas id="branchRankingChart"></canvas>
             </div>
           </div>
@@ -355,16 +365,16 @@
       </div>
     </div>
 
-    <div id="stock-summary-view" class="hidden">
-      <div id="stock-summary-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+    <div id="stock-summary-view" class="hidden animate-fade-in">
+      <div id="stock-summary-content" class="card overflow-hidden"></div>
     </div>
 
     <!-- Penjualan WHO View -->
-    <div id="penjualan-who-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Penjualan WHO</h2>
-        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel Laporan Penjualan WHO Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 text-xs text-blue-800">
+    <div id="penjualan-who-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Data Penjualan WHO</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan <i>Copy</i> (Salin) baris data dari file Excel Laporan Penjualan WHO Anda, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini.</p>
+        <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-accent-light);color:var(--color-accent);border:1px solid rgba(34,197,94,0.2)">
           <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Panduan Input Data:</p>
           <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
             <li>Copy (Salin) baris data dari Excel Laporan Penjualan WHO (header sudah termasuk).</li>
@@ -373,45 +383,42 @@
           </ol>
         </div>
 
-        <textarea id="penjualan-who-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data Excel di sini..."></textarea>
+        <textarea id="penjualan-who-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data Excel di sini..."></textarea>
         
         <div class="mt-4 flex gap-3">
-          <button data-action="process-paste" data-form="who" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button data-action="clear-form" data-form="who" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+          <button data-action="process-paste" data-form="who" class="btn btn-primary" style="box-shadow:0 2px 8px rgba(34,197,94,0.25)"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="who" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
         </div>
         
-        <div id="penjualan-who-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div id="penjualan-who-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
         <div class="mt-6 hidden" id="penjualan-who-submit-container">
-           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" data-action="submit-data" data-form="who"><i class="fas fa-save mr-2"></i> Simpan Data</button>
+           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="who"><i class="fas fa-save mr-2"></i> Simpan Data</button>
         </div>
       </div>
     </div>
 
     <!-- Best Products View -->
-    <div id="best-products-view" class="hidden space-y-6">
+    <div id="best-products-view" class="hidden space-y-5 animate-fade-in">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-3">
-          <label class="text-sm font-semibold text-slate-600">Bulan:</label>
-          <select id="best-products-month" class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
-          </select>
+          <label class="label mb-0" style="margin-bottom:0">Bulan:</label>
+          <select id="best-products-month" class="input select" style="width:auto;min-width:12rem"></select>
         </div>
-        <button id="btn-screenshot-best-products" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
-          <i class="fas fa-camera"></i> Screenshot
-        </button>
+        <button id="btn-screenshot-best-products" class="btn btn-accent"><i class="fas fa-camera"></i> Screenshot</button>
       </div>
       <div id="best-products-loader" class="hidden flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-amber-600 mb-4"></div>
-        <p class="text-slate-500 font-semibold animate-pulse">Menghitung best produk...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-2" style="border-color:var(--color-accent) transparent var(--color-accent) transparent;border-width:3px;margin-bottom:1rem"></div>
+        <p class="font-semibold animate-pulse" style="color:var(--color-text-muted)">Menghitung best produk...</p>
       </div>
-      <div id="best-products-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+      <div id="best-products-content" class="card overflow-hidden"></div>
     </div>
 
     <!-- Laporan Harian View -->
-    <div id="daily-report-view" class="hidden space-y-6">
+    <div id="daily-report-view" class="hidden space-y-5 animate-fade-in">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex flex-wrap items-center gap-3">
-          <label class="text-sm font-semibold text-slate-600">Hari:</label>
-          <select id="daily-report-day" class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+          <label class="label mb-0" style="margin-bottom:0">Hari:</label>
+          <select id="daily-report-day" class="input select" style="width:auto;min-width:10rem">
             <option value="-1">Semua Hari</option>
             <option value="0">Minggu</option>
             <option value="1" selected>Senin</option>
@@ -421,110 +428,89 @@
             <option value="5">Jumat</option>
             <option value="6">Sabtu</option>
           </select>
-          <span class="text-sm font-semibold text-slate-500 ml-2">Januari 2026 - Sekarang</span>
+          <span class="text-sm font-semibold" style="color:var(--color-text-muted)">Januari 2026 - Sekarang</span>
         </div>
         <div class="flex gap-2">
-          <button id="btn-screenshot-daily-report" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
-            <i class="fas fa-camera"></i> Screenshot
-          </button>
-          <button id="btn-pdf-daily-report" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
-            <i class="fas fa-file-pdf"></i> Export PDF
-          </button>
+          <button id="btn-screenshot-daily-report" class="btn btn-primary"><i class="fas fa-camera"></i> Screenshot</button>
+          <button id="btn-pdf-daily-report" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Export PDF</button>
         </div>
       </div>
       <div id="daily-report-loader" class="hidden flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 font-semibold animate-pulse">Memuat laporan...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-2" style="border-color:var(--color-primary) transparent var(--color-primary) transparent;border-width:3px;margin-bottom:1rem"></div>
+        <p class="font-semibold animate-pulse" style="color:var(--color-text-muted)">Memuat laporan...</p>
       </div>
-      <div id="daily-report-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+      <div id="daily-report-content" class="card overflow-hidden"></div>
     </div>
 
     <!-- Penjualan Pertanggal View -->
-    <div id="sales-per-date-view" class="hidden space-y-6">
+    <div id="sales-per-date-view" class="hidden space-y-5 animate-fade-in">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-3">
-          <label class="text-sm font-semibold text-slate-600">Bulan:</label>
-          <select id="sales-per-date-month" class="px-4 py-2.5 bg-white border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
-          </select>
+          <label class="label mb-0" style="margin-bottom:0">Bulan:</label>
+          <select id="sales-per-date-month" class="input select" style="width:auto;min-width:12rem"></select>
         </div>
         <div class="flex gap-2">
-          <button id="btn-screenshot-sales-per-date" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
-            <i class="fas fa-camera"></i> Screenshot
-          </button>
-          <button id="btn-pdf-sales-per-date" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 text-sm">
-            <i class="fas fa-file-pdf"></i> Export PDF
-          </button>
+          <button id="btn-screenshot-sales-per-date" class="btn" style="background:var(--color-success);color:white"><i class="fas fa-camera"></i> Screenshot</button>
+          <button id="btn-pdf-sales-per-date" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Export PDF</button>
         </div>
       </div>
       <div id="sales-per-date-loader" class="hidden flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mb-4"></div>
-        <p class="text-slate-500 font-semibold animate-pulse">Memuat laporan...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-2" style="border-color:var(--color-success) transparent var(--color-success) transparent;border-width:3px;margin-bottom:1rem"></div>
+        <p class="font-semibold animate-pulse" style="color:var(--color-text-muted)">Memuat laporan...</p>
       </div>
-      <div id="sales-per-date-content" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"></div>
+      <div id="sales-per-date-content" class="card overflow-hidden"></div>
     </div>
 
     <!-- SalesHub View -->
-    <div id="sales-hub-view" class="hidden space-y-6">
+    <div id="sales-hub-view" class="hidden space-y-5 animate-fade-in">
       <div id="sales-hub-loader" class="hidden flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
-        <p class="text-slate-500 font-semibold animate-pulse">Memuat data SalesHub...</p>
+        <div class="animate-spin rounded-full h-10 w-10 border-2" style="border-color:var(--color-primary) transparent var(--color-primary) transparent;border-width:3px;margin-bottom:1rem"></div>
+        <p class="font-semibold animate-pulse" style="color:var(--color-text-muted)">Memuat data SalesHub...</p>
       </div>
-      <div id="sales-hub-content" class="space-y-6">
+      <div id="sales-hub-content" class="space-y-5">
         <!-- Filter Tanggal -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap items-center gap-4">
+        <div class="card p-4 flex flex-wrap items-center gap-4">
           <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-blue-500"></i>Tanggal Berakhir</label>
-            <input type="date" id="sh-end-date" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="label mb-0" style="margin-bottom:0;white-space:nowrap"><i class="fas fa-calendar-alt mr-1" style="color:var(--color-accent)"></i>Tanggal Berakhir</label>
+            <input type="date" id="sh-end-date" class="input" style="width:auto">
           </div>
           <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-slate-400"></i>Periode Lalu</label>
-            <input type="date" id="sh-prev-date" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="label mb-0" style="margin-bottom:0;white-space:nowrap"><i class="fas fa-calendar-alt mr-1"></i>Periode Lalu</label>
+            <input type="date" id="sh-prev-date" class="input" style="width:auto">
           </div>
-          <button id="btn-sh-apply" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl font-semibold text-sm shadow-sm shadow-blue-200 transition-all flex items-center gap-2 active:scale-95">
-            <i class="fas fa-sync-alt"></i> Terapkan
-          </button>
-          <button id="btn-screenshot-sh" class="bg-slate-900 hover:bg-slate-700 text-white px-5 py-2 rounded-xl font-semibold text-sm shadow-sm transition-all flex items-center gap-2 active:scale-95">
-            <i class="fas fa-camera"></i> Screenshot
-          </button>
-          <button id="btn-pdf-sh" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-semibold text-sm shadow-sm transition-all flex items-center gap-2 active:scale-95">
-            <i class="fas fa-file-pdf"></i> Export PDF
-          </button>
+          <button id="btn-sh-apply" class="btn btn-primary"><i class="fas fa-sync-alt"></i> Terapkan</button>
+          <button id="btn-screenshot-sh" class="btn btn-outline"><i class="fas fa-camera"></i> Screenshot</button>
+          <button id="btn-pdf-sh" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Export PDF</button>
         </div>
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="sales-hub-kpis"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5" id="sales-hub-kpis"></div>
         <!-- Period Tables -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="sales-hub-periods"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="sales-hub-periods"></div>
         <!-- Date Snapshots -->
         <div id="sales-hub-snapshots" class="space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wider">Penjualan Harian</h3>
+            <h3 class="text-sm font-bold uppercase tracking-wider" style="color:var(--color-text-secondary)">Penjualan Harian</h3>
             <div class="flex items-center gap-2">
-              <label class="text-xs font-bold text-slate-500 uppercase whitespace-nowrap"><i class="fas fa-calendar-alt mr-1 text-amber-500"></i>Backdate</label>
-              <input type="date" id="sh-backdate" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <label class="label mb-0" style="margin-bottom:0;white-space:nowrap"><i class="fas fa-calendar-alt mr-1" style="color:var(--color-accent)"></i>Backdate</label>
+              <input type="date" id="sh-backdate" class="input" style="width:auto">
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="sales-hub-snapshot-cards"></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="sales-hub-snapshot-cards"></div>
         </div>
         <div id="sales-hub-daily-comparison" class="space-y-3 hidden"></div>
       </div>
     </div>
 
     <!-- Control Point View -->
-    <div id="control-point-view" class="hidden">
+    <div id="control-point-view" class="hidden animate-fade-in">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">Perbandingan Stok BIZ vs Stok Excel</h2>
-          <p class="text-xs text-slate-500 mt-1">BIZ (SAP) vs Update-STOCK (Excel)</p>
+          <h2 class="text-xl font-bold" style="color:var(--color-text)">Perbandingan Stok BIZ vs Stok Excel</h2>
+          <p class="text-xs mt-1" style="color:var(--color-text-muted)">BIZ (SAP) vs Update-STOCK (Excel)</p>
         </div>
         <div class="flex gap-2 w-full md:w-auto">
-          <button id="btn-screenshot-cp"
-            class="flex-1 md:flex-none bg-slate-900 hover:bg-slate-700 text-white font-bold py-3 px-5 rounded-xl transition-all shadow-lg active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            <i class="fas fa-camera mr-2"></i>Screenshot
-          </button>
-          <button id="btn-teks-cp"
-            class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-5 rounded-xl transition-all shadow-lg active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            <i class="fas fa-copy mr-2"></i>Salin Teks WA
-          </button>
+          <button id="btn-screenshot-cp" class="btn btn-outline flex-1 md:flex-none"><i class="fas fa-camera mr-2"></i>Screenshot</button>
+          <button id="btn-teks-cp" class="btn btn-success flex-1 md:flex-none"><i class="fas fa-copy mr-2"></i>Salin Teks WA</button>
         </div>
       </div>
 
@@ -534,36 +520,34 @@
     </div>
 
     <!-- Chat AI View -->
-    <div id="chat-ai-view" class="hidden">
+    <div id="chat-ai-view" class="hidden animate-fade-in">
       <div class="mb-4">
-        <h2 class="text-xl font-bold text-slate-800">Chat AI - Asisten Penjualan</h2>
-        <p class="text-xs text-slate-500 mt-1">Tanya seputar data penjualan: dashboard, produk terlaris, laporan harian, perbandingan penjualan.</p>
+        <h2 class="text-xl font-bold" style="color:var(--color-text)">Chat AI - Asisten Penjualan</h2>
+        <p class="text-xs mt-1" style="color:var(--color-text-muted)">Tanya seputar data penjualan: dashboard, produk terlaris, laporan harian, perbandingan penjualan.</p>
       </div>
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col" style="height:65vh;">
+      <div class="card flex flex-col overflow-hidden" style="height:65vh;border-radius:var(--radius-lg)">
         <div id="chat-ai-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
-        <div class="border-t border-slate-200 p-3 flex gap-2">
-          <input type="text" id="chat-ai-input" placeholder="Tulis pertanyaan..." class="flex-1 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <button id="btn-chat-ai-send" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-            <i class="fas fa-paper-plane"></i>
-          </button>
+        <div class="flex gap-2 p-3" style="border-top:1px solid var(--color-border)">
+          <input type="text" id="chat-ai-input" placeholder="Tulis pertanyaan..." class="input" style="border-color:var(--color-border)">
+          <button id="btn-chat-ai-send" class="btn btn-primary" style="padding-left:1rem;padding-right:1rem"><i class="fas fa-paper-plane"></i></button>
         </div>
       </div>
     </div>
 
     <!-- Kartu Laporan (tersembunyi, untuk screenshot) -->
-    <div id="cp-report-card" style="position:fixed;left:-9999px;top:0;width:800px;background:#fff;padding:16px;font-family:sans-serif;border-radius:12px;"></div>
+    <div id="cp-report-card" style="position:fixed;left:-9999px;top:0;width:800px;padding:16px;border-radius:12px;background:var(--color-surface);color:var(--color-text);font-family:var(--font-sans)"></div>
 
     <!-- Screenshot card SalesHub (tersembunyi) -->
     <div id="sh-screenshot-card" style="display:none;"></div>
 
     <!-- Input Stok BIZ View -->
-    <div id="input-stok-biz-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Stok BIZ</h2>
-        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) baris data dari file Excel/export BIZ, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini. Data lama akan <b>diganti</b> dengan data baru.</p>
-        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-xs text-amber-800">
+    <div id="input-stok-biz-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Data Stok BIZ</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan <i>Copy</i> (Salin) baris data dari file Excel/export BIZ, lalu <i>Paste</i> (Tempel) di dalam kotak di bawah ini. Data lama akan <b>diganti</b> dengan data baru.</p>
+        <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-warning-light);color:var(--color-warning);border:1px solid rgba(245,158,11,0.15)">
           <p class="font-bold mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Perhatian:</p>
-          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+          <ol class="list-decimal list-inside space-y-1 ml-2">
             <li>Copy (Salin) data dari sheet BIZ/file export BIZ (header sudah termasuk).</li>
             <li>Paste (Tempel) ke dalam kotak di bawah ini.</li>
             <li>Klik tombol <b>Proses & Preview Data</b> untuk melihat pratinjau.</li>
@@ -571,28 +555,28 @@
           </ol>
         </div>
 
-        <textarea id="input-stok-biz-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data BIZ di sini..."></textarea>
+        <textarea id="input-stok-biz-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data BIZ di sini..."></textarea>
         
         <div class="mt-4 flex gap-3">
-          <button data-action="process-paste" data-form="biz" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button data-action="clear-form" data-form="biz" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+          <button data-action="process-paste" data-form="biz" class="btn btn-primary" style="box-shadow:0 2px 8px rgba(34,197,94,0.25)"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="biz" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
         </div>
         
-        <div id="input-stok-biz-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div id="input-stok-biz-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
         <div class="mt-6 hidden" id="input-stok-biz-submit-container">
-           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" data-action="submit-data" data-form="biz"><i class="fas fa-save mr-2"></i> Simpan Data BIZ</button>
+           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="biz"><i class="fas fa-save mr-2"></i> Simpan Data BIZ</button>
         </div>
       </div>
     </div>
 
     <!-- Input Stok Excel View -->
-    <div id="input-stok-excel-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Data Stok Excel</h2>
-        <p class="text-xs text-slate-500 mb-6">Silakan <i>Copy</i> (Salin) data stok dari kolom <b>B sampai W</b> (nilai stok saja, tanpa kolom A/Cabang), lalu <i>Paste</i> (Tempel) di kotak bawah. Data lama akan <b>diganti</b> sesuai urutan baris.</p>
-        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl mb-6 text-xs text-amber-800">
+    <div id="input-stok-excel-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Data Stok Excel</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan <i>Copy</i> (Salin) data stok dari kolom <b>B sampai W</b> (nilai stok saja, tanpa kolom A/Cabang), lalu <i>Paste</i> (Tempel) di kotak bawah. Data lama akan <b>diganti</b> sesuai urutan baris.</p>
+        <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-warning-light);color:var(--color-warning);border:1px solid rgba(245,158,11,0.15)">
           <p class="font-bold mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Perhatian:</p>
-          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+          <ol class="list-decimal list-inside space-y-1 ml-2">
             <li>Copy data dari kolom <b>B sampai W</b> (nilai stok produk) di file Excel Anda.</li>
             <li>Urutan baris harus <b>sama persis</b> dengan urutan cabang di sheet Update-STOCK.</li>
             <li>Paste (Tempel) ke dalam kotak di bawah ini.</li>
@@ -601,28 +585,28 @@
           </ol>
         </div>
 
-        <textarea id="input-stok-excel-paste-area" class="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste data stok Excel (kolom B-W) di sini..."></textarea>
+        <textarea id="input-stok-excel-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data stok Excel (kolom B-W) di sini..."></textarea>
         
         <div class="mt-4 flex gap-3">
-          <button data-action="process-paste" data-form="stock" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button data-action="clear-form" data-form="stock" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+          <button data-action="process-paste" data-form="stock" class="btn btn-primary" style="box-shadow:0 2px 8px rgba(34,197,94,0.25)"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="stock" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
         </div>
         
-        <div id="input-stok-excel-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div id="input-stok-excel-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
         <div class="mt-6 hidden" id="input-stok-excel-submit-container">
-           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" data-action="submit-data" data-form="stock"><i class="fas fa-save mr-2"></i> Simpan Data Stok</button>
+           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="stock"><i class="fas fa-save mr-2"></i> Simpan Data Stok</button>
         </div>
       </div>
     </div>
 
     <!-- Penerimaan Pabrik View -->
-    <div id="penerimaan-pabrik-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Penerimaan dari Pabrik</h2>
-        <p class="text-xs text-slate-500 mb-6">Pilih Gudang, atur Tanggal (otomatis hari ini), lalu paste Jumlah dari Excel.</p>
-        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-6 text-xs text-emerald-800">
+    <div id="penerimaan-pabrik-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Penerimaan dari Pabrik</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Pilih Gudang, atur Tanggal (otomatis hari ini), lalu paste Jumlah dari Excel.</p>
+        <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-success-light);color:var(--color-success);border:1px solid rgba(5,150,105,0.15)">
           <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Cara Input:</p>
-          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+          <ol class="list-decimal list-inside space-y-1 ml-2">
             <li>Pilih <b>Gudang</b> tujuan.</li>
             <li><b>Tanggal</b> otomatis terisi hari ini, bisa diubah jika perlu.</li>
             <li>Copy kolom <b>Jumlah</b> dari Excel, paste ke kotak di bawah.</li>
@@ -631,15 +615,15 @@
         </div>
 
         <div class="mb-4 flex flex-col sm:flex-row gap-4">
-          <select id="penerimaan-pabrik-gudang-select" class="w-full sm:w-72 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+          <select id="penerimaan-pabrik-gudang-select" class="input select" style="width:100%;min-width:16rem">
             <option value="">-- Pilih Gudang --</option>
             <option value="GUDANG BANDUNG">Gudang Bandung</option>
             <option value="GUDANG TASIKMALAYA">Gudang Tasikmalaya</option>
           </select>
-          <input type="date" id="penerimaan-pabrik-tanggal" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+          <input type="date" id="penerimaan-pabrik-tanggal" class="input" style="width:100%;min-width:12rem">
         </div>
 
-        <textarea id="penerimaan-pabrik-paste-area" class="w-full h-32 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Paste Jumlah dari Excel di sini...
+        <textarea id="penerimaan-pabrik-paste-area" class="input font-mono" style="height:8rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste Jumlah dari Excel di sini...
 Bisa juga paste TANGGAL + Jumlah (2 kolom).
 
 Contoh (Jumlah saja):
@@ -653,25 +637,25 @@ TANGGAL  Jumlah
 02/06/2026  3000"></textarea>
         
         <div class="mt-4 flex gap-3">
-          <button data-action="process-paste" data-form="pabrik" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button data-action="clear-form" data-form="pabrik" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+          <button data-action="process-paste" data-form="pabrik" class="btn btn-success"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="pabrik" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
         </div>
         
-        <div id="penerimaan-pabrik-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div id="penerimaan-pabrik-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
         <div class="mt-6 hidden" id="penerimaan-pabrik-submit-container">
-           <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-emerald-400 disabled:cursor-wait" data-action="submit-data" data-form="pabrik"><i class="fas fa-save mr-2"></i> Simpan Data Penerimaan Pabrik</button>
+           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="pabrik"><i class="fas fa-save mr-2"></i> Simpan Data Penerimaan Pabrik</button>
         </div>
       </div>
     </div>
 
     <!-- Input Distribusi -->
-    <div id="input-distribusi-view" class="hidden">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800 mb-2">Input Distribusi</h2>
-        <p class="text-xs text-slate-500 mb-6">Pilih Gudang & Tanggal, lalu tulis Cabang dan Jumlah langsung di kolom input.</p>
-        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-6 text-xs text-emerald-800">
+    <div id="input-distribusi-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Distribusi</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Pilih Gudang & Tanggal, lalu tulis Cabang dan Jumlah langsung di kolom input.</p>
+        <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-success-light);color:var(--color-success);border:1px solid rgba(5,150,105,0.15)">
           <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Cara Input:</p>
-          <ol class="list-decimal list-inside space-y-1 ml-2 text-xs">
+          <ol class="list-decimal list-inside space-y-1 ml-2">
             <li>Pilih <b>Gudang</b> tujuan.</li>
             <li><b>Tanggal</b> otomatis terisi hari ini, bisa diubah jika perlu.</li>
             <li>Tulis <b>Nama Cabang</b> (TAB) <b>Jumlah</b> per baris di kotak bawah.</li>
@@ -680,15 +664,15 @@ TANGGAL  Jumlah
         </div>
 
         <div class="mb-4 flex flex-col sm:flex-row gap-4">
-          <select id="distribusi-gudang-select" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+          <select id="distribusi-gudang-select" class="input select" style="width:100%;min-width:14rem">
             <option value="">-- Pilih Gudang --</option>
             <option value="GUDANG BANDUNG">Gudang Bandung</option>
             <option value="GUDANG TASIKMALAYA">Gudang Tasikmalaya</option>
           </select>
-          <input type="date" id="distribusi-tanggal" class="w-full sm:w-56 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+          <input type="date" id="distribusi-tanggal" class="input" style="width:100%;min-width:12rem">
         </div>
 
-        <textarea id="distribusi-paste-area" class="w-full h-32 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-xs whitespace-pre bg-slate-50 placeholder-slate-400" placeholder="Tulis: Nama Cabang (TAB) Jumlah
+        <textarea id="distribusi-paste-area" class="input font-mono" style="height:8rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Tulis: Nama Cabang (TAB) Jumlah
 
 Contoh:
 BANDUNG	5000000
@@ -697,69 +681,70 @@ BOGOR	7500000
 TASIKMALAYA	4200000"></textarea>
         
         <div class="mt-4 flex gap-3">
-          <button data-action="process-paste" data-form="distribusi" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-xs"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
-          <button data-action="clear-form" data-form="distribusi" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-semibold transition-all text-xs"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+          <button data-action="process-paste" data-form="distribusi" class="btn btn-primary"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="distribusi" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
         </div>
         
-        <div id="distribusi-preview" class="mt-8 overflow-auto max-h-[50vh] rounded-xl border-slate-200"></div>
+        <div id="distribusi-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
         <div class="mt-6 hidden" id="distribusi-submit-container">
-           <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl font-bold shadow-md transition-all text-base disabled:bg-blue-400 disabled:cursor-wait" data-action="submit-data" data-form="distribusi"><i class="fas fa-save mr-2"></i> Simpan Data Distribusi</button>
+           <button class="btn btn-primary w-full btn-lg" data-action="submit-data" data-form="distribusi"><i class="fas fa-save mr-2"></i> Simpan Data Distribusi</button>
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="text-center mt-12 text-sm text-slate-600 font-medium pb-8">
-      Powered by ATR™ Created by SND Support | © 2026 Tridaya Sinergi Indonesia
+    <div class="text-center mt-12 text-sm font-medium pb-8" style="color:var(--color-text-muted)">
+      Powered by ATR&trade; Created by SND Support | &copy; 2026 Tridaya Sinergi Indonesia
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-32 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-semibold pointer-events-none">
-    <i class="fas fa-check-circle text-emerald-400 text-xl"></i>
+  <div id="toast" class="fixed bottom-6 right-6 z-50 flex items-center gap-3 font-semibold pointer-events-none" style="background:var(--color-surface);color:var(--color-text);padding:0.75rem 1.5rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--color-border);transform:translateY(8rem);opacity:0;transition:all 300ms cubic-bezier(0.16,1,0.3,1)">
+    <i class="fas fa-check-circle text-xl" style="color:var(--color-success)"></i>
     <span>Teks WhatsApp berhasil disalin!</span>
   </div>
 
   <!-- Urgent Products Modal -->
-  <div id="urgentProductsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-      <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-red-700 flex items-center gap-3">
-          <i class="fas fa-exclamation-triangle text-red-500"></i> Produk Mendesak
+  <div id="urgentProductsModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.6);backdrop-filter:blur(4px)">
+    <div class="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scale-in" style="background:var(--color-surface);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);border:1px solid var(--color-border)">
+      <div class="p-6 flex justify-between items-center" style="border-bottom:1px solid var(--color-border)">
+        <h2 class="text-xl font-bold flex items-center gap-3" style="color:var(--color-danger)">
+          <i class="fas fa-exclamation-triangle" style="color:var(--color-danger)"></i> Produk Mendesak
         </h2>
-        <button data-action="close-urgent-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
-          <i class="fas fa-times text-xl"></i>
+        <button data-action="close-urgent-modal" class="btn-icon btn-ghost" style="font-size:1.125rem">
+          <i class="fas fa-times"></i>
         </button>
       </div>
-      <div id="urgentProductsModalContent" class="p-6 overflow-y-auto flex-1">
-        <!-- Content will be loaded here by JavaScript -->
-      </div>
-      <div class="p-4 border-t border-slate-200 text-right">
-        <button data-action="close-urgent-modal" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl font-semibold transition-colors">Tutup</button>
+      <div id="urgentProductsModalContent" class="p-6 overflow-y-auto flex-1"></div>
+      <div class="p-4 flex justify-end" style="border-top:1px solid var(--color-border)">
+        <button data-action="close-urgent-modal" class="btn btn-ghost">Tutup</button>
       </div>
     </div>
   </div>
 
   <!-- Confirm Modal -->
-  <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+  <div id="confirmModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.6);backdrop-filter:blur(4px)">
+    <div class="w-full max-w-md overflow-hidden animate-scale-in" style="background:var(--color-surface);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);border:1px solid var(--color-border)">
       <div class="p-6">
         <div class="flex items-center gap-4 mb-4">
-          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+          <div style="width:3rem;height:3rem;border-radius:9999px;background:var(--color-accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="fas fa-question-circle" style="color:var(--color-accent);font-size:1.25rem"></i>
           </div>
           <div>
-            <h3 class="text-lg font-bold text-slate-800">Konfirmasi</h3>
-            <p id="confirmMessage" class="text-sm text-slate-600 mt-1"></p>
+            <h3 class="text-lg font-bold" style="color:var(--color-text)">Konfirmasi</h3>
+            <p id="confirmMessage" class="text-sm mt-1" style="color:var(--color-text-secondary)"></p>
           </div>
         </div>
       </div>
       <div class="px-6 pb-4 flex gap-3 justify-end">
-        <button id="confirmNoBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-semibold transition-colors text-sm">Tidak</button>
-        <button id="confirmYesBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors text-sm">Ya, Muat Ulang</button>
+        <button id="confirmNoBtn" class="btn btn-ghost">Tidak</button>
+        <button id="confirmYesBtn" class="btn btn-primary">Ya, Muat Ulang</button>
       </div>
     </div>
   </div>
+
+  <!-- Ensure sidebar transform classes exist in Tailwind build -->
+  <div class="translate-x-0 -translate-x-full translate-x-full hidden" aria-hidden="true"></div>
 
   <script type="module" src="src/app.js"></script>
     </div> <!-- /report-area -->

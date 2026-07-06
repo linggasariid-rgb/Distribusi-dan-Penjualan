@@ -61,7 +61,7 @@ export function loadSalesHubData() {
       renderSalesHub(resp.data);
     } else {
       document.getElementById('sales-hub-kpis').innerHTML =
-        '<div class="col-span-full bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 font-bold">' + resp.message + '</div>';
+        '<div class="col-span-full p-6 rounded-2xl border font-bold" style="background:var(--color-danger-light);color:var(--color-danger);border-color:rgba(220,38,38,0.15)">' + resp.message + '</div>';
     }
   }).catch(function(err) {
     if (loader && content) {
@@ -70,7 +70,7 @@ export function loadSalesHubData() {
       content.classList.remove('hidden');
     }
     document.getElementById('sales-hub-kpis').innerHTML =
-      '<div class="col-span-full bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 font-bold">Gagal: ' + err.message + '</div>';
+      '<div class="col-span-full p-6 rounded-2xl border font-bold" style="background:var(--color-danger-light);color:var(--color-danger);border-color:rgba(220,38,38,0.15)">Gagal: ' + err.message + '</div>';
   });
 }
 
@@ -83,24 +83,23 @@ export function renderSalesHub(data) {
 
 export function renderSalesHubKPIs(kpis) {
   const container = document.getElementById('sales-hub-kpis');
-  const deltaClass = kpis.delta >= 0 ? 'text-blue-600' : 'text-red-600';
 
   container.innerHTML = `
-    <div class="bg-blue-50/50 p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-blue-500">
-      <h4 class="text-sm font-bold text-slate-500 uppercase mb-1">Bulan Berjalan</h4>
-      <div class="text-2xl font-black text-blue-700">${kpis.currentTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-sm font-medium">Bks</span></div>
+    <div class="p-7 rounded-2xl shadow-sm border border-l-4" style="background:var(--color-surface);border-color:var(--color-border);border-left-color:var(--color-accent)">
+      <h4 class="text-sm font-bold uppercase mb-1" style="color:var(--color-text-secondary)">Bulan Berjalan</h4>
+      <div class="text-2xl font-black" style="color:var(--color-text)">${kpis.currentTotal.toLocaleString('id-ID')} <span style="color:var(--color-text-secondary)" class="text-sm font-medium">Bks</span></div>
     </div>
-    <div class="bg-slate-50 p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-slate-400">
-      <h4 class="text-sm font-bold text-slate-500 uppercase mb-1">Bulan Lalu</h4>
-      <div class="text-2xl font-black text-slate-700">${kpis.previousTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-sm font-medium">Bks</span></div>
+    <div class="p-7 rounded-2xl shadow-sm border border-l-4" style="background:var(--color-surface);border-color:var(--color-border);border-left-color:var(--color-accent)">
+      <h4 class="text-sm font-bold uppercase mb-1" style="color:var(--color-text-secondary)">Bulan Lalu</h4>
+      <div class="text-2xl font-black" style="color:var(--color-text)">${kpis.previousTotal.toLocaleString('id-ID')} <span style="color:var(--color-text-secondary)" class="text-sm font-medium">Bks</span></div>
     </div>
-    <div class="${kpis.delta >= 0 ? 'bg-emerald-50/50' : 'bg-red-50/50'} p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 ${kpis.delta >= 0 ? 'border-l-blue-500' : 'border-l-red-400'}">
-      <h4 class="text-sm font-bold text-slate-500 uppercase mb-1">Selisih M-1</h4>
-      <div class="text-2xl font-black ${deltaClass}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
+    <div class="p-7 rounded-2xl shadow-sm border border-l-4" style="background:var(--color-surface);border-color:var(--color-border);border-left-color:var(--color-accent)">
+      <h4 class="text-sm font-bold uppercase mb-1" style="color:var(--color-text-secondary)">Selisih M-1</h4>
+      <div class="text-2xl font-black" style="color:${kpis.delta >= 0 ? 'var(--color-success)' : 'var(--color-danger)'}">${kpis.delta >= 0 ? '+' : ''}${kpis.delta.toLocaleString('id-ID')}</div>
     </div>
-    <div class="bg-violet-50/50 p-7 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-violet-500">
-      <h4 class="text-sm font-bold text-slate-500 uppercase mb-1">Penjualan Hari Ini</h4>
-      <div class="text-2xl font-black text-violet-700">${kpis.todayTotal.toLocaleString('id-ID')} <span class="text-slate-400 text-sm font-medium">Bks</span></div>
+    <div class="p-7 rounded-2xl shadow-sm border border-l-4" style="background:var(--color-surface);border-color:var(--color-border);border-left-color:var(--color-accent)">
+      <h4 class="text-sm font-bold uppercase mb-1" style="color:var(--color-text-secondary)">Penjualan Hari Ini</h4>
+      <div class="text-2xl font-black" style="color:var(--color-text)">${kpis.todayTotal.toLocaleString('id-ID')} <span style="color:var(--color-text-secondary)" class="text-sm font-medium">Bks</span></div>
     </div>
   `;
 }
@@ -120,50 +119,50 @@ export function renderSalesHubTable(title, data) {
   }
 
   let html = `
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
-        <h3 class="text-sm font-extrabold text-slate-700 uppercase tracking-tight">${title}</h3>
+    <div class="card overflow-hidden">
+      <div class="px-4 py-3" style="border-bottom:1px solid var(--color-border);background:var(--color-bg-alt)">
+        <h3 class="text-sm font-extrabold uppercase tracking-tight" style="color:var(--color-text)">${title}</h3>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-xs text-left border-collapse">
           <thead>
-            <tr class="text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
-              <th class="px-4 py-2.5 whitespace-nowrap bg-blue-100">Warehouse</th>
-              <th class="px-4 py-2.5 text-right whitespace-nowrap bg-green-100">MST</th>
-              <th class="px-4 py-2.5 text-right whitespace-nowrap bg-green-100">MSI</th>
-              <th class="px-4 py-2.5 text-right whitespace-nowrap bg-green-100">STK</th>
-              <th class="px-4 py-2.5 text-right whitespace-nowrap bg-green-100">Karyawan</th>
-              <th class="px-4 py-2.5 text-right whitespace-nowrap bg-green-100">APPS</th>
-              <th class="px-4 py-2.5 text-right whitespace-nowrap bg-orange-400 text-white">Total</th>
+            <tr class="uppercase text-xs font-black" style="color:var(--color-text);border-bottom:2px solid var(--color-border)">
+              <th class="px-4 py-2.5 whitespace-nowrap" style="background:var(--color-primary-light)">Warehouse</th>
+              <th class="px-4 py-2.5 text-right whitespace-nowrap" style="background:var(--color-success-light)">MST</th>
+              <th class="px-4 py-2.5 text-right whitespace-nowrap" style="background:var(--color-success-light)">MSI</th>
+              <th class="px-4 py-2.5 text-right whitespace-nowrap" style="background:var(--color-success-light)">STK</th>
+              <th class="px-4 py-2.5 text-right whitespace-nowrap" style="background:var(--color-success-light)">Karyawan</th>
+              <th class="px-4 py-2.5 text-right whitespace-nowrap" style="background:var(--color-success-light)">APPS</th>
+              <th class="px-4 py-2.5 text-right whitespace-nowrap" style="background:var(--color-accent);color:white">Total</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">`;
+          <tbody style="border-color:var(--color-border)">`;
 
   if (!hasData) {
-    html += '<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">Tidak ada data</td></tr>';
+    html += '<tr><td colspan="7" class="px-4 py-8 text-center font-medium" style="color:var(--color-text-muted)">Tidak ada data</td></tr>';
   } else {
     data.forEach(function(row, i) {
-      var bgClass = i % 2 === 0 ? 'bg-white hover:bg-slate-50' : 'bg-slate-50 hover:bg-slate-100';
+      var bgClass = i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-bg)';
       html += `
-        <tr class="${bgClass} transition-colors">
-          <td class="px-4 py-2 font-bold text-slate-800 whitespace-nowrap">${row.warehouse}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.masterStokis)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.msi)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.stokis)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.karyawan)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.tsiApps)}</td>
-          <td class="px-4 py-2 text-right font-black text-slate-900">${formatNum(row.total)}</td>
+        <tr style="background:${bgClass}">
+          <td class="px-4 py-2 font-bold whitespace-nowrap" style="color:var(--color-text)">${row.warehouse}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.masterStokis)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.msi)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.stokis)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.karyawan)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.tsiApps)}</td>
+          <td class="px-4 py-2 text-right font-black" style="color:var(--color-text)">${formatNum(row.total)}</td>
         </tr>`;
     });
     html += `
-            <tr class="bg-[#ccff00] font-black text-black border-t-2 border-slate-300">
+            <tr style="background:var(--color-accent);color:var(--color-text-inverse);font-weight:900;border-top:2px solid var(--color-border)">
               <td class="px-4 py-2.5">TOTAL</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.masterStokis)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.msi)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.stokis)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.karyawan)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.tsiApps)}</td>
-              <td class="px-4 py-2.5 text-right font-black text-black">${formatNum(grandTotals.total)}</td>
+              <td class="px-4 py-2.5 text-right font-black">${formatNum(grandTotals.total)}</td>
             </tr>`;
   }
 
@@ -181,7 +180,7 @@ export function renderSalesHubPeriods(current, previous) {
 export function renderSalesHubSnapshots(snapshots) {
   const container = document.getElementById('sales-hub-snapshot-cards');
   if (!snapshots || snapshots.length === 0) {
-    container.innerHTML = '<div class="col-span-full text-center text-slate-400 font-medium py-8">Belum ada data harian</div>';
+    container.innerHTML = '<div class="col-span-full text-center font-medium py-8" style="color:var(--color-text-muted)">Belum ada data harian</div>';
     return;
   }
   let html = '';
@@ -197,46 +196,46 @@ export function renderSalesHubSnapshots(snapshots) {
     });
 
     html += `
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="px-4 py-3 border-b border-slate-200 bg-slate-50/50">
-          <h4 class="text-sm font-extrabold text-blue-700 uppercase tracking-tight">${snap.date}</h4>
+      <div class="card overflow-hidden">
+        <div class="px-4 py-3" style="border-bottom:1px solid var(--color-border);background:var(--color-bg-alt)">
+          <h4 class="text-sm font-extrabold uppercase tracking-tight" style="color:var(--color-text)">${snap.date}</h4>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs text-left border-collapse">
             <thead>
-              <tr class="text-slate-800 uppercase text-xs font-black border-b-2 border-slate-300">
-                <th class="px-4 py-2.5 bg-blue-100">Cabang</th>
-                <th class="px-4 py-2.5 text-right bg-green-100">MST</th>
-                <th class="px-4 py-2.5 text-right bg-green-100">MSI</th>
-                <th class="px-4 py-2.5 text-right bg-green-100">STK</th>
-                <th class="px-4 py-2.5 text-right bg-green-100">Karyawan</th>
-                <th class="px-4 py-2.5 text-right bg-green-100">APPS</th>
-                <th class="px-4 py-2.5 text-right bg-orange-400 text-white">Total</th>
+              <tr class="uppercase text-xs font-black" style="color:var(--color-text);border-bottom:2px solid var(--color-border)">
+                <th class="px-4 py-2.5" style="background:var(--color-primary-light)">Cabang</th>
+                <th class="px-4 py-2.5 text-right" style="background:var(--color-success-light)">MST</th>
+                <th class="px-4 py-2.5 text-right" style="background:var(--color-success-light)">MSI</th>
+                <th class="px-4 py-2.5 text-right" style="background:var(--color-success-light)">STK</th>
+                <th class="px-4 py-2.5 text-right" style="background:var(--color-success-light)">Karyawan</th>
+                <th class="px-4 py-2.5 text-right" style="background:var(--color-success-light)">APPS</th>
+                <th class="px-4 py-2.5 text-right" style="background:var(--color-accent);color:white">Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">`;
+            <tbody style="border-color:var(--color-border)">`;
     snap.data.forEach(function(row, i) {
-      var bgClass = i % 2 === 0 ? 'bg-white hover:bg-slate-50' : 'bg-slate-50 hover:bg-slate-100';
+      var bgClass = i % 2 === 0 ? 'var(--color-surface)' : 'var(--color-bg)';
       html += `
-        <tr class="${bgClass} transition-colors">
-          <td class="px-4 py-2 font-bold text-slate-700 whitespace-nowrap">${row.warehouse}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.masterStokis)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.msi)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.stokis)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.karyawan)}</td>
-          <td class="px-4 py-2 text-right font-bold text-slate-900">${formatNum(row.tsiApps)}</td>
-          <td class="px-4 py-2 text-right font-black text-slate-900">${formatNum(row.total)}</td>
+        <tr style="background:${bgClass}">
+          <td class="px-4 py-2 font-bold whitespace-nowrap" style="color:var(--color-text)">${row.warehouse}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.masterStokis)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.msi)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.stokis)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.karyawan)}</td>
+          <td class="px-4 py-2 text-right font-bold" style="color:var(--color-text)">${formatNum(row.tsiApps)}</td>
+          <td class="px-4 py-2 text-right font-black" style="color:var(--color-text)">${formatNum(row.total)}</td>
         </tr>`;
     });
     html += `
-            <tr class="bg-[#ccff00] font-black text-black border-t-2 border-slate-300">
+            <tr style="background:var(--color-accent);color:var(--color-text-inverse);font-weight:900;border-top:2px solid var(--color-border)">
               <td class="px-4 py-2.5">TOTAL</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.masterStokis)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.msi)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.stokis)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.karyawan)}</td>
               <td class="px-4 py-2.5 text-right">${formatNum(grandTotals.tsiApps)}</td>
-              <td class="px-4 py-2.5 text-right font-black text-black">${formatNum(grandTotals.total)}</td>
+              <td class="px-4 py-2.5 text-right font-black">${formatNum(grandTotals.total)}</td>
             </tr>
             </tbody>
           </table>
@@ -260,39 +259,39 @@ export function renderDailyComparison(dailyData) {
   });
 
   let html = `
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
-        <h3 class="text-base font-extrabold text-slate-700 uppercase tracking-tight">Perbandingan Harian</h3>
-        <span class="text-xs font-bold text-slate-500">Bulan Berjalan vs Bulan Lalu</span>
+    <div class="card overflow-hidden">
+      <div class="px-5 py-4 flex items-center justify-between" style="border-bottom:1px solid var(--color-border);background:var(--color-bg-alt)">
+        <h3 class="text-base font-extrabold uppercase tracking-tight" style="color:var(--color-text)">Perbandingan Harian</h3>
+        <span class="text-xs font-bold" style="color:var(--color-text-secondary)">Bulan Berjalan vs Bulan Lalu</span>
       </div>
       <div class="overflow-x-auto table-container" style="max-height:420px;overflow-y:auto;">
         <table class="w-full text-sm text-left border-collapse">
           <thead class="sticky top-0">
-            <tr class="bg-slate-100 text-slate-900 text-sm font-black uppercase tracking-wider border-b-2 border-slate-300">
+            <tr class="text-sm font-black uppercase tracking-wider" style="background:var(--color-bg-alt);color:var(--color-text);border-bottom:2px solid var(--color-border)">
               <th class="px-5 py-3 whitespace-nowrap">Tanggal</th>
               <th class="px-5 py-3 text-right whitespace-nowrap">Bulan Berjalan</th>
               <th class="px-5 py-3 text-right whitespace-nowrap">Bulan Lalu</th>
-              <th class="px-5 py-3 text-right whitespace-nowrap bg-blue-50 text-blue-800">Selisih M-1</th>
+              <th class="px-5 py-3 text-right whitespace-nowrap" style="background:var(--color-accent-light);color:var(--color-accent)">Selisih M-1</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">`;
+          <tbody style="border-color:var(--color-border)">`;
   dailyData.forEach(function(d) {
-    var deltaClass = d.delta >= 0 ? 'text-blue-600' : 'text-red-600';
+    var deltaClass = d.delta >= 0 ? 'color:var(--color-success)' : 'color:var(--color-danger)';
     var arrow = d.delta >= 0 ? '▲' : '▼';
     html += `
-            <tr class="hover:bg-slate-50 transition-colors">
-              <td class="px-5 py-2.5 font-bold text-slate-800 whitespace-nowrap">${d.date}</td>
-              <td class="px-5 py-2.5 text-right font-bold text-blue-700">${d.current.toLocaleString('id-ID')}</td>
-              <td class="px-5 py-2.5 text-right font-bold text-slate-600">${d.previous.toLocaleString('id-ID')}</td>
-              <td class="px-5 py-2.5 text-right font-black ${deltaClass} bg-blue-50/30">${arrow} ${Math.abs(d.delta).toLocaleString('id-ID')}</td>
+            <tr style="transition:background-color 150ms">
+              <td class="px-5 py-2.5 font-bold whitespace-nowrap" style="color:var(--color-text)">${d.date}</td>
+              <td class="px-5 py-2.5 text-right font-bold" style="color:var(--color-text)">${d.current.toLocaleString('id-ID')}</td>
+              <td class="px-5 py-2.5 text-right font-bold" style="color:var(--color-text-secondary)">${d.previous.toLocaleString('id-ID')}</td>
+              <td class="px-5 py-2.5 text-right font-black" style="${deltaClass}">${arrow} ${Math.abs(d.delta).toLocaleString('id-ID')}</td>
             </tr>`;
   });
   html += `
-            <tr class="bg-slate-50 font-black text-slate-900 border-t-2 border-slate-300">
+            <tr style="background:var(--color-bg-alt);border-top:2px solid var(--color-border);font-weight:900;color:var(--color-text)">
               <td class="px-5 py-3 whitespace-nowrap">TOTAL</td>
-              <td class="px-5 py-3 text-right text-blue-700">${grandCurrent.toLocaleString('id-ID')}</td>
-              <td class="px-5 py-3 text-right text-slate-600">${grandPrevious.toLocaleString('id-ID')}</td>
-              <td class="px-5 py-3 text-right font-black bg-blue-50 ${grandDelta >= 0 ? 'text-blue-600' : 'text-red-600'}">${grandDelta >= 0 ? '▲' : '▼'} ${Math.abs(grandDelta).toLocaleString('id-ID')}</td>
+              <td class="px-5 py-3 text-right" style="color:var(--color-text)">${grandCurrent.toLocaleString('id-ID')}</td>
+              <td class="px-5 py-3 text-right" style="color:var(--color-text-secondary)">${grandPrevious.toLocaleString('id-ID')}</td>
+              <td class="px-5 py-3 text-right font-black" style="background:var(--color-accent-light);${grandDelta >= 0 ? 'color:var(--color-success)' : 'color:var(--color-danger)'}">${grandDelta >= 0 ? '▲' : '▼'} ${Math.abs(grandDelta).toLocaleString('id-ID')}</td>
             </tr>
           </tbody>
         </table>
@@ -308,7 +307,7 @@ function buildSalesHubExportCard(content, tglStr) {
   var isDark = document.documentElement.classList.contains('dark');
   var shBg = isDark ? '#1e293b' : '#ffffff';
   var shText = isDark ? '#f1f5f9' : '#0f172a';
-  var shAccent = isDark ? '#60a5fa' : '#2563eb';
+  var shAccent = isDark ? '#4ADE80' : '#22C55E';
   var shMuted = isDark ? '#94a3b8' : '#64748b';
   var shBorder = isDark ? '#334155' : '#1e293b';
   var shFooterBorder = isDark ? '#334155' : '#e2e8f0';

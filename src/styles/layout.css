@@ -1,8 +1,198 @@
+/* Login Overlay */
 #login-overlay {
   display: flex;
-  background-image: url('../../images/login-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background:
+    linear-gradient(135deg, rgba(34, 197, 94, 0.85) 0%, rgba(15, 23, 42, 0.97) 100%);
+  backdrop-filter: blur(4px);
 }
+
+.dark #login-overlay {
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(34, 197, 94, 0.3) 100%);
+}
+
 #login-overlay.hidden { display: none; }
+
+/* Login Card Glass Effect */
+#login-overlay > div:last-child {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark #login-overlay > div:last-child {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Sidebar */
+#sidebar {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+  z-index: 50;
+}
+
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-track { background: transparent; }
+#sidebar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+/* Sidebar Items */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms var(--ease-out);
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+.sidebar-item:hover {
+  background: rgba(51,65,85,0.5);
+  color: #f1f5f9;
+}
+
+.sidebar-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms var(--ease-out);
+  color: #cbd5e1;
+  font-size: 0.875rem;
+}
+.sidebar-item-main:hover {
+  background: rgba(51,65,85,0.5);
+  color: #f1f5f9;
+}
+
+.sidebar-item-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-xl);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 200ms var(--ease-out);
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+.sidebar-item-sub:hover {
+  background: rgba(51,65,85,0.5);
+  color: #e2e8f0;
+}
+
+.sidebar-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all 200ms var(--ease-out);
+  color: #94a3b8;
+}
+.sidebar-group-toggle:hover {
+  background: rgba(51,65,85,0.5);
+  color: #f1f5f9;
+}
+
+.sidebar-item.active,
+.sidebar-item-main.active,
+.sidebar-item-sub.active {
+  background: rgba(34,197,94,0.12);
+  color: var(--color-accent);
+  border: 1px solid rgba(34,197,94,0.25);
+  font-weight: 700;
+}
+
+.sidebar-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-xl);
+  transition: all 200ms var(--ease-out);
+  background: rgba(51,65,85,0.3);
+  color: #94a3b8;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+}
+.sidebar-theme-btn:hover {
+  background: rgba(51,65,85,0.6);
+  color: #e2e8f0;
+}
+
+.sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-xl);
+  transition: all 200ms var(--ease-out);
+  background: rgba(220,38,38,0.1);
+  color: #f87171;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+}
+.sidebar-logout-btn:hover {
+  background: rgba(220,38,38,0.2);
+  color: #ef4444;
+}
+
+/* Main content area */
+#main-content {
+  transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Report area */
+#report-area {
+  max-width: 1280px;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  #report-area {
+    padding: 1.5rem;
+  }
+}
+
+/* Summary cards border-left colors */
+.border-l-red-500 { border-left-color: var(--color-danger) !important; }
+.border-l-amber-500 { border-left-color: var(--color-warning) !important; }
+.border-l-orange-500 { border-left-color: #ea580c !important; }
+
+/* Fix for sidebar auto-hide interaction */
+@media (max-width: 767px) {
+  #sidebar.translate-x-0 ~ #main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Chart containers */
+#branchRankingChart {
+  max-height: 500px;
+}
+
+/* Modal backdrop fix */
+#urgentProductsModal,
+#confirmModal {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -43,9 +43,9 @@ export function renderBeranda(data) {
   const growth = k.growth;
   const growEl = document.getElementById('beranda-penjualan-growth');
   if (growth >= 0) {
-    growEl.innerHTML = '<span class="text-emerald-600 font-bold">+' + formatNumber(growth) + '</span> <span class="text-slate-400">dari bulan lalu (' + formatNumber(k.lastMonth) + ')</span>';
+    growEl.innerHTML = '<span class="font-bold" style="color:var(--color-success)">+' + formatNumber(growth) + '</span> <span style="color:var(--color-text-muted)">dari bulan lalu (' + formatNumber(k.lastMonth) + ')</span>';
   } else {
-    growEl.innerHTML = '<span class="text-red-600 font-bold">' + formatNumber(growth) + '</span> <span class="text-slate-400">dari bulan lalu (' + formatNumber(k.lastMonth) + ')</span>';
+    growEl.innerHTML = '<span class="font-bold" style="color:var(--color-danger)">' + formatNumber(growth) + '</span> <span style="color:var(--color-text-muted)">dari bulan lalu (' + formatNumber(k.lastMonth) + ')</span>';
   }
 
   const distTotal = (k.distBDG || 0) + (k.distTSM || 0);
@@ -60,22 +60,22 @@ export function renderBeranda(data) {
   document.getElementById('beranda-today-label').textContent = 'Penjualan pada hari terakhir';
 
   // Comparison table
-  let html = '<table class="w-full text-left border-collapse"><thead class="bg-slate-50"><tr class="text-[10px] uppercase tracking-wider text-slate-500">';
-  html += '<th class="px-3 py-2 font-bold border border-slate-200">Gudang</th>';
-  html += '<th class="px-3 py-2 font-bold border border-slate-200 text-right">Distribusi</th>';
-  html += '<th class="px-3 py-2 font-bold border border-slate-200 text-right">Penerimaan</th>';
-  html += '<th class="px-3 py-2 font-bold border border-slate-200 text-right">Selisih</th>';
+  let html = '<table class="w-full text-left border-collapse"><thead><tr class="text-[10px] uppercase tracking-wider" style="background:var(--color-bg-alt);color:var(--color-text-muted)">';
+  html += '<th class="px-3 py-2 font-bold border" style="border-color:var(--color-border)">Gudang</th>';
+  html += '<th class="px-3 py-2 font-bold border text-right" style="border-color:var(--color-border)">Distribusi</th>';
+  html += '<th class="px-3 py-2 font-bold border text-right" style="border-color:var(--color-border)">Penerimaan</th>';
+  html += '<th class="px-3 py-2 font-bold border text-right" style="border-color:var(--color-border)">Selisih</th>';
   html += '</tr></thead><tbody>';
   ['BANDUNG', 'TASIKMALAYA'].forEach(function(g) {
     const dist = g === 'BANDUNG' ? k.distBDG : k.distTSM;
     const rec = g === 'BANDUNG' ? k.recBDG : k.recTSM;
     const selisih = rec - dist;
-    const cls = selisih >= 0 ? 'text-emerald-600' : 'text-red-600';
-    html += '<tr class="hover:bg-slate-50">';
-    html += '<td class="px-3 py-2 border border-slate-200 font-semibold">Gudang ' + g + '</td>';
-    html += '<td class="px-3 py-2 border border-slate-200 text-right">' + formatNumber(dist) + '</td>';
-    html += '<td class="px-3 py-2 border border-slate-200 text-right">' + formatNumber(rec) + '</td>';
-    html += '<td class="px-3 py-2 border border-slate-200 text-right font-bold ' + cls + '">' + formatNumber(selisih) + '</td>';
+    var cls = selisih >= 0 ? 'var(--color-success)' : 'var(--color-danger)';
+    html += '<tr>';
+    html += '<td class="px-3 py-2 border font-semibold" style="border-color:var(--color-border);color:var(--color-text)">Gudang ' + g + '</td>';
+    html += '<td class="px-3 py-2 border text-right" style="border-color:var(--color-border)">' + formatNumber(dist) + '</td>';
+    html += '<td class="px-3 py-2 border text-right" style="border-color:var(--color-border)">' + formatNumber(rec) + '</td>';
+    html += '<td class="px-3 py-2 border text-right font-bold" style="border-color:var(--color-border);color:' + cls + '">' + formatNumber(selisih) + '</td>';
     html += '</tr>';
   });
   html += '</tbody></table>';

@@ -2,6 +2,21 @@ import { state } from './state/appState.js';
 import { getUserRole } from './state/authState.js';
 import { expandParentGroup } from './ui/sidebar.js';
 
+function setActiveMenu(el) {
+  if (!el) return;
+  var cls = el.className;
+  if (cls.indexOf('sidebar-item-main') >= 0 || cls.indexOf('sidebar-item-sub') >= 0 || cls.indexOf('sidebar-item') >= 0) {
+    el.classList.add('active');
+  } else {
+    el.className = "flex items-center gap-3 px-4 py-3 rounded-xl font-bold";
+    el.style.background = 'rgba(34,197,94,0.12)';
+    el.style.color = '#22C55E';
+    el.style.border = '1px solid rgba(34,197,94,0.25)';
+    el.onmouseenter = null;
+    el.onmouseleave = null;
+  }
+}
+
 import { loadBeranda } from './modules/dashboard/dashboard.js';
 import { loadData, renderCards } from './modules/dashboard/distribution.js';
 import { renderStockSummaryTable } from './modules/dashboard/summary.js';
@@ -106,23 +121,22 @@ export function switchMenu(menuName) {
   }
 
   // Reset semua Menu Class (Non-aktif)
-  const defaultMenuClass = "flex items-center gap-4 px-4 py-3.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-300";
-  const activeMenuClass = "flex items-center gap-4 px-4 py-3.5 bg-blue-600/10 text-blue-500 rounded-xl font-bold border border-blue-500/20 transition-all";
-  if(menuDist) menuDist.className = defaultMenuClass;
-  if(menuStok) menuStok.className = defaultMenuClass;
-  if(menuPenjualanWHO) menuPenjualanWHO.className = defaultMenuClass;
-  if(menuPenerimaanPabrik) menuPenerimaanPabrik.className = defaultMenuClass;
-  if(menuSalesDash) menuSalesDash.className = defaultMenuClass;
-  if(menuBestProducts) menuBestProducts.className = defaultMenuClass;
-  if(menuDailyReport) menuDailyReport.className = defaultMenuClass;
-  if(menuSalesPerDate) menuSalesPerDate.className = defaultMenuClass;
-  if(menuControlPoint) menuControlPoint.className = defaultMenuClass;
-  if(menuChatAi) menuChatAi.className = defaultMenuClass;
-  if(menuInputStokBiz) menuInputStokBiz.className = defaultMenuClass;
-  if(menuInputStokExcel) menuInputStokExcel.className = defaultMenuClass;
-  if(menuSalesHub) menuSalesHub.className = defaultMenuClass;
-  if(menuInputDistribusi) menuInputDistribusi.className = defaultMenuClass;
-  if(menuBeranda) menuBeranda.className = defaultMenuClass;
+  const allMenus = [menuDist, menuStok, menuPenjualanWHO, menuPenerimaanPabrik,
+    menuSalesDash, menuBestProducts, menuDailyReport, menuSalesPerDate,
+    menuControlPoint, menuChatAi, menuInputStokBiz, menuInputStokExcel,
+    menuSalesHub, menuInputDistribusi, menuBeranda];
+  allMenus.forEach(function(m) {
+    if (!m) return;
+    m.classList.remove('active');
+    var cls = m.className;
+    if (cls.indexOf('sidebar-item') >= 0 || cls.indexOf('sidebar-item-main') >= 0 || cls.indexOf('sidebar-item-sub') >= 0) return;
+    m.className = "flex items-center gap-3 px-4 py-3 rounded-xl font-medium";
+    m.style.background = 'transparent';
+    m.style.color = '#94a3b8';
+    m.style.border = 'none';
+    m.onmouseenter = function() { this.style.background = 'rgba(51,65,85,0.5)'; this.style.color = '#f1f5f9'; };
+    m.onmouseleave = function() { this.style.background = 'transparent'; this.style.color = '#94a3b8'; };
+  });
 
   // Tampilkan View & Aktifkan Menu sesuai Pilihan
   if (menuName === 'stok') {
@@ -130,7 +144,7 @@ export function switchMenu(menuName) {
     pageTitle.innerText = "Ringkasan Stok";
     pageIcon.className = "fas fa-boxes";
     branchFilter.classList.remove('hidden');
-    if (menuStok) menuStok.className = activeMenuClass;
+    setActiveMenu(menuStok);
     if (!state.gData) loadData();
     else renderStockSummaryTable();
   }
@@ -138,20 +152,20 @@ export function switchMenu(menuName) {
     penjualanWhoView.classList.remove('hidden');
     pageTitle.innerText = "Input Penjualan";
     pageIcon.className = "fas fa-file-invoice";
-    if (menuPenjualanWHO) menuPenjualanWHO.className = activeMenuClass;
+    setActiveMenu(menuPenjualanWHO);
   }
   else if (menuName === 'penerimaan-pabrik') {
     penerimaanPabrikView.classList.remove('hidden');
     pageTitle.innerText = "Input Penerimaan";
     pageIcon.className = "fas fa-factory";
-    if (menuPenerimaanPabrik) menuPenerimaanPabrik.className = activeMenuClass;
+    setActiveMenu(menuPenerimaanPabrik);
     initPenerimaanPabrik();
   }
   else if (menuName === 'best-products') {
     bestProductsView.classList.remove('hidden');
     pageTitle.innerText = "Best Produk";
     pageIcon.className = "fas fa-trophy";
-    if (menuBestProducts) menuBestProducts.className = activeMenuClass;
+    setActiveMenu(menuBestProducts);
     const bpContent = document.getElementById('best-products-content');
     const bpMonth = document.getElementById('best-products-month');
     if (bpMonth && bpMonth.options.length === 0) initBestProductsMonths();
@@ -161,7 +175,7 @@ export function switchMenu(menuName) {
     controlPointView.classList.remove('hidden');
     pageTitle.innerText = "Perbandingan Stok BIZ vs Stok Excel";
     pageIcon.className = "fas fa-balance-scale";
-    if (menuControlPoint) menuControlPoint.className = activeMenuClass;
+    setActiveMenu(menuControlPoint);
     const cpContent = document.getElementById('cp-dashboard-content');
     if (!cpContent || cpContent.innerHTML.trim() === '' || cpContent.querySelector('.text-red-500')) loadControlPoint();
   }
@@ -169,19 +183,19 @@ export function switchMenu(menuName) {
     inputStokBizView.classList.remove('hidden');
     pageTitle.innerText = "Input Stok BIZ";
     pageIcon.className = "fas fa-database";
-    if (menuInputStokBiz) menuInputStokBiz.className = activeMenuClass;
+    setActiveMenu(menuInputStokBiz);
   }
   else if (menuName === 'input-stok-excel') {
     inputStokExcelView.classList.remove('hidden');
     pageTitle.innerText = "Input Stok Excel";
     pageIcon.className = "fas fa-file-excel";
-    if (menuInputStokExcel) menuInputStokExcel.className = activeMenuClass;
+    setActiveMenu(menuInputStokExcel);
   }
   else if (menuName === 'daily-report') {
     dailyReportView.classList.remove('hidden');
     pageTitle.innerText = "Penjualan Harian";
     pageIcon.className = "fas fa-calendar-week";
-    if (menuDailyReport) menuDailyReport.className = activeMenuClass;
+    setActiveMenu(menuDailyReport);
     const drContent = document.getElementById('daily-report-content');
     if (!drContent || drContent.innerHTML.trim() === '') initDailyReport();
   }
@@ -189,7 +203,7 @@ export function switchMenu(menuName) {
     salesPerDateView.classList.remove('hidden');
     pageTitle.innerText = "Penjualan Pertanggal";
     pageIcon.className = "fas fa-calendar-day";
-    if (menuSalesPerDate) menuSalesPerDate.className = activeMenuClass;
+    setActiveMenu(menuSalesPerDate);
     const spContent = document.getElementById('sales-per-date-content');
     if (!spContent || spContent.innerHTML.trim() === '') initSalesPerDate();
   }
@@ -198,35 +212,35 @@ export function switchMenu(menuName) {
     pageTitle.innerText = "Report Penjualan";
     pageIcon.className = "fas fa-chart-line";
     branchFilter.classList.remove('hidden');
-    if (menuSalesDash) menuSalesDash.className = activeMenuClass;
+    setActiveMenu(menuSalesDash);
     loadSalesData();
   }
   else if (menuName === 'sales-hub') {
     document.getElementById('sales-hub-view').classList.remove('hidden');
     pageTitle.innerText = "Perbandingan Penjualan";
     pageIcon.className = "fas fa-chart-bar";
-    if (menuSalesHub) menuSalesHub.className = activeMenuClass;
+    setActiveMenu(menuSalesHub);
     initSalesHubDates();
   }
   else if (menuName === 'beranda') {
     berandaView.classList.remove('hidden');
     pageTitle.innerText = "Beranda";
     pageIcon.className = "fas fa-home";
-    if (menuBeranda) menuBeranda.className = activeMenuClass;
+    setActiveMenu(menuBeranda);
     loadBeranda();
   }
   else if (menuName === 'input-distribusi') {
     inputDistribusiView.classList.remove('hidden');
     pageTitle.innerText = "Input Distribusi";
     pageIcon.className = "fas fa-arrow-right-arrow-left";
-    if (menuInputDistribusi) menuInputDistribusi.className = activeMenuClass;
+    setActiveMenu(menuInputDistribusi);
     initInputDistribusi();
   }
   else if (menuName === 'chat-ai') {
     chatAiView.classList.remove('hidden');
     pageTitle.innerText = "Chat AI";
     pageIcon.className = "fas fa-comment-dots";
-    if (menuChatAi) menuChatAi.className = activeMenuClass;
+    setActiveMenu(menuChatAi);
   }
   else { // 'distribusi'
     distView.style.display = 'block';
@@ -238,7 +252,7 @@ export function switchMenu(menuName) {
       summarySection.classList.remove('hidden');
       summarySection.classList.add('grid');
     }
-    if (menuDist) menuDist.className = activeMenuClass;
+    setActiveMenu(menuDist);
   }
   expandParentGroup(menuName);
 }

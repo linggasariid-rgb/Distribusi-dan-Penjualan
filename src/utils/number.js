@@ -3,5 +3,5 @@ export function formatNumber(n) {
 }
 
 export function formatNum(val) {
-  return val > 0 ? val.toLocaleString('id-ID') : '<span class="text-slate-300">&ndash;</span>';
+  return val > 0 ? val.toLocaleString('id-ID') : '<span style="color:var(--color-text-muted)">&ndash;</span>';
 }

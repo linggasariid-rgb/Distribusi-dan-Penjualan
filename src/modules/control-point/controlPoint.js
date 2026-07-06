@@ -13,7 +13,7 @@ export function loadControlPoint() {
   callApi('getControlPointData').then(function(data) {
     if (document.getElementById('btn-screenshot-cp')) document.getElementById('btn-screenshot-cp').disabled = false;
     if (data && data.error) {
-      content.innerHTML = '<div class="col-span-full bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 font-bold">' + data.error + '</div>';
+      content.innerHTML = '<div class="col-span-full p-6 rounded-2xl border font-bold" style="background:var(--color-danger-light);color:var(--color-danger);border-color:rgba(220,38,38,0.15)">' + data.error + '</div>';
       return;
     }
     cpData = data;
@@ -22,7 +22,7 @@ export function loadControlPoint() {
     populateReportCardCP(data);
   }).catch(function(err) {
     if (btn) btn.disabled = false;
-    content.innerHTML = '<div class="col-span-full bg-red-50 text-red-600 p-6 rounded-2xl border border-red-200 font-bold">Gagal memuat data: ' + (err.message || err) + '</div>';
+    content.innerHTML = '<div class="col-span-full p-6 rounded-2xl border font-bold" style="background:var(--color-danger-light);color:var(--color-danger);border-color:rgba(220,38,38,0.15)">Gagal memuat data: ' + (err.message || err) + '</div>';
   });
 }
 
@@ -35,13 +35,13 @@ export function renderControlPointSummaryBar(data) {
     year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
   bar.innerHTML = `
-    <span class="bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs px-3 py-2 rounded-lg flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>${sesuai} Cabang Sesuai
+    <span class="badge-success flex items-center gap-2" style="padding:0.5rem 0.75rem">
+      <span class="w-2 h-2 rounded-full" style="background:var(--color-success);display:inline-block"></span>${sesuai} Cabang Sesuai
     </span>
-    ${selisih > 0 ? `<span class="bg-red-50 border border-red-200 text-red-700 font-bold text-xs px-3 py-2 rounded-lg flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-red-500 inline-block dot-pulse"></span>${selisih} Cabang Selisih
+    ${selisih > 0 ? `<span class="badge-danger flex items-center gap-2" style="padding:0.5rem 0.75rem">
+      <span class="w-2 h-2 rounded-full dot-pulse" style="background:var(--color-danger);display:inline-block"></span>${selisih} Cabang Selisih
     </span>` : ''}
-    <span class="bg-slate-50 border border-slate-200 text-slate-500 font-semibold text-xs px-3 py-2 rounded-lg">${now}</span>
+    <span style="background:var(--color-bg-alt);color:var(--color-text-muted);font-weight:600;font-size:0.75rem;padding:0.5rem 0.75rem;border-radius:var(--radius-md)">${now}</span>
   `;
   bar.style.display = 'flex';
 }
@@ -49,7 +49,7 @@ export function renderControlPointSummaryBar(data) {
 export function renderControlPointDashboard(data) {
   const content = document.getElementById('cp-dashboard-content');
   if (!data.length) {
-    content.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400">Tidak ada data.</div>';
+    content.innerHTML = '<div class="col-span-full text-center py-20" style="color:var(--color-text-muted)">Tidak ada data.</div>';
     return;
   }
   let html = '';
@@ -58,38 +58,38 @@ export function renderControlPointDashboard(data) {
     let detailHtml = '';
     if (!isMatch) {
       const produkCards = item.details.map(d => `
-        <div class="bg-white border border-red-100 rounded-lg p-3 mb-2">
-          <div class="text-[11px] font-black text-slate-800 uppercase tracking-tight mb-2">${d.produk}</div>
+        <div class="card p-3 mb-2" style="border-color:rgba(220,38,38,0.1)">
+          <div class="text-[11px] font-black uppercase tracking-tight mb-2" style="color:var(--color-text)">${d.produk}</div>
           <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="bg-slate-50 rounded-md p-2">
-              <div class="text-[9px] text-slate-400 font-semibold">BIZ</div>
-              <div class="text-[13px] font-bold text-slate-700">${d.biz}</div>
+            <div class="rounded-md p-2" style="background:var(--color-bg-alt)">
+              <div class="text-[9px] font-semibold" style="color:var(--color-text-muted)">BIZ</div>
+              <div class="text-[13px] font-bold" style="color:var(--color-text)">${d.biz}</div>
             </div>
-            <div class="bg-slate-50 rounded-md p-2">
-              <div class="text-[9px] text-slate-400 font-semibold">EXCEL</div>
-              <div class="text-[13px] font-bold text-slate-700">${d.excel}</div>
+            <div class="rounded-md p-2" style="background:var(--color-bg-alt)">
+              <div class="text-[9px] font-semibold" style="color:var(--color-text-muted)">EXCEL</div>
+              <div class="text-[13px] font-bold" style="color:var(--color-text)">${d.excel}</div>
             </div>
-            <div class="bg-red-50 rounded-md p-2">
-              <div class="text-[9px] text-red-400 font-semibold">SELISIH</div>
-              <div class="text-[13px] font-black text-red-600">${d.selisih}</div>
+            <div class="rounded-md p-2" style="background:var(--color-danger-light)">
+              <div class="text-[9px] font-semibold" style="color:var(--color-danger)">SELISIH</div>
+              <div class="text-[13px] font-black" style="color:var(--color-danger)">${d.selisih}</div>
             </div>
           </div>
         </div>
       `).join('');
       detailHtml = `
-        <div class="mt-3 pt-3 border-t border-red-100">
-          <div class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-2">Detail Selisih</div>
+        <div class="mt-3 pt-3" style="border-top:1px solid rgba(220,38,38,0.1)">
+          <div class="text-[9px] font-black uppercase tracking-widest mb-2" style="color:var(--color-danger)">Detail Selisih</div>
           <div class="max-h-72 overflow-y-auto">${produkCards}</div>
         </div>
       `;
     }
     html += `
-      <div class="bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${isMatch ? 'cp-card-match' : 'cp-card-mismatch'}">
+      <div class="card p-5 transition-all duration-200 ${isMatch ? 'cp-card-match' : 'cp-card-mismatch'}">
         <div class="flex justify-between items-start mb-3">
-          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">${item.cabang}</span>
-          <span class="w-2.5 h-2.5 rounded-full ${isMatch ? 'bg-emerald-500' : 'bg-red-500 dot-pulse'} inline-block mt-0.5"></span>
+          <span class="text-[10px] font-black uppercase tracking-wider" style="color:var(--color-text-muted)">${item.cabang}</span>
+          <span class="w-2.5 h-2.5 rounded-full ${isMatch ? '' : 'dot-pulse'} inline-block mt-0.5" style="background:${isMatch ? 'var(--color-success)' : 'var(--color-danger)'}"></span>
         </div>
-        <div class="text-2xl font-black ${isMatch ? 'text-emerald-600' : 'text-red-600'} tracking-tight">
+        <div class="text-2xl font-black tracking-tight" style="color:${isMatch ? 'var(--color-success)' : 'var(--color-danger)'}">
           ${isMatch ? 'SESUAI' : 'ADA SELISIH'}
         </div>
         ${detailHtml}

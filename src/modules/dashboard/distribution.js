@@ -234,22 +234,22 @@ export function renderCards() {
       }
 
       let noData = res.noSalesData;
-      let dayClass = noData ? 'text-slate-400 italic text-xs' : (res.isCritical ? 'text-red-600 font-extrabold bg-red-50' : (res.isWarning ? 'text-amber-600 font-extrabold bg-amber-50' : 'text-slate-600 font-medium text-xs'));
-      let rowClass = res.isCritical ? 'bg-red-50/40' : (noData ? 'opacity-60' : 'hover:bg-slate-50');
+      let dayStyle = noData ? 'color:var(--color-text-muted);font-style:italic;font-size:0.75rem' : (res.isCritical ? 'color:var(--color-danger);font-weight:900;background:var(--color-danger-light)' : (res.isWarning ? 'color:var(--color-accent);font-weight:900;background:var(--color-accent-light)' : 'color:var(--color-text-secondary);font-weight:500;font-size:0.75rem'));
+      let rowStyle = res.isCritical ? 'background:rgba(220,38,38,0.04)' : (noData ? 'opacity:0.6' : '');
 
-      let qtyDisplay = isStockLimit ? `<span class="text-red-600 font-black" title="Stok WHP Limit (Kebutuhan Ideal: ${reqIdeal.toLocaleString('id-ID')})">${qtyFinal.toLocaleString('id-ID')}</span>` : qtyFinal.toLocaleString('id-ID');
+      let qtyDisplay = isStockLimit ? `<span style="color:var(--color-danger);font-weight:900" title="Stok WHP Limit (Kebutuhan Ideal: ${reqIdeal.toLocaleString('id-ID')})">${qtyFinal.toLocaleString('id-ID')}</span>` : qtyFinal.toLocaleString('id-ID');
       let mendesakDisplay = noData ? '-' : (res.kirimMendesak > 0 ? qtyDisplay : '-');
       let regulerDisplay = noData ? '-' : (res.kirimMendesak > 0 ? '-' : qtyDisplay);
       let sisaHariDisplay = noData ? 'N/A' : (res.sisaHari.toFixed(1) + ' Hari');
 
       rows += `
-        <tr class="${rowClass} transition-colors border-b border-slate-100 last:border-0">
-          <td class="px-5 py-3 whitespace-nowrap font-bold text-slate-800">${p}</td>
-          <td class="px-5 py-3 whitespace-nowrap text-slate-600 font-medium">${res.dsr}</td>
-          <td class="px-5 py-3 whitespace-nowrap text-slate-600 font-medium">${res.stok}</td>
-          <td class="px-5 py-3 whitespace-nowrap ${dayClass} rounded-lg text-sm">${sisaHariDisplay}</td>
-          <td class="px-5 py-3 whitespace-nowrap font-extrabold text-slate-800">${regulerDisplay}</td>
-          <td class="px-5 py-3 whitespace-nowrap font-extrabold text-indigo-600">${mendesakDisplay}</td>
+        <tr style="${rowStyle}">
+          <td class="px-5 py-3 whitespace-nowrap font-bold" style="color:var(--color-text)">${p}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-medium" style="color:var(--color-text-secondary)">${res.dsr}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-medium" style="color:var(--color-text-secondary)">${res.stok}</td>
+          <td class="px-5 py-3 whitespace-nowrap rounded-lg text-sm" style="${dayStyle}">${sisaHariDisplay}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-extrabold" style="color:var(--color-text)">${regulerDisplay}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-extrabold" style="color:var(--color-danger)">${mendesakDisplay}</td>
         </tr>`;
     });
 
