@@ -16,7 +16,7 @@ export function exportPivotAsPdf(containerId, title) {
   }
 
   const area = container.querySelector('#pivot-report-area') || container;
-  const filterRow = container.closest('.space-y-6').querySelector('.flex');
+  const filterRow = container.parentElement.querySelector('.flex');
   if (filterRow) filterRow.style.display = 'none';
 
   const origStyle = area.getAttribute('style') || '';

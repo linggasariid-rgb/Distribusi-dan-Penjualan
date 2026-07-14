@@ -142,6 +142,8 @@ export function submitDataPabrik() {
     idPrefix: 'penerimaan-pabrik',
     button: button,
     offerReload: true,
+    historyTable: 'penerimaan',
+    historyContainerId: 'penerimaan-pabrik-history',
   });
 }
 

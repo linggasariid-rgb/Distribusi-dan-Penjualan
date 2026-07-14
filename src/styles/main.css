@@ -18,12 +18,12 @@
   --color-info: #3B82F6;
   --color-info-light: #DBEAFE;
 
-  --color-bg: #F8FAFC;
-  --color-bg-alt: #F1F5F9;
-  --color-surface: #FFFFFF;
-  --color-surface-hover: #F8FAFC;
-  --color-border: #E2E8F0;
-  --color-border-light: #F1F5F9;
+  --color-bg: #F8F9FA;
+  --color-bg-alt: #F1F2F3;
+  --color-surface: #FCFCFD;
+  --color-surface-hover: #F8F9FA;
+  --color-border: #E5E7EB;
+  --color-border-light: #F1F2F3;
 
   --color-text: #0F172A;
   --color-text-secondary: #475569;

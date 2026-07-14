@@ -52,6 +52,8 @@ export function submitDataWHO() {
     idPrefix: 'penjualan-who',
     button: button,
     offerReload: true,
+    historyTable: 'penjualan_who',
+    historyContainerId: 'penjualan-who-history',
   });
 }
 

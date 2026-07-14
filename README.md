@@ -22,6 +22,9 @@ Dashboard monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
 | Layer | Teknologi |
 |-------|-----------|
 | Frontend | Cloudflare Pages, Vanilla JS, Tailwind CSS, Chart.js |
+| Styling | CSS Variable Design System (light/dark mode), Enterprise Gateway pattern |
+| Typography | Fira Sans (UI) + Fira Code (mono/data) |
+| Brand | Navy `#0F172A` / Green `#22C55E` |
 | Backend | Cloudflare Workers (API), Google Apps Script (legacy) |
 | Database | Supabase (PostgreSQL) |
 | AI | Google Gemini API |

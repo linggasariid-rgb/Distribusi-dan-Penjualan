@@ -13,6 +13,8 @@ import * as saveBiz from './routes/save-biz.js';
 import * as saveStock from './routes/save-stock.js';
 import * as chat from './routes/chat.js';
 import * as login from './routes/login.js';
+import * as inputHistory from './routes/input-history.js';
+import * as deleteBatch from './routes/delete-batch.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -83,6 +85,11 @@ export default {
         return json(await distribution.handle(db, whp));
       }
 
+      if (path === '/api/input-history') {
+        const table = url.searchParams.get('table') || '';
+        return json(await inputHistory.handle(db, table));
+      }
+
       if (path === '/api/login' || path === '/api/login/') {
         if (request.method !== 'POST') return error('Method not allowed', 405);
         const body = await request.json();
@@ -110,6 +117,9 @@ export default {
         }
         if (path === '/api/chat') {
           return json(await chat.handle(env, body));
+        }
+        if (path === '/api/delete-batch') {
+          return json(await deleteBatch.handle(db, body));
         }
 
         return json({ status: 'error', message: 'Not found' }, 404);

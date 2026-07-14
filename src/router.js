@@ -1,5 +1,5 @@
 import { state } from './state/appState.js';
-import { getUserRole } from './state/authState.js';
+import { getUserRole, getUserName, getUserWHP } from './state/authState.js';
 import { expandParentGroup } from './ui/sidebar.js';
 
 function setActiveMenu(el) {
@@ -28,6 +28,35 @@ import { initDailyReport } from './modules/reports/dailyReport.js';
 import { initSalesPerDate } from './modules/reports/salesReport.js';
 import { initPenerimaanPabrik } from './modules/input/inputPabrik.js';
 import { initInputDistribusi } from './modules/input/inputDistribusi.js';
+import { loadInputHistory } from './modules/input/inputHistory.js';
+
+function initPengaturanView() {
+  var nameEl = document.getElementById('settings-user-name');
+  var roleEl = document.getElementById('settings-user-role');
+  var whpEl = document.getElementById('settings-user-whp');
+  var name = getUserName() || '-';
+  var role = getUserRole() || '-';
+  var whp = getUserWHP() || '-';
+  var roleLabels = { admin: 'Admin', admin_whp: 'Admin WHP', super_admin: 'Super Admin' };
+  if (nameEl) nameEl.textContent = name;
+  if (roleEl) roleEl.textContent = roleLabels[role] || role;
+  if (whpEl) whpEl.textContent = whp;
+
+  var themeBtn = document.getElementById('settings-theme-toggle');
+  var themeDot = document.getElementById('settings-theme-dot');
+  function syncThemeToggle() {
+    var isDark = document.documentElement.classList.contains('dark');
+    if (themeBtn) themeBtn.style.background = isDark ? '#22C55E' : 'var(--color-border)';
+    if (themeDot) themeDot.style.transform = isDark ? 'translateX(22px)' : 'translateX(2px)';
+  }
+  syncThemeToggle();
+  if (themeBtn) {
+    themeBtn.onclick = function() {
+      document.documentElement.classList.toggle('dark');
+      syncThemeToggle();
+    };
+  }
+}
 
 // Central view router (switchMenu) plus the filter/refresh handlers that
 // depend on "which view is currently visible". Kept in its own module (not
@@ -75,6 +104,7 @@ export function switchMenu(menuName) {
   const inputStokExcelView = document.getElementById('input-stok-excel-view');
   const inputDistribusiView = document.getElementById('input-distribusi-view');
   const berandaView = document.getElementById('beranda-view');
+  const pengaturanView = document.getElementById('pengaturan-view');
 
   const menuDist = document.getElementById('menu-distribusi');
   const menuStok = document.getElementById('menu-stok');
@@ -91,6 +121,7 @@ export function switchMenu(menuName) {
   const menuSalesHub = document.getElementById('menu-sales-hub');
   const menuInputDistribusi = document.getElementById('menu-input-distribusi');
   const menuBeranda = document.getElementById('menu-beranda');
+  const menuPengaturan = document.getElementById('menu-pengaturan');
 
   const pageTitle = document.getElementById('page-title');
   const pageIcon = document.getElementById('page-icon');
@@ -113,6 +144,7 @@ export function switchMenu(menuName) {
   inputStokExcelView.classList.add('hidden');
   inputDistribusiView.classList.add('hidden');
   berandaView.classList.add('hidden');
+  pengaturanView.classList.add('hidden');
   document.getElementById('sales-hub-view').classList.add('hidden');
   branchFilter.classList.add('hidden');
   if (summarySection) {
@@ -124,7 +156,7 @@ export function switchMenu(menuName) {
   const allMenus = [menuDist, menuStok, menuPenjualanWHO, menuPenerimaanPabrik,
     menuSalesDash, menuBestProducts, menuDailyReport, menuSalesPerDate,
     menuControlPoint, menuChatAi, menuInputStokBiz, menuInputStokExcel,
-    menuSalesHub, menuInputDistribusi, menuBeranda];
+    menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan];
   allMenus.forEach(function(m) {
     if (!m) return;
     m.classList.remove('active');
@@ -153,6 +185,7 @@ export function switchMenu(menuName) {
     pageTitle.innerText = "Input Penjualan";
     pageIcon.className = "fas fa-file-invoice";
     setActiveMenu(menuPenjualanWHO);
+    loadInputHistory('penjualan_who', 'penjualan-who-history');
   }
   else if (menuName === 'penerimaan-pabrik') {
     penerimaanPabrikView.classList.remove('hidden');
@@ -160,6 +193,7 @@ export function switchMenu(menuName) {
     pageIcon.className = "fas fa-factory";
     setActiveMenu(menuPenerimaanPabrik);
     initPenerimaanPabrik();
+    loadInputHistory('penerimaan', 'penerimaan-pabrik-history');
   }
   else if (menuName === 'best-products') {
     bestProductsView.classList.remove('hidden');
@@ -235,12 +269,20 @@ export function switchMenu(menuName) {
     pageIcon.className = "fas fa-arrow-right-arrow-left";
     setActiveMenu(menuInputDistribusi);
     initInputDistribusi();
+    loadInputHistory('distribusi', 'distribusi-history');
   }
   else if (menuName === 'chat-ai') {
     chatAiView.classList.remove('hidden');
     pageTitle.innerText = "Chat AI";
     pageIcon.className = "fas fa-comment-dots";
     setActiveMenu(menuChatAi);
+  }
+  else if (menuName === 'pengaturan') {
+    pengaturanView.classList.remove('hidden');
+    pageTitle.innerText = "Pengaturan";
+    pageIcon.className = "fas fa-cog";
+    setActiveMenu(menuPengaturan);
+    initPengaturanView();
   }
   else { // 'distribusi'
     distView.style.display = 'block';

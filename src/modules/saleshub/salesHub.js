@@ -485,13 +485,29 @@ export async function exportSalesHubPDF() {
       allowTaint: false
     });
 
-    const imgData = canvas.toDataURL('image/png');
     const pdf = new window.jspdf.jsPDF('landscape', 'mm', 'a4');
     const pdfW = 297;
+    const pdfH = 210;
     const ratio = canvas.width / canvas.height;
     const imgW = pdfW;
     const imgH = pdfW / ratio;
-    pdf.addImage(imgData, 'PNG', 0, 0, imgW, imgH);
+
+    if (imgH <= pdfH) {
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgW, imgH);
+    } else {
+      var pages = Math.ceil(imgH / pdfH);
+      for (var i = 0; i < pages; i++) {
+        if (i > 0) pdf.addPage();
+        var srcY = i * pdfH * (canvas.height / imgH);
+        var srcH = Math.min(pdfH * (canvas.height / imgH), canvas.height - srcY);
+        var tmpC = document.createElement('canvas');
+        tmpC.width = canvas.width;
+        tmpC.height = srcH;
+        tmpC.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        pdf.addImage(tmpC.toDataURL('image/png'), 'PNG', 0, 0, pdfW, Math.min(pdfH, imgH - i * pdfH));
+      }
+    }
+
     pdf.save('Perbandingan_Penjualan_' + fileDate + '.pdf');
     showToast('PDF tersimpan!');
   } catch (err) {

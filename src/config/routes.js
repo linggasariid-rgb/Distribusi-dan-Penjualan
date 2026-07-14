@@ -8,6 +8,7 @@ export const READ = {
   getBestProductsData: { url: '/api/best-products/data', params: ['month'] },
   getControlPointData: { url: '/api/control-point', params: [] },
   getDistributionData: { url: '/api/distribution', params: ['whp'] },
+  getInputHistory: { url: '/api/input-history', params: ['table'] },
 };
 
 export const WRITE = {
@@ -18,6 +19,7 @@ export const WRITE = {
   savePastedDataUpdateStock: { url: '/api/save/stock', params: ['data'] },
   chatWithSalesAI: { url: '/api/chat', params: ['pesan', 'riwayat', 'userWHP'] },
   login: { url: '/api/login', params: ['username', 'password'] },
+  deleteInputBatch: { url: '/api/delete-batch', params: ['table', 'createdAt'] },
 };
 
 export const BERANDA = ['getBerandaData', 'getSalesDashboardData'];

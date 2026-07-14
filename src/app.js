@@ -17,6 +17,7 @@ import { initSidebarEvents } from './events/sidebarEvents.js';
 import { initChatEvents } from './events/chatEvents.js';
 import { initLoginEvents } from './events/loginEvents.js';
 import { initInputEvents } from './events/inputEvents.js';
+import { initInputHistoryEvents } from './modules/input/inputHistory.js';
 
 function init() {
   registerChartPlugins();
@@ -32,6 +33,7 @@ function init() {
   initChatEvents();
   initLoginEvents();
   initInputEvents();
+  initInputHistoryEvents();
 
   const whp = getUserWHP();
   const role = getUserRole();

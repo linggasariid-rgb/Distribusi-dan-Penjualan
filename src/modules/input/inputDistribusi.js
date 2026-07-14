@@ -93,6 +93,8 @@ export function submitDataDistribusi() {
     idPrefix: 'distribusi',
     button: button,
     offerReload: true,
+    historyTable: 'distribusi',
+    historyContainerId: 'distribusi-history',
   });
 }
 

@@ -3,11 +3,12 @@ import { state } from '../../state/appState.js';
 import { showConfirmModal } from '../../ui/modal.js';
 import { loadData } from '../dashboard/distribution.js';
 import { requestNavigate } from '../../events/navigation.js';
+import { loadInputHistory } from './inputHistory.js';
 
 // Shared "paste -> submit -> toast -> optionally offer dashboard reload"
 // tail shared verbatim by Penerimaan Pabrik, Input Distribusi and Penjualan
 // WHO (the other two input forms don't offer a reload, so offerReload=false).
-export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, button, offerReload = false }) {
+export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, button, offerReload = false, historyTable, historyContainerId }) {
   const dataToSubmit = state.pastedDataCache[cacheKey];
   const originalButtonText = button.innerHTML;
 
@@ -30,6 +31,8 @@ export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, b
       document.getElementById(idPrefix + '-preview').innerHTML = '';
       document.getElementById(idPrefix + '-submit-container').classList.add('hidden');
       state.pastedDataCache[cacheKey] = null;
+
+      if (historyTable && historyContainerId) loadInputHistory(historyTable, historyContainerId);
 
       if (offerReload) {
         showConfirmModal('Data berhasil disimpan. Muat ulang dashboard sekarang?', function() {
