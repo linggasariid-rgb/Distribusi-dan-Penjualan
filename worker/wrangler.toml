@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
 [vars]
-SUPABASE_URL = "REMOVED_URL"
+SUPABASE_URL = "https://qszgpfzajkdherkitraq.supabase.co"
 
 # Set secrets via: npx wrangler secret put SUPABASE_ANON_KEY
 # Set secrets via: npx wrangler secret put GEMINI_API_KEY
