@@ -20,4 +20,4 @@ INSERT INTO users (username, password_hash, name, role, whp) VALUES
 ON CONFLICT (username) DO NOTHING;
 
 -- Enable RLS
-ALTER TABLE users ENABLE ROW LEVEL LEVEL;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
