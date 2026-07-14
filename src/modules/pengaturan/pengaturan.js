@@ -44,8 +44,10 @@ function renderUsersTable() {
     return;
   }
 
+  var currentUsername = getUserName();
   var html = '';
   usersData.forEach(function(user, i) {
+    var isSelf = user.username === currentUsername;
     html += '<tr style="border-bottom:1px solid var(--color-border)">';
     html += '<td class="py-3 px-4 text-sm" style="color:var(--color-text-muted)">' + (i + 1) + '</td>';
     html += '<td class="py-3 px-4"><span class="font-semibold text-sm" style="color:var(--color-text)">' + escHtml(user.username) + '</span></td>';
@@ -54,10 +56,14 @@ function renderUsersTable() {
     html += '<td class="py-3 px-4 text-xs" style="color:var(--color-text-muted)">' + escHtml(user.whp) + '</td>';
     html += '<td class="py-3 px-4">' + statusBadge(user.is_active) + '</td>';
     html += '<td class="py-3 px-4">';
-    html += '<div class="flex items-center gap-2">';
-    html += '<button onclick="window._editUser(\'' + user.id + '\')" class="btn-icon" title="Edit" style="color:var(--color-info);background:var(--color-info-light);width:2rem;height:2rem;border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none"><i class="fas fa-pen text-xs"></i></button>';
-    html += '<button onclick="window._deleteUser(\'' + user.id + '\',\'' + escHtml(user.username) + '\')" class="btn-icon" title="Hapus" style="color:var(--color-danger);background:var(--color-danger-light);width:2rem;height:2rem;border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none"><i class="fas fa-trash text-xs"></i></button>';
-    html += '</div>';
+    if (isSelf) {
+      html += '<span style="color:var(--color-text-muted);font-size:0.75rem">Akun Anda</span>';
+    } else {
+      html += '<div class="flex items-center gap-2">';
+      html += '<button onclick="window._editUser(\'' + user.id + '\')" class="btn-icon" title="Edit" style="color:var(--color-info);background:var(--color-info-light);width:2rem;height:2rem;border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none"><i class="fas fa-pen text-xs"></i></button>';
+      html += '<button onclick="window._deleteUser(\'' + user.id + '\',\'' + escHtml(user.username) + '\')" class="btn-icon" title="Hapus" style="color:var(--color-danger);background:var(--color-danger-light);width:2rem;height:2rem;border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:none"><i class="fas fa-trash text-xs"></i></button>';
+      html += '</div>';
+    }
     html += '</td>';
     html += '</tr>';
   });
