@@ -13,9 +13,19 @@ Dashboard monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
 - **Best Produk** — Ranking produk terlaris
 - **Ringkasan Stok** — Status stok terkini
 - **Chat AI** — Asisten penjualan berbasis Gemini AI
-- **Login & Role** — Super Admin / Admin WHP
+- **Pengaturan** — Profil akun, manajemen user (super_admin), toggle dark mode
+- **Manajemen Akun** — CRUD user (tambah/edit/hapus), role & WHP assignment. User tidak bisa edit/hapus akun sendiri
+- **Login & Role** — Super Admin / Admin / Admin WHP
 - **Dark Mode** — Toggle tema gelap/terang
 - **Export** — Screenshot (PNG) & PDF
+
+## Role
+
+| Role | Akses |
+|------|-------|
+| `super_admin` | Full access + Manajemen Akun |
+| `admin` | Dashboard, sales, distribusi, input data, laporan, chat AI |
+| `admin_whp` | Terbatas sesuai WHP assignment, tanpa SalesHub |
 
 ## Teknologi
 
@@ -34,19 +44,24 @@ Dashboard monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
 
 | File | Deskripsi |
 |------|-----------|
-| `worker/` | Cloudflare Workers API (pengganti GAS backend) |
+| `worker/` | Cloudflare Workers API |
 | `worker/src/index.js` | Entry point worker, routing |
-| `worker/src/routes/` | Handler per endpoint (beranda, sales-hub, dll) |
+| `worker/src/routes/` | Handler per endpoint (beranda, sales-hub, users, dll) |
+| `worker/src/routes/users.js` | CRUD user (list, create, update, remove) |
 | `worker/wrangler.toml` | Konfigurasi Cloudflare Workers |
+| `worker/create-users-table.sql` | Migrasi tabel users + RLS policies + seed data |
 | `migrate.js` | Script migrasi Google Sheets → Supabase |
 | `Main.js` - `Sales.js` - dll | Backend GAS (legacy, masih dipakai) |
 | `index.html` | Halaman utama SPA (login, sidebar, routing, seluruh konten dashboard) |
-| `dashboard.html` | Salinan identik `index.html`, dijaga tetap sinkron -- keduanya harus selalu sama isinya |
-| `worker/rls-setup.sql` | Row Level Security policy untuk Supabase (jalankan sekali sebelum pakai anon key asli) |
+| `dashboard.html` | Salinan identik `index.html`, dijaga tetap sinkron |
+| `worker/rls-setup.sql` | Row Level Security policy untuk Supabase |
 
 ## Setup Cloudflare Workers
 
-**Sebelum deploy pertama kali**, jalankan `worker/rls-setup.sql` sekali di Supabase SQL Editor (Project > SQL Editor) untuk mengaktifkan Row Level Security + policy yang dibutuhkan Worker. Ini WAJIB dilakukan sebelum mengisi `SUPABASE_ANON_KEY` dengan anon key asli, karena RLS yang aktif tanpa policy justru akan menolak semua akses.
+**Sebelum deploy pertama kali**, jalankan SQL berikut di Supabase SQL Editor (Project > SQL Editor):
+
+1. `worker/rls-setup.sql` — aktifkan RLS + policy untuk semua tabel existing
+2. `worker/create-users-table.sql` — buat tabel `users` + RLS + seed 4 akun default
 
 ```bash
 cd worker
@@ -57,7 +72,7 @@ npx wrangler secret put GEMINI_API_KEY       # (opsional) untuk Chat AI
 npx wrangler deploy
 ```
 
-Subdomain `workers.dev` untuk akun Cloudflare harus sudah terdaftar terlebih dahulu (Workers & Pages > buka sekali untuk auto-generate, atau `PUT /accounts/{id}/workers/subdomain` via API) sebelum `wrangler deploy` bisa publish ke `https://api-distribusi.<subdomain>.workers.dev`.
+Subdomain `workers.dev` untuk akun Cloudflare harus sudah terdaftar terlebih dahulu sebelum `wrangler deploy`.
 
 ## Setup Migrasi Data
 
@@ -71,17 +86,30 @@ node migrate.js
 
 | Endpoint | Deskripsi |
 |----------|-----------|
-| `GET /api/beranda?whp=...&selWhp=...&branch=...` | Data KPI beranda (whp = pembatasan role, selWhp/branch = filter dropdown user) |
+| `GET /api/beranda?whp=...&selWhp=...&branch=...` | Data KPI beranda |
 | `GET /api/sales-hub?whp=...&currDate=...&prevDate=...&backDate=...` | Sales Hub |
 | `GET /api/sales-report?dayFilter=...&filterMonth=...&startMonth=...&whp=...` | Laporan harian/pertanggal |
 | `GET /api/best-products/months` | Daftar bulan tersedia |
 | `GET /api/best-products/data?month=...` | Ranking produk |
-| `GET /api/control-point` | Control Point BIZ vs Stock (termasuk konsolidasi Tasikmalaya & WHP Bandung) |
+| `GET /api/control-point` | Control Point BIZ vs Stock |
 | `GET /api/distribution?whp=...` | Data distribusi & sisa hari stok |
-| `POST /api/login` | Login (username, password) -- verifikasi server-side |
+| `POST /api/login` | Login (username, password) |
 | `POST /api/chat` | Chat AI (proxy ke Gemini) |
+| `GET /api/users` | List semua user (super_admin only) |
+| `POST /api/users` | Tambah user baru (super_admin only) |
+| `PUT /api/users/:id` | Update user (super_admin only) |
+| `DELETE /api/users/:id` | Hapus user (super_admin only) |
 | `POST /api/save/penjualan-who` | Simpan paste data Penjualan WHO |
 | `POST /api/save/distribusi` | Simpan input Distribusi |
 | `POST /api/save/penerimaan-pabrik` | Simpan input Penerimaan Pabrik |
 | `POST /api/save/stock` | Simpan/update paste data Update-STOCK |
 | `POST /api/save/biz` | Simpan paste data BIZ (SAP) |
+
+## Akun Default
+
+| Username | Password | Role |
+|----------|----------|------|
+| `superadmin` | `admin123` | super_admin |
+| `admin` | `admin123` | admin |
+| `whp_tasik` | `admin123` | admin_whp (WHP TASIKMALAYA) |
+| `whp_bandung` | `admin123` | admin_whp (WHP BANDUNG) |
