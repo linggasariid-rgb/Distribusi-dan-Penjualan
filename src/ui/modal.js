@@ -1,12 +1,35 @@
-// Generic Yes/No confirm modal. Owns its own callback state and wiring since
-// there is exactly one instance of this modal in the DOM, shared by every
-// feature that needs a confirmation prompt.
 let confirmCallback = null;
 
-export function showConfirmModal(message, onConfirm) {
+export function showConfirmModal(message, onConfirm, options) {
   const modal = document.getElementById('confirmModal');
-  document.getElementById('confirmMessage').innerText = message;
+  const msgEl = document.getElementById('confirmMessage');
+  const yesBtn = document.getElementById('confirmYesBtn');
+  const noBtn = document.getElementById('confirmNoBtn');
+  const titleEl = document.getElementById('confirmTitle');
+
+  msgEl.innerText = message;
   confirmCallback = onConfirm;
+
+  if (options) {
+    if (titleEl) titleEl.textContent = options.title || 'Konfirmasi';
+    if (yesBtn) {
+      yesBtn.textContent = options.yesText || 'Ya, Muat Ulang';
+      if (options.yesStyle) {
+        yesBtn.style.background = options.yesStyle.background || '';
+        yesBtn.style.color = options.yesStyle.color || '';
+      }
+    }
+    if (noBtn) noBtn.textContent = options.noText || 'Tidak';
+  } else {
+    if (titleEl) titleEl.textContent = 'Konfirmasi';
+    if (yesBtn) {
+      yesBtn.textContent = 'Ya, Muat Ulang';
+      yesBtn.style.background = '';
+      yesBtn.style.color = '';
+    }
+    if (noBtn) noBtn.textContent = 'Tidak';
+  }
+
   modal.classList.remove('hidden');
   modal.classList.add('flex');
 }

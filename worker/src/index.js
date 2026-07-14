@@ -13,12 +13,13 @@ import * as saveBiz from './routes/save-biz.js';
 import * as saveStock from './routes/save-stock.js';
 import * as chat from './routes/chat.js';
 import * as login from './routes/login.js';
+import * as users from './routes/users.js';
 import * as inputHistory from './routes/input-history.js';
 import * as deleteBatch from './routes/delete-batch.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
@@ -93,7 +94,30 @@ export default {
       if (path === '/api/login' || path === '/api/login/') {
         if (request.method !== 'POST') return error('Method not allowed', 405);
         const body = await request.json();
-        return json(await login.handle(body));
+        return json(await login.handle(body, db));
+      }
+
+      // ──── USER MANAGEMENT ──────────────────────────────────────────
+      if (path === '/api/users' || path === '/api/users/') {
+        if (request.method === 'GET') return json(await users.list(db));
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return json(await users.create(db, body));
+        }
+        return error('Method not allowed', 405);
+      }
+
+      const userMatch = path.match(/^\/api\/users\/([a-f0-9-]+)$/);
+      if (userMatch) {
+        const userId = userMatch[1];
+        if (request.method === 'PUT') {
+          const body = await request.json();
+          return json(await users.update(db, userId, body));
+        }
+        if (request.method === 'DELETE') {
+          return json(await users.remove(db, userId));
+        }
+        return error('Method not allowed', 405);
       }
 
       // ──── WRITE APIs ────────────────────────────────────────────────

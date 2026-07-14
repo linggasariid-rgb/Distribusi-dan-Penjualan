@@ -713,15 +713,15 @@ TASIKMALAYA	4200000"></textarea>
 
     <!-- Pengaturan View -->
     <div id="pengaturan-view" class="hidden animate-fade-in">
-      <div class="card p-6">
+      <div class="card p-6 mb-6">
         <h2 class="text-lg font-bold mb-1" style="color:var(--color-text)"><i class="fas fa-cog mr-2" style="color:var(--color-accent)"></i>Pengaturan</h2>
         <p class="text-xs mb-6" style="color:var(--color-text-muted)">Kelola pengaturan akun dan preferensi tampilan Anda.</p>
 
         <!-- Profile Section -->
         <div class="mb-6">
-          <h3 class="text-sm font-bold mb-3" style="color:var(--color-text)"><i class="fas fa-user-circle mr-2"></i>Profil Pengguna</h3>
+          <h3 class="text-sm font-bold mb-3" style="color:var(--color-text)"><i class="fas fa-user-circle mr-2"></i>Profil Saya</h3>
           <div class="p-4 rounded-xl" style="background:var(--color-bg-alt);border:1px solid var(--color-border)">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Nama</label>
                 <p id="settings-user-name" class="text-sm font-medium" style="color:var(--color-text)">-</p>
@@ -734,6 +734,36 @@ TASIKMALAYA	4200000"></textarea>
                 <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">WHP</label>
                 <p id="settings-user-whp" class="text-sm font-medium" style="color:var(--color-text)">-</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Management (super_admin only) -->
+        <div id="admin-user-management" class="mb-6" style="display:none">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold" style="color:var(--color-text)"><i class="fas fa-users-cog mr-2"></i>Manajemen Akun</h3>
+            <button id="add-user-btn" class="btn btn-primary" style="font-size:0.8rem;padding:0.4rem 0.8rem">
+              <i class="fas fa-plus mr-1"></i>Tambah Akun
+            </button>
+          </div>
+          <div class="rounded-xl overflow-hidden" style="background:var(--color-bg-alt);border:1px solid var(--color-border)">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr style="border-bottom:2px solid var(--color-border)">
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">No</th>
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">Username</th>
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">Nama</th>
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">Role</th>
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">WHP</th>
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">Status</th>
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style="color:var(--color-text-muted)">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body">
+                  <tr><td colspan="7" class="text-center py-6" style="color:var(--color-text-muted)"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -766,6 +796,58 @@ TASIKMALAYA	4200000"></textarea>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4" style="background:rgba(15,23,42,0.6);backdrop-filter:blur(4px)">
+      <div class="w-full max-w-md overflow-hidden animate-scale-in" style="background:var(--color-surface);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);border:1px solid var(--color-border)">
+        <div class="p-5 flex justify-between items-center" style="border-bottom:1px solid var(--color-border)">
+          <h3 id="userModalTitle" class="text-base font-bold" style="color:var(--color-text)">Tambah User</h3>
+          <button id="userModalClose" class="btn-icon" style="color:var(--color-text-muted);cursor:pointer;background:none;border:none;font-size:1rem"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="userForm" class="p-5 space-y-4">
+          <input type="hidden" id="user-form-id" value="">
+          <div id="userModalError" class="hidden p-3 rounded-lg text-xs font-medium" style="background:var(--color-danger-light);color:var(--color-danger)"></div>
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Username <span style="color:var(--color-danger)">*</span></label>
+            <input id="user-form-username" type="text" required class="input" placeholder="contoh: admin_baru" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);color:var(--color-text);font-size:0.85rem">
+          </div>
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Password <span style="color:var(--color-danger)">*</span></label>
+            <input id="user-form-password" type="password" required minlength="6" class="input" placeholder="Minimal 6 karakter" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);color:var(--color-text);font-size:0.85rem">
+          </div>
+          <div>
+            <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Nama Lengkap <span style="color:var(--color-danger)">*</span></label>
+            <input id="user-form-name" type="text" required class="input" placeholder="contoh: Admin Bandung" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);color:var(--color-text);font-size:0.85rem">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Role</label>
+              <select id="user-form-role" class="input" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);color:var(--color-text);font-size:0.85rem">
+                <option value="admin">Admin</option>
+                <option value="admin_whp">Admin WHP</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">WHP</label>
+              <select id="user-form-whp" class="input" style="width:100%;padding:0.5rem 0.75rem;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-bg);color:var(--color-text);font-size:0.85rem">
+                <option value="ALL">ALL</option>
+                <option value="WHP BANDUNG">WHP Bandung</option>
+                <option value="WHP TASIKMALAYA">WHP Tasikmalaya</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="user-form-active" checked style="accent-color:var(--color-accent)">
+            <label for="user-form-active" class="text-xs font-medium" style="color:var(--color-text-muted)">Akun Aktif</label>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" id="userModalCancel" class="btn btn-ghost flex-1" style="font-size:0.85rem">Batal</button>
+            <button type="submit" id="userFormSubmit" class="btn btn-primary flex-1" style="font-size:0.85rem"><i class="fas fa-save mr-2"></i>Simpan</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -808,7 +890,7 @@ TASIKMALAYA	4200000"></textarea>
             <i class="fas fa-question-circle" style="color:var(--color-accent);font-size:1.25rem"></i>
           </div>
           <div>
-            <h3 class="text-lg font-bold" style="color:var(--color-text)">Konfirmasi</h3>
+            <h3 id="confirmTitle" class="text-lg font-bold" style="color:var(--color-text)">Konfirmasi</h3>
             <p id="confirmMessage" class="text-sm mt-1" style="color:var(--color-text-secondary)"></p>
           </div>
         </div>

@@ -9,6 +9,7 @@ export const READ = {
   getControlPointData: { url: '/api/control-point', params: [] },
   getDistributionData: { url: '/api/distribution', params: ['whp'] },
   getInputHistory: { url: '/api/input-history', params: ['table'] },
+  getUsers: { url: '/api/users', params: [] },
 };
 
 export const WRITE = {
