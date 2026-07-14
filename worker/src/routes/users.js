@@ -6,12 +6,15 @@ async function sha256(msg) {
 }
 
 export async function list(db) {
-  var { data, error } = await db.query('users', {
-    select: 'id,username,name,role,whp,is_active,created_at,updated_at',
-    order: 'created_at.asc'
-  });
-  if (error) return { status: 'error', message: error.message };
-  return { status: 'success', data: data || [] };
+  try {
+    var data = await db.query('users', {
+      select: 'id,username,name,role,whp,is_active,created_at,updated_at',
+      order: 'created_at.asc'
+    });
+    return { status: 'success', data: data || [] };
+  } catch (e) {
+    return { status: 'error', message: e.message };
+  }
 }
 
 export async function create(db, body) {
@@ -35,16 +38,23 @@ export async function create(db, body) {
 
   var password_hash = await sha256(password);
 
-  var { data: existing } = await db.query('users', { select: 'id', eq: { username: username }, limit: 1 });
-  if (existing && existing.length > 0) {
-    return { status: 'error', message: 'Username sudah digunakan' };
+  try {
+    var existing = await db.query('users', { select: 'id', eq: { username: username }, limit: 1 });
+    if (existing && existing.length > 0) {
+      return { status: 'error', message: 'Username sudah digunakan' };
+    }
+  } catch (e) {
+    return { status: 'error', message: 'Gagal cek username: ' + e.message };
   }
 
-  var { error } = await db.request('POST', 'users', {
-    data: { username, password_hash, name, role, whp, is_active }
-  });
-  if (error) return { status: 'error', message: error.message };
-  return { status: 'success', message: 'User berhasil ditambahkan' };
+  try {
+    await db.request('POST', 'users', {
+      data: { username, password_hash, name, role, whp, is_active }
+    });
+    return { status: 'success', message: 'User berhasil ditambahkan' };
+  } catch (e) {
+    return { status: 'error', message: e.message };
+  }
 }
 
 export async function update(db, id, body) {
@@ -87,12 +97,16 @@ export async function update(db, id, body) {
 export async function remove(db, id) {
   if (!id) return { status: 'error', message: 'ID user harus diisi' };
 
-  var { data: user } = await db.query('users', { select: 'username,role', eq: { id: id }, limit: 1 });
-  if (user && user.length > 0 && user[0].role === 'super_admin') {
-    var { data: allSuperAdmins } = await db.query('users', { select: 'id', eq: { role: 'super_admin' } });
-    if (allSuperAdmins && allSuperAdmins.length <= 1) {
-      return { status: 'error', message: 'Tidak bisa menghapus super admin terakhir' };
+  try {
+    var user = await db.query('users', { select: 'username,role', eq: { id: id }, limit: 1 });
+    if (user && user.length > 0 && user[0].role === 'super_admin') {
+      var allSuperAdmins = await db.query('users', { select: 'id', eq: { role: 'super_admin' } });
+      if (allSuperAdmins && allSuperAdmins.length <= 1) {
+        return { status: 'error', message: 'Tidak bisa menghapus super admin terakhir' };
+      }
     }
+  } catch (e) {
+    return { status: 'error', message: 'Gagal cek user: ' + e.message };
   }
 
   var path = `/rest/v1/users?id=eq.${encodeURIComponent(id)}`;

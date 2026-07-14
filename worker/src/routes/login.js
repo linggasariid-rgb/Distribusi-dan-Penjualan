@@ -23,7 +23,7 @@ export async function handle(body, db) {
 
   if (db) {
     try {
-      var { data } = await db.query('users', {
+      var data = await db.query('users', {
         select: 'username,password_hash,name,role,whp,is_active',
         eq: { username: username },
         limit: 1
