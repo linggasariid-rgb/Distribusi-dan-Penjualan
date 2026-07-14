@@ -21,3 +21,9 @@ ON CONFLICT (username) DO NOTHING;
 
 -- Enable RLS
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Policies: izinkan anon key akses full (sama seperti tabel lain)
+CREATE POLICY "anon select users" ON users FOR SELECT TO anon USING (true);
+CREATE POLICY "anon insert users" ON users FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon update users" ON users FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon delete users" ON users FOR DELETE TO anon USING (true);
