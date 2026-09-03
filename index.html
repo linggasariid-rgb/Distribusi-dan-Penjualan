@@ -11,6 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <link rel="stylesheet" href="src/styles/main.css">
   <link rel="stylesheet" href="src/styles/darkmode.css">
   <link rel="stylesheet" href="src/styles/layout.css">
@@ -119,8 +120,11 @@
           <div id="menu-control-point" class="sidebar-item-sub">
             <i class="fas fa-clipboard-check w-4 text-center"></i><span>Control Point</span>
           </div>
-          <div id="menu-best-products" class="sidebar-item-sub">
+          <div id="menu-best-products" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
             <i class="fas fa-trophy w-4 text-center"></i><span>Best Produk</span>
+          </div>
+          <div id="menu-rekap-belanja" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-file-invoice-dollar w-4 text-center"></i><span>Rekap Belanja</span>
           </div>
         </div>
       </div>
@@ -407,6 +411,55 @@
     </div>
 
     <!-- Best Products View -->
+    <div id="rekap-belanja-view" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bulan</label>
+            <input type="month" id="rekap-belanja-month" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cabang</label>
+            <select id="rekap-belanja-branch" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="ALL">Semua Cabang</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tipe</label>
+            <select id="rekap-belanja-kategori" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-semibold text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="ALL">Semua</option>
+              <option value="Master Stokis">Master Stokis</option>
+              <option value="Stokis">Stokis</option>
+              <option value="Karyawan">Karyawan</option>
+              <option value="Apps">TSI Apps</option>
+            </select>
+          </div>
+          <button id="btn-rekap-belanja-refresh" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all"><i class="fas fa-sync-alt mr-2"></i>Terapkan</button>
+        </div>
+        <button id="btn-rekap-belanja-export" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-semibold shadow-sm transition-all text-sm flex items-center gap-2">
+          <i class="fas fa-file-excel"></i> Export Excel
+        </button>
+      </div>
+
+      <div id="rekap-belanja-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Menarik data transaksi...</p>
+      </div>
+
+      <div id="rekap-belanja-content" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead id="rekap-belanja-thead" class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
+            </thead>
+            <tbody id="rekap-belanja-tbody" class="divide-y divide-slate-100">
+            </tbody>
+            <tfoot id="rekap-belanja-tfoot" class="bg-slate-50 font-bold text-slate-800 border-t border-slate-200">
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div id="best-products-view" class="hidden space-y-5 animate-fade-in">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-3">
@@ -734,6 +787,35 @@ TASIKMALAYA	4200000"></textarea>
                 <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">WHP</label>
                 <p id="settings-user-whp" class="text-sm font-medium" style="color:var(--color-text)">-</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Management (super_admin only) -->
+        <div id="admin-price-management" class="mb-6" style="display:none">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-bold" style="color:var(--color-text)"><i class="fas fa-tags mr-2"></i>Pengaturan Harga Produk</h3>
+            <button id="save-prices-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm transition-all" style="font-size:0.8rem;padding:0.4rem 0.8rem">
+              <i class="fas fa-save mr-1"></i>Simpan Harga
+            </button>
+          </div>
+          <p class="text-xs text-slate-500 mb-3">Isi harga per bungkus/pcs. Harga ini akan otomatis digunakan di menu laporan "Rekap Belanja".</p>
+          <div class="rounded-xl overflow-hidden bg-white" style="border:1px solid var(--color-border)">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200">
+                    <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Nama Produk</th>
+                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Master Stokis</th>
+                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Stokis</th>
+                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Karyawan</th>
+                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Apps</th>
+                  </tr>
+                </thead>
+                <tbody id="price-table-body" class="divide-y divide-slate-100 text-sm">
+                  <tr><td colspan="3" class="px-4 py-8 text-center text-slate-500 animate-pulse">Memuat data harga...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

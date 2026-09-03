@@ -280,5 +280,90 @@ export function initPengaturanView() {
 
     var modalCancel = document.getElementById('userModalCancel');
     if (modalCancel) modalCancel.onclick = hideUserModal;
+
+    // --- PRICE MANAGEMENT ---
+    var priceSection = document.getElementById('admin-price-management');
+    if (priceSection) priceSection.style.display = '';
+    loadPrices();
+    
+    var savePricesBtn = document.getElementById('save-prices-btn');
+    if (savePricesBtn) savePricesBtn.onclick = savePrices;
+  }
+}
+
+async function loadPrices() {
+  const tbody = document.getElementById('price-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-8 text-center text-slate-500 animate-pulse">Memuat data harga...</td></tr>';
+  
+  try {
+    const res = await callApi('getPrices');
+    if (!res || !res.data) throw new Error('Data kosong');
+    
+    let html = '';
+    res.data.forEach(p => {
+      html += `<tr>
+        <td class="px-4 py-3 font-medium text-slate-700">${p.product_name}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center justify-end">
+            <span class="text-slate-400 mr-2">Rp</span>
+            <input type="number" class="price-input-mst w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_mst}">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex items-center justify-end">
+            <span class="text-slate-400 mr-2">Rp</span>
+            <input type="number" class="price-input-stk w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_stk}">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex items-center justify-end">
+            <span class="text-slate-400 mr-2">Rp</span>
+            <input type="number" class="price-input-karyawan w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_karyawan || 0}">
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex items-center justify-end">
+            <span class="text-slate-400 mr-2">Rp</span>
+            <input type="number" class="price-input-apps w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_apps || 0}">
+          </div>
+        </td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500">Gagal memuat harga: ${e.message}</td></tr>`;
+  }
+}
+
+async function savePrices() {
+  const btn = document.getElementById('save-prices-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Menyimpan...';
+
+  try {
+    const mstInputs = document.querySelectorAll('.price-input-mst');
+    const stkInputs = document.querySelectorAll('.price-input-stk');
+    const karyawanInputs = document.querySelectorAll('.price-input-karyawan');
+    const appsInputs = document.querySelectorAll('.price-input-apps');
+    
+    const prices = [];
+    mstInputs.forEach((input, i) => {
+      prices.push({
+        product_name: input.getAttribute('data-product'),
+        price_mst: parseInt(input.value) || 0,
+        price_stk: parseInt(stkInputs[i].value) || 0,
+        price_karyawan: parseInt(karyawanInputs[i].value) || 0,
+        price_apps: parseInt(appsInputs[i].value) || 0
+      });
+    });
+
+    const res = await callApi('savePrices', prices);
+    showToast('Harga berhasil disimpan!');
+  } catch (e) {
+    showToast('Gagal menyimpan harga: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save mr-1"></i>Simpan Harga';
   }
 }
