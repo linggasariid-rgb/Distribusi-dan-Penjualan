@@ -10,9 +10,17 @@ function isIgnoredBranch(cabang) {
 // Port dari Sales.js:494-498 (GAS legacy) -- dicek sebelum di-uppercase karena
 // nilai lama tersimpan mixed-case ("TsiEmployee").
 function mapTipe(tipe) {
+  const u = tipe.toUpperCase();
+  if (u.startsWith('MST ') || u === 'MST') return 'MST';
+  if (u.startsWith('STK ') || u === 'STK') return 'STK';
+  if (u.startsWith('MSI ') || u === 'MSI') return 'MSI';
+  if (u.startsWith('KARYAWAN ') || u === 'KARYAWAN' || u.startsWith('ORE ') || u === 'ORE' || u === 'TSIEMPLOYEE') return 'KARYAWAN';
+  if (u.startsWith('TSIAPPS ') || u === 'TSIAPPS' || u.startsWith('ORM ') || u === 'ORM') return 'TSIAPPS';
+  
   if (tipe === 'ORE' || tipe === 'TsiEmployee') return 'KARYAWAN';
   if (tipe === 'ORM' || tipe === 'TsiApps') return 'TSIAPPS';
-  return tipe.toUpperCase();
+  
+  return u;
 }
 
 function snapshotLabel(d) {

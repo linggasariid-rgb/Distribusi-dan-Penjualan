@@ -338,7 +338,7 @@ function buildSalesHubExportCard(content, tglStr) {
 
   var card = document.getElementById('sh-screenshot-card');
   var wrapperHtml = `
-    <div style="width:1400px;margin:0;padding:0 0 36px 0;background:${shBg};font-family:Arial,sans-serif;">
+    <div style="width:2600px;margin:0;padding:0 0 36px 0;background:${shBg};font-family:Arial,sans-serif;">
       <style>
         #sh-overlay-content, #sh-overlay-content * { overflow:visible !important; }
         #sh-overlay-content { font-size:56px !important; }
@@ -346,7 +346,12 @@ function buildSalesHubExportCard(content, tglStr) {
         #sh-overlay-content .text-\\[13px\\],
         #sh-overlay-content .text-\\[11px\\],
         #sh-overlay-content .text-\\[10px\\],
-        #sh-overlay-content .text-\\[9px\\] { font-size:42px !important; }
+        #sh-overlay-content .text-\\[9px\\],
+        #sh-overlay-content .text-xs,
+        #sh-overlay-content .text-sm { font-size:36px !important; line-height:1.5 !important; }
+        #sh-overlay-content .text-base { font-size:42px !important; line-height:1.5 !important; }
+        #sh-overlay-content .text-lg, #sh-overlay-content .text-xl, #sh-overlay-content .text-2xl { font-size:56px !important; line-height:1.2 !important; }
+        #sh-overlay-content td, #sh-overlay-content th { padding: 18px 24px !important; }
         #sh-overlay-content .shadow-sm { box-shadow:none !important; }
         #sh-overlay-content #sales-hub-kpis h4 { color:${isDark ? '#e2e8f0' : '#334155'} !important; }
         #sales-hub-periods { grid-template-columns:1fr 1fr !important; }
@@ -360,7 +365,7 @@ function buildSalesHubExportCard(content, tglStr) {
       </div>
     </div>`;
   card.innerHTML = wrapperHtml;
-  card.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:999999;overflow:visible;width:1400px;height:auto;margin:0;padding:0;border:0;';
+  card.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:999999;overflow:visible;width:2600px;height:auto;margin:0;padding:0;border:0;';
   card.querySelector('#sh-overlay-content').appendChild(clone);
 
   return { card: card, shBg: shBg };

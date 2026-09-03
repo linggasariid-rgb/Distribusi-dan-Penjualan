@@ -9,6 +9,7 @@ Dashboard monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
 - **Control Point** — Perbandingan stok BIZ (SAP) vs Update-STOCK (Excel)
 - **Input Data** — Form paste Excel untuk semua tipe data
 - **Laporan Harian & Penjualan Pertanggal** — Rekap penjualan
+- **Rekap Belanja** — Rekap pembelanjaan khusus Master Stokis & Stokis
 - **SalesHub** — Perbandingan penjualan antar periode
 - **Best Produk** — Ranking produk terlaris
 - **Ringkasan Stok** — Status stok terkini
@@ -91,6 +92,9 @@ node migrate.js
 | `GET /api/sales-report?dayFilter=...&filterMonth=...&startMonth=...&whp=...` | Laporan harian/pertanggal |
 | `GET /api/best-products/months` | Daftar bulan tersedia |
 | `GET /api/best-products/data?month=...` | Ranking produk |
+| `GET /api/report-belanja-stokis?month=...` | Laporan rekap belanja MST/MSI/STK |
+| `GET /api/prices` | Mengambil harga produk dari database |
+| `POST /api/prices` | Update harga produk (super_admin only) |
 | `GET /api/control-point` | Control Point BIZ vs Stock |
 | `GET /api/distribution?whp=...` | Data distribusi & sisa hari stok |
 | `POST /api/login` | Login (username, password) |
@@ -113,3 +117,16 @@ node migrate.js
 | `admin` | `admin123` | admin |
 | `whp_tasik` | `admin123` | admin_whp (WHP TASIKMALAYA) |
 | `whp_bandung` | `admin123` | admin_whp (WHP BANDUNG) |
+
+## Recent Updates (September 2026)
+
+- **Cabang Baru (Cibaduyut):** Penambahan konfigurasi untuk cabang `CIBADUYUT` secara hardcoded di `worker/src/config.js` dan Apps Script. Pemetaan WHP diubah menjadi `WHP BANDUNG` dan lead time 1 hari.
+- **Pembersihan Cabang Lama:** `BANYUMAS`, `GUDANG BANDUNG`, dan `GUDANG TASIKMALAYA` telah dihapus secara permanen dari konfigurasi `STOCK_SHEET_ROW_ORDER` dan dari database `branches` di Supabase untuk merapikan tabel Ringkasan Stok.
+- **Stok Excel Positional Update:** Struktur *copy-paste* stok Excel disesuaikan menjadi **13 baris** (tanpa Banyumas, diakhiri dengan Cibaduyut) agar pembacaan array 2 dimensi tepat sasaran saat menimpa tabel `stock`.
+- **Perbaikan Kalender Best Produk:** Penanganan PostgreSQL exception `"date/time field value out of range"` pada bulan yang berjumlah kurang dari 31 hari (seperti September). Kalkulasi hari terakhir kini mendeteksi otomatis sesuai bulan `(new Date(y, m, 0).getDate())`.
+- **Rekap Belanja Master Stokis & Stokis:** Penambahan modul pelaporan baru yang menampilkan rekap transaksi bulanan dengan tampilan *grouped* per nama customer, dilengkapi filter tipe dan cabang dinamis.
+- **Pengaturan Harga Produk:** Implementasi tabel `product_prices` di Supabase. Harga kini dikelola langsung lewat database (bukan hardcoded) melalui antarmuka khusus di menu Pengaturan yang hanya dapat diakses oleh `super_admin`.
+- **Ekstraksi NAMA PDM:** Fitur *paste* Excel Penjualan WHO kini mendeteksi nama asli customer (NAMA PDM) dan menggabungkannya ke kolom `tipe_customer` (misal: "MST Sinergi Kautsar"), sehingga nama muncul otomatis di laporan Rekap Belanja. Termasuk penambahan *aliases* nama panjang (seperti "Sin Precision White" -> SPW).
+- **Export Excel Pro:** Export ke Excel menggunakan library `xlsx-js-style` yang mendukung warna header (*styling*), otomatisasi format angka ribuan, lebar kolom yang dihitung presisi, dan *grand total*.
+- **Perbaikan Deteksi Tipe Customer:** Pembaruan logika di Cloudflare Workers (`sales-hub.js`) agar tipe customer (`MST`, `MSI`, `STK`, `Karyawan`, dan `Apps`) tetap terakumulasi secara benar di menu Perbandingan Penjualan meskipun format data mengandung tambahan suffix nama (misal: "MST Sinergi Kautsar").
+- **Perbaikan Layout Export Screenshot:** Menyesuaikan ulang CSS (padding, line-height) dan memperlebar dimensi bingkai canvas `html2canvas` pada menu Perbandingan Penjualan menjadi `2600px` agar tabel tetap rapi, proporsional, dan tidak terpotong saat diexport.
