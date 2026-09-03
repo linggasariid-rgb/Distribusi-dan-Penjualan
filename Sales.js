@@ -286,12 +286,16 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
 
     // 2. Proses Data Penjualan
     const salesData = getSheetDataCached("Update-Penjualan WHO");
-    const salesHeader = salesData.shift();
+    const salesHeader = salesData[0].map(h => String(h).trim().toUpperCase().replace(/\s+/g, ''));
+    const salesRows = salesData.slice(1);
 
-    // Indeks Kolom (A=0, B=1, D=3, AH=33)
-    const colBranch = 1;     // Kolom B (CABANG)
-    const colTanggal = 3;    // Kolom D (TANGGAL)
-    const colJumlah = 33;    // Kolom AH (JUMLAH)
+    const colBranch = salesHeader.indexOf('CABANG');
+    const colTanggal = salesHeader.indexOf('TANGGAL');
+    const colJumlah = salesHeader.indexOf('JUMLAH');
+
+    if (colBranch === -1 || colTanggal === -1 || colJumlah === -1) {
+      throw new Error("Kolom CABANG/TANGGAL/JUMLAH tidak ditemukan di sheet.");
+    }
 
     let totalLastMonth = 0;
     let totalMonthly = 0;
@@ -301,7 +305,7 @@ function getSalesDashboardData(filterWHO, filterBranch, userWHP) {
     
     let maxTimeCurrMonth = 0;
 
-    salesData.forEach(row => {
+    salesRows.forEach(row => {
       const branchName = String(row[colBranch] || '').toUpperCase().trim();
       const qty = cleanNum(row[colJumlah]); // Kolom AD
       
@@ -447,12 +451,17 @@ function getSalesHubData(userWHP, currDateStr, prevDateStr, backdateStr) {
     if (!sheet) throw new Error("Sheet 'Update-Penjualan WHO' tidak ditemukan.");
 
     const data = getSheetDataCached("Update-Penjualan WHO");
+    const headers = data[0].map(h => String(h).trim().toUpperCase().replace(/\s+/g, ''));
     const rows = data.slice(1);
 
-    const colBranch = 1;
-    const colTipe = 2;
-    const colTanggal = 3;
-    const colJumlah = 33;
+    const colBranch = headers.indexOf('CABANG');
+    const colTipe = headers.indexOf('TIPE');
+    const colTanggal = headers.indexOf('TANGGAL');
+    const colJumlah = headers.indexOf('JUMLAH');
+
+    if (colBranch === -1 || colTanggal === -1 || colJumlah === -1) {
+      throw new Error("Kolom CABANG/TANGGAL/JUMLAH tidak ditemukan di sheet.");
+    }
 
     function parseYMD(str) {
       if (!str) return null;

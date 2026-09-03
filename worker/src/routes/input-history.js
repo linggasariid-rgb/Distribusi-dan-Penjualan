@@ -14,7 +14,8 @@ export async function handle(db, table) {
     return { status: 'error', message: 'Tabel tidak dikenali' };
   }
 
-  const since = new Date(Date.now() - 3 * 86400 * 1000).toISOString().split('T')[0];
+  // Ubah dari 3 hari menjadi 14 hari agar user bisa melihat riwayat paste (termasuk backdate/revisi) sampai 2 minggu ke belakang.
+  const since = new Date(Date.now() - 14 * 86400 * 1000).toISOString().split('T')[0];
   let rows;
   try {
     rows = await db.query(table, {

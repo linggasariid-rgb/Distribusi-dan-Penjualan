@@ -24,10 +24,14 @@ export async function data(db, filterMonth) {
     targetMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   }
 
+  const parts = targetMonth.split('-');
+  const lastDay = new Date(parseInt(parts[0]), parseInt(parts[1]), 0).getDate();
+  const lteDate = `${targetMonth}-${String(lastDay).padStart(2, '0')}`;
+
   const rows = await db.query('penjualan_who', {
     select: 'tanggal,jumlah,products',
     gte: { tanggal: `${targetMonth}-01` },
-    lte: { tanggal: `${targetMonth}-31` },
+    lte: { tanggal: lteDate },
   });
 
   const totals = {};

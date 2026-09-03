@@ -10,6 +10,8 @@ export const READ = {
   getDistributionData: { url: '/api/distribution', params: ['whp'] },
   getInputHistory: { url: '/api/input-history', params: ['table'] },
   getUsers: { url: '/api/users', params: [] },
+  getPrices: { url: '/api/prices', params: [] },
+  getRekapBelanja: { url: '/api/report-belanja-stokis', params: ['month'] }
 };
 
 export const WRITE = {
@@ -21,6 +23,7 @@ export const WRITE = {
   chatWithSalesAI: { url: '/api/chat', params: ['pesan', 'riwayat', 'userWHP'] },
   login: { url: '/api/login', params: ['username', 'password'] },
   deleteInputBatch: { url: '/api/delete-batch', params: ['table', 'createdAt'] },
+  savePrices: { url: '/api/prices', params: ['prices'] }
 };
 
 export const BERANDA = ['getBerandaData', 'getSalesDashboardData'];

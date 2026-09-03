@@ -16,6 +16,8 @@ import * as login from './routes/login.js';
 import * as users from './routes/users.js';
 import * as inputHistory from './routes/input-history.js';
 import * as deleteBatch from './routes/delete-batch.js';
+import * as prices from './routes/prices.js';
+import * as reportBelanjaStokis from './routes/report-belanja-stokis.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -95,6 +97,17 @@ export default {
         if (request.method !== 'POST') return error('Method not allowed', 405);
         const body = await request.json();
         return json(await login.handle(body, db));
+      }
+
+      if (path === '/api/prices') {
+        let body = null;
+        if (request.method === 'POST') body = await request.json();
+        return json(await prices.handle(db, request.method, body));
+      }
+
+      if (path === '/api/report-belanja-stokis') {
+        const monthFilter = url.searchParams.get('month') || '';
+        return json(await reportBelanjaStokis.handle(db, monthFilter));
       }
 
       // ──── USER MANAGEMENT ──────────────────────────────────────────

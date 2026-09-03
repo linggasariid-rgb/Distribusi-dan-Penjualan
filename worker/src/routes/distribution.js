@@ -40,6 +40,12 @@ export async function handle(db, whp) {
   // Kumpulkan nilai penjualan PER TRANSAKSI (bukan langsung dijumlah) per cabang+produk,
   // supaya filter outlier bisa dijalankan sebelum dijumlahkan -- port dari Distribution.js:78-107.
   const dailySales = {};
+  for (const b of branches) {
+    if (b.is_active && !isIgnoredBranch(b.name)) {
+      dailySales[b.name] = {};
+    }
+  }
+
   for (const r of salesRows) {
     const cabang = r.cabang;
     if (isIgnoredBranch(cabang)) continue;

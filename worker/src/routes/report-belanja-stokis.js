@@ -15,11 +15,11 @@ export async function handle(db, monthFilter) {
 
     // 2. Tarik harga produk dari database
     const pricesRaw = await db.query('product_prices', {
-      select: 'product_name,price_mst,price_stk,price_karyawan,price_apps'
+      select: 'product_name,price_mst,price_stk,price_karyawan'
     });
     const priceMap = {};
     for (const p of pricesRaw) {
-      priceMap[p.product_name] = { mst: p.price_mst, stk: p.price_stk, karyawan: p.price_karyawan, apps: p.price_apps };
+      priceMap[p.product_name] = { mst: p.price_mst, stk: p.price_stk, karyawan: p.price_karyawan };
     }
 
   // 3. Tarik data penjualan WHO
@@ -70,7 +70,7 @@ export async function handle(db, monthFilter) {
           if (category === 'Master Stokis') price = priceMap[prodName].mst;
           else if (category === 'Stokis') price = priceMap[prodName].stk;
           else if (category === 'Karyawan') price = priceMap[prodName].karyawan;
-          else if (category === 'Apps') price = priceMap[prodName].apps;
+          else if (category === 'Apps') price = priceMap[prodName].mst; // Apps pakai harga Master Stokis
           
           totalNominal += (qty * price);
         }

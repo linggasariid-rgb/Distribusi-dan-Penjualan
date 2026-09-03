@@ -52,6 +52,13 @@ export async function handle(db, body) {
     };
   }
 
+  // Cari kolom NAMA PDM secara spesifik -- harus mengandung "NAMA" DAN "PDM"
+  // atau tepat bernama "NAMA PDM". Hindari mencocokkan kolom lain yang ada kata "NAMA".
+  const namaPdmCol = headers.findIndex(h => {
+    const u = h.toUpperCase();
+    return u === 'NAMA PDM' || (u.includes('NAMA') && u.includes('PDM'));
+  });
+
   const rows = [];
   for (let i = 1; i < data.length; i++) {
     const r = data[i];
@@ -64,11 +71,23 @@ export async function handle(db, body) {
       products[key] = parseNum(r[idx]);
     }
 
+    // Ambil tipe dari kolom ke-3 (MST/MSI/STK)
+    const tipe = String(r[2] || '').trim();
+    // Gabungkan dengan NAMA PDM: simpan sebagai "MST Sinergi Kautsar"
+    // sehingga kolom tipe_customer mengandung keduanya sekaligus
+    let tipeCustomer = tipe;
+    if (namaPdmCol >= 0) {
+      const namaPdm = String(r[namaPdmCol] || '').trim();
+      if (namaPdm) {
+        tipeCustomer = `${tipe} ${namaPdm}`.trim(); // contoh: "MST Sinergi Kautsar"
+      }
+    }
+
     const jumlah = jumlahCol >= 0 ? parseNum(r[jumlahCol]) : Object.values(products).reduce((s, v) => s + v, 0);
     rows.push({
       bulan: (r[0] || '').toUpperCase(),
       cabang: (r[1] || '').toUpperCase().trim(),
-      tipe_customer: r[2] || '',
+      tipe_customer: tipeCustomer,
       tanggal,
       products,
       jumlah,

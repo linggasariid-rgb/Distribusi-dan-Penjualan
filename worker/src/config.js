@@ -14,17 +14,17 @@ export const CONFIG = {
     "SNN ORG":    { ctn: 1000, targetStock: 8 },
     "SNN Mind":   { ctn: 1000, targetStock: 8 },
     "SNN Menthol":{ ctn: 700,  targetStock: 8, alias: "SNNM" },
-    "SPW":        { ctn: 500,  targetStock: 8 },
-    "SP":         { ctn: 500,  targetStock: 8 },
-    "KMK":        { ctn: 40,   targetStock: 8 },
-    "KOOR":       { ctn: 40,   targetStock: 8, alias: "KO" },
+    "SPW":        { ctn: 500,  targetStock: 8, aliases: ["SIN PRECISION WHITE"] },
+    "SP":         { ctn: 500,  targetStock: 8, aliases: ["SIN PRECISION"] },
+    "KMK":        { ctn: 40,   targetStock: 8, aliases: ["KOPI MANA KOPI"] },
+    "KOOR":       { ctn: 40,   targetStock: 8, alias: "KO", aliases: ["KOPI ORIGINAL", "KO"] },
     "SSE":        { ctn: 1000, targetStock: 8 },
     "HU":         { ctn: 10,   targetStock: 8 },
   },
   SPECIAL_ROUND_UP: ["SP19 TSI", "SKM TSI", "SSJ", "SNN ORG"],
-  CABANG_FULL_TIME: ["BOGOR", "TANGERANG", "SUKABUMI", "TASIKMALAYA", "KARAWANG", "BANDUNG"],
+  CABANG_FULL_TIME: ["BOGOR", "TANGERANG", "SUKABUMI", "TASIKMALAYA", "KARAWANG", "BANDUNG", "CIBADUYUT"],
   WHP_MAPPING: {
-    "WHP BANDUNG": ["BANDUNG", "PURWAKARTA", "KARAWANG", "SUKABUMI", "BOGOR", "TANGERANG", "SERANG"],
+    "WHP BANDUNG": ["BANDUNG", "PURWAKARTA", "KARAWANG", "SUKABUMI", "BOGOR", "TANGERANG", "SERANG", "CIBADUYUT"],
     "WHP TASIKMALAYA": ["TASIKMALAYA", "GARUT", "CIREBON"],
   },
   IGNORE_BRANCHES: ["WHP BANDUNG", "WHP TASIKMALAYA", "TOTAL", "GRAND TOTAL", "TOTAL KESELURUHAN", "BANYUMAS"],
@@ -35,13 +35,13 @@ export const CONFIG = {
   STOCK_SHEET_ROW_ORDER: [
     "WHP BANDUNG", "WHP TASIKMALAYA", "BANDUNG", "TASIKMALAYA", "BOGOR",
     "SERANG", "SUKABUMI", "KARAWANG", "GARUT", "PURWAKARTA",
-    "TANGERANG", "CIREBON", "BANYUMAS",
+    "TANGERANG", "CIREBON", "CIBADUYUT"
   ],
   // Dipakai khusus di sales-report.js (Laporan Harian/Pertanggal) -- daftar berbeda dari IGNORE_BRANCHES,
   // sengaja tidak termasuk BANYUMAS, cocok dengan Sales.js legacy (matching by substring, bukan exact).
   IGNORE_BRANCHES_REPORT: ["WHP", "TOTAL", "GRAND TOTAL", "TOTAL KESELURUHAN"],
   LEAD_TIME: {
-    "BANDUNG": 1, "PURWAKARTA": 2, "KARAWANG": 2, "SUKABUMI": 2,
+    "BANDUNG": 1, "CIBADUYUT": 1, "PURWAKARTA": 2, "KARAWANG": 2, "SUKABUMI": 2,
     "BOGOR": 2, "TANGERANG": 3, "SERANG": 4,
     "TASIKMALAYA": 1, "GARUT": 3, "CIREBON": 3,
   },
@@ -105,6 +105,7 @@ export function buildProductColumnMap(headers) {
   for (const [key, info] of Object.entries(CONFIG.PRODUCT_INFO)) {
     const candidates = [key.toUpperCase()];
     if (info.alias) candidates.push(info.alias.toUpperCase());
+    if (info.aliases) info.aliases.forEach(a => candidates.push(a.toUpperCase()));
     let idx = -1;
     for (const cand of candidates) {
       idx = normalized.indexOf(cand);

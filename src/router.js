@@ -78,6 +78,7 @@ export function switchMenu(menuName) {
   const inputDistribusiView = document.getElementById('input-distribusi-view');
   const berandaView = document.getElementById('beranda-view');
   const pengaturanView = document.getElementById('pengaturan-view');
+  const rekapBelanjaView = document.getElementById('rekap-belanja-view');
 
   const menuDist = document.getElementById('menu-distribusi');
   const menuStok = document.getElementById('menu-stok');
@@ -95,6 +96,7 @@ export function switchMenu(menuName) {
   const menuInputDistribusi = document.getElementById('menu-input-distribusi');
   const menuBeranda = document.getElementById('menu-beranda');
   const menuPengaturan = document.getElementById('menu-pengaturan');
+  const menuRekapBelanja = document.getElementById('menu-rekap-belanja');
 
   const pageTitle = document.getElementById('page-title');
   const pageIcon = document.getElementById('page-icon');
@@ -118,6 +120,7 @@ export function switchMenu(menuName) {
   inputDistribusiView.classList.add('hidden');
   berandaView.classList.add('hidden');
   pengaturanView.classList.add('hidden');
+  if (rekapBelanjaView) rekapBelanjaView.classList.add('hidden');
   document.getElementById('sales-hub-view').classList.add('hidden');
   branchFilter.classList.add('hidden');
   if (summarySection) {
@@ -129,7 +132,7 @@ export function switchMenu(menuName) {
   const allMenus = [menuDist, menuStok, menuPenjualanWHO, menuPenerimaanPabrik,
     menuSalesDash, menuBestProducts, menuDailyReport, menuSalesPerDate,
     menuControlPoint, menuChatAi, menuInputStokBiz, menuInputStokExcel,
-    menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan];
+    menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan, menuRekapBelanja];
   allMenus.forEach(function(m) {
     if (!m) return;
     m.classList.remove('active');
@@ -256,6 +259,16 @@ export function switchMenu(menuName) {
     pageIcon.className = "fas fa-cog";
     setActiveMenu(menuPengaturan);
     initPengaturanView();
+  }
+  else if (menuName === 'rekap-belanja') {
+    if (rekapBelanjaView) rekapBelanjaView.classList.remove('hidden');
+    pageTitle.innerText = "Rekap Belanja";
+    pageIcon.className = "fas fa-file-invoice-dollar";
+    setActiveMenu(menuRekapBelanja);
+    const rbContent = document.getElementById('rekap-belanja-tbody');
+    if (!rbContent || rbContent.innerHTML.trim() === '') {
+      import('./modules/reports/rekapBelanja.js').then(m => m.initRekapBelanja());
+    }
   }
   else { // 'distribusi'
     distView.style.display = 'block';

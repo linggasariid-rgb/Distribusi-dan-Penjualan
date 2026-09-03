@@ -307,32 +307,26 @@ async function loadPrices() {
         <td class="px-4 py-3">
           <div class="flex items-center justify-end">
             <span class="text-slate-400 mr-2">Rp</span>
-            <input type="number" class="price-input-mst w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_mst}">
+            <input type="number" class="price-input-mst w-32 px-3 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_mst}">
           </div>
         </td>
         <td class="px-4 py-3">
           <div class="flex items-center justify-end">
             <span class="text-slate-400 mr-2">Rp</span>
-            <input type="number" class="price-input-stk w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_stk}">
+            <input type="number" class="price-input-stk w-32 px-3 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_stk}">
           </div>
         </td>
         <td class="px-4 py-3">
           <div class="flex items-center justify-end">
             <span class="text-slate-400 mr-2">Rp</span>
-            <input type="number" class="price-input-karyawan w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_karyawan || 0}">
-          </div>
-        </td>
-        <td class="px-4 py-3">
-          <div class="flex items-center justify-end">
-            <span class="text-slate-400 mr-2">Rp</span>
-            <input type="number" class="price-input-apps w-24 px-2 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_apps || 0}">
+            <input type="number" class="price-input-karyawan w-32 px-3 py-1.5 bg-white border border-slate-300 rounded-md text-right focus:outline-none focus:ring-2 focus:ring-emerald-500" data-product="${p.product_name}" value="${p.price_karyawan || 0}">
           </div>
         </td>
       </tr>`;
     });
     tbody.innerHTML = html;
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500">Gagal memuat harga: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-red-500">Gagal memuat harga: ${e.message}</td></tr>`;
   }
 }
 
@@ -345,7 +339,6 @@ async function savePrices() {
     const mstInputs = document.querySelectorAll('.price-input-mst');
     const stkInputs = document.querySelectorAll('.price-input-stk');
     const karyawanInputs = document.querySelectorAll('.price-input-karyawan');
-    const appsInputs = document.querySelectorAll('.price-input-apps');
     
     const prices = [];
     mstInputs.forEach((input, i) => {
@@ -353,8 +346,7 @@ async function savePrices() {
         product_name: input.getAttribute('data-product'),
         price_mst: parseInt(input.value) || 0,
         price_stk: parseInt(stkInputs[i].value) || 0,
-        price_karyawan: parseInt(karyawanInputs[i].value) || 0,
-        price_apps: parseInt(appsInputs[i].value) || 0
+        price_karyawan: parseInt(karyawanInputs[i].value) || 0
       });
     });
 
