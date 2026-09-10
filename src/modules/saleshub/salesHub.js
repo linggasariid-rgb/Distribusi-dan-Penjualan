@@ -338,7 +338,7 @@ function buildSalesHubExportCard(content, tglStr) {
 
   var card = document.getElementById('sh-screenshot-card');
   var wrapperHtml = `
-    <div style="width:2600px;margin:0;padding:0 0 36px 0;background:${shBg};font-family:Arial,sans-serif;">
+    <div style="width:3200px;margin:0;padding:0 0 36px 0;background:${shBg};font-family:Arial,sans-serif;">
       <style>
         #sh-overlay-content, #sh-overlay-content * { overflow:visible !important; }
         #sh-overlay-content { font-size:56px !important; }
@@ -354,7 +354,7 @@ function buildSalesHubExportCard(content, tglStr) {
         #sh-overlay-content td, #sh-overlay-content th { padding: 18px 24px !important; }
         #sh-overlay-content .shadow-sm { box-shadow:none !important; }
         #sh-overlay-content #sales-hub-kpis h4 { color:${isDark ? '#e2e8f0' : '#334155'} !important; }
-        #sales-hub-periods { grid-template-columns:1fr 1fr !important; }
+        #sales-hub-periods { grid-template-columns:1fr 1fr !important; gap: 40px !important; }
         #sales-hub-snapshot-cards { grid-template-columns:1fr 1fr !important; }
         #sh-overlay-content #sales-hub-kpis { grid-template-columns:1fr 1fr 1fr 1fr !important; }
       </style>
@@ -365,7 +365,7 @@ function buildSalesHubExportCard(content, tglStr) {
       </div>
     </div>`;
   card.innerHTML = wrapperHtml;
-  card.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:999999;overflow:visible;width:2600px;height:auto;margin:0;padding:0;border:0;';
+  card.style.cssText = 'display:block;position:fixed;top:0;left:0;z-index:999999;overflow:visible;width:3200px;height:auto;margin:0;padding:0;border:0;';
   card.querySelector('#sh-overlay-content').appendChild(clone);
 
   return { card: card, shBg: shBg };
@@ -412,7 +412,7 @@ export async function captureSalesHub() {
 
     const canvas = await html2canvas(card.firstElementChild, {
       scale: 3, useCORS: true, logging: false, backgroundColor: shBg,
-      allowTaint: false
+      allowTaint: false, width: 3200, windowWidth: 3200
     });
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     try {
@@ -487,7 +487,7 @@ export async function exportSalesHubPDF() {
 
     const canvas = await html2canvas(card.firstElementChild, {
       scale: 3, useCORS: true, logging: false, backgroundColor: shBg,
-      allowTaint: false
+      allowTaint: false, width: 3200, windowWidth: 3200
     });
 
     const pdf = new window.jspdf.jsPDF('landscape', 'mm', 'a4');

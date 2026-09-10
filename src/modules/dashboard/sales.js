@@ -196,7 +196,9 @@ export function captureReport() {
     html2canvas(reportArea, {
       scale: 2,
       useCORS: true,
-      backgroundColor: getExportBodyBgColor()
+      backgroundColor: getExportBodyBgColor(),
+      width: 1920,
+      windowWidth: 1920
     }).then(function(canvas) {
       canvas.toBlob(function(blob) {
         try {

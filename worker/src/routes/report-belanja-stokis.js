@@ -13,13 +13,13 @@ export async function handle(db, monthFilter) {
   const lteDate = `${targetMonth}-${String(lastDay).padStart(2, '0')}`;
   const gteDate = `${targetMonth}-01`;
 
-    // 2. Tarik harga produk dari database
+    // 2. Tarik harga produk dari database (price_stk akan kita pakai untuk Karyawan)
     const pricesRaw = await db.query('product_prices', {
-      select: 'product_name,price_mst,price_stk,price_karyawan'
+      select: 'product_name,price_mst,price_stk'
     });
     const priceMap = {};
     for (const p of pricesRaw) {
-      priceMap[p.product_name] = { mst: p.price_mst, stk: p.price_stk, karyawan: p.price_karyawan };
+      priceMap[p.product_name] = { mst: p.price_mst, karyawan: p.price_stk };
     }
 
   // 3. Tarik data penjualan WHO
@@ -67,10 +67,8 @@ export async function handle(db, monthFilter) {
         }
         if (priceMap[prodName]) {
           let price = 0;
-          if (category === 'Master Stokis') price = priceMap[prodName].mst;
-          else if (category === 'Stokis') price = priceMap[prodName].stk;
-          else if (category === 'Karyawan') price = priceMap[prodName].karyawan;
-          else if (category === 'Apps') price = priceMap[prodName].mst; // Apps pakai harga Master Stokis
+          if (category === 'Master Stokis' || category === 'Stokis' || category === 'Apps') price = priceMap[prodName].mst;
+          else if (category === 'Karyawan') price = priceMap[prodName].karyawan; // Mengambil dari kolom price_stk
           
           totalNominal += (qty * price);
         }

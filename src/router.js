@@ -30,6 +30,7 @@ import { initPenerimaanPabrik } from './modules/input/inputPabrik.js';
 import { initInputDistribusi } from './modules/input/inputDistribusi.js';
 import { loadInputHistory } from './modules/input/inputHistory.js';
 import { initPengaturanView } from './modules/pengaturan/pengaturan.js';
+import { renderFormOrder } from './modules/order/formOrder.js';
 
 // Central view router (switchMenu) plus the filter/refresh handlers that
 // depend on "which view is currently visible". Kept in its own module (not
@@ -43,6 +44,7 @@ export function switchMenu(menuName) {
     'beranda': 'admin',
     'distribusi': 'admin',
     'stok': 'admin',
+    'form-order': 'admin',
     'sales-dashboard': 'super_admin',
     'penjualan-who': 'super_admin',
     'penerimaan-pabrik': 'super_admin',
@@ -76,9 +78,14 @@ export function switchMenu(menuName) {
   const inputStokBizView = document.getElementById('input-stok-biz-view');
   const inputStokExcelView = document.getElementById('input-stok-excel-view');
   const inputDistribusiView = document.getElementById('input-distribusi-view');
+  const penerimaanCabangView = document.getElementById('penerimaan-cabang-view');
+  const mutasiView = document.getElementById('mutasi-view');
+  const returView = document.getElementById('retur-view');
   const berandaView = document.getElementById('beranda-view');
   const pengaturanView = document.getElementById('pengaturan-view');
   const rekapBelanjaView = document.getElementById('rekap-belanja-view');
+  const formOrderView = document.getElementById('form-order-view');
+  const riwayatTransaksiView = document.getElementById('riwayat-transaksi-view');
 
   const menuDist = document.getElementById('menu-distribusi');
   const menuStok = document.getElementById('menu-stok');
@@ -97,6 +104,7 @@ export function switchMenu(menuName) {
   const menuBeranda = document.getElementById('menu-beranda');
   const menuPengaturan = document.getElementById('menu-pengaturan');
   const menuRekapBelanja = document.getElementById('menu-rekap-belanja');
+  const menuFormOrder = document.getElementById('menu-form-order');
 
   const pageTitle = document.getElementById('page-title');
   const pageIcon = document.getElementById('page-icon');
@@ -118,21 +126,30 @@ export function switchMenu(menuName) {
   inputStokBizView.classList.add('hidden');
   inputStokExcelView.classList.add('hidden');
   inputDistribusiView.classList.add('hidden');
+  penerimaanCabangView.classList.add('hidden');
+  mutasiView.classList.add('hidden');
+  returView.classList.add('hidden');
   berandaView.classList.add('hidden');
   pengaturanView.classList.add('hidden');
-  if (rekapBelanjaView) rekapBelanjaView.classList.add('hidden');
-  document.getElementById('sales-hub-view').classList.add('hidden');
+  riwayatTransaksiView.classList.add('hidden');
   branchFilter.classList.add('hidden');
   if (summarySection) {
     summarySection.classList.add('hidden');
     summarySection.classList.remove('grid');
   }
 
+  const menuPenerimaanCabang = document.getElementById('menu-penerimaan-cabang');
+  const menuMutasi = document.getElementById('menu-mutasi');
+  const menuRetur = document.getElementById('menu-retur');
+  const menuRiwayatTransaksi = document.getElementById('menu-riwayat-transaksi');
+
   // Reset semua Menu Class (Non-aktif)
   const allMenus = [menuDist, menuStok, menuPenjualanWHO, menuPenerimaanPabrik,
     menuSalesDash, menuBestProducts, menuDailyReport, menuSalesPerDate,
     menuControlPoint, menuChatAi, menuInputStokBiz, menuInputStokExcel,
-    menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan, menuRekapBelanja];
+    menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan, 
+    menuRekapBelanja, menuFormOrder, menuPenerimaanCabang, menuMutasi, menuRetur, menuRiwayatTransaksi];
+
   allMenus.forEach(function(m) {
     if (!m) return;
     m.classList.remove('active');
@@ -156,12 +173,19 @@ export function switchMenu(menuName) {
     if (!state.gData) loadData();
     else renderStockSummaryTable();
   }
+  else if (menuName === 'form-order') {
+    if (formOrderView) formOrderView.classList.remove('hidden');
+    pageTitle.innerText = "Form Order Kopi";
+    pageIcon.className = "fas fa-shopping-cart";
+    setActiveMenu(menuFormOrder);
+    if (!state.gData) loadData().then(() => renderFormOrder());
+    else renderFormOrder();
+  }
   else if (menuName === 'penjualan-who') {
     penjualanWhoView.classList.remove('hidden');
     pageTitle.innerText = "Input Penjualan";
     pageIcon.className = "fas fa-file-invoice";
     setActiveMenu(menuPenjualanWHO);
-    loadInputHistory('penjualan_who', 'penjualan-who-history');
   }
   else if (menuName === 'penerimaan-pabrik') {
     penerimaanPabrikView.classList.remove('hidden');
@@ -169,7 +193,6 @@ export function switchMenu(menuName) {
     pageIcon.className = "fas fa-factory";
     setActiveMenu(menuPenerimaanPabrik);
     initPenerimaanPabrik();
-    loadInputHistory('penerimaan', 'penerimaan-pabrik-history');
   }
   else if (menuName === 'best-products') {
     bestProductsView.classList.remove('hidden');
@@ -245,13 +268,55 @@ export function switchMenu(menuName) {
     pageIcon.className = "fas fa-arrow-right-arrow-left";
     setActiveMenu(menuInputDistribusi);
     initInputDistribusi();
-    loadInputHistory('distribusi', 'distribusi-history');
   }
   else if (menuName === 'chat-ai') {
     chatAiView.classList.remove('hidden');
     pageTitle.innerText = "Chat AI";
     pageIcon.className = "fas fa-comment-dots";
     setActiveMenu(menuChatAi);
+  }
+  else if (menuName === 'penerimaan-cabang') {
+    penerimaanCabangView.classList.remove('hidden');
+    pageTitle.innerText = "Input Penerimaan Cabang";
+    pageIcon.className = "fas fa-box-open";
+    setActiveMenu(menuPenerimaanCabang);
+  }
+  else if (menuName === 'mutasi') {
+    mutasiView.classList.remove('hidden');
+    pageTitle.innerText = "Input Mutasi Antar Cabang";
+    pageIcon.className = "fas fa-exchange-alt";
+    setActiveMenu(menuMutasi);
+  }
+  else if (menuName === 'retur') {
+    if (returView) returView.classList.remove('hidden');
+    pageTitle.innerText = "Input Retur / Kerugian";
+    pageIcon.className = "fas fa-undo-alt";
+    setActiveMenu(menuRetur);
+  }
+  else if (menuName === 'riwayat-transaksi') {
+    if (riwayatTransaksiView) riwayatTransaksiView.classList.remove('hidden');
+    pageTitle.innerText = "Riwayat Transaksi";
+    pageIcon.className = "fas fa-history";
+    setActiveMenu(menuRiwayatTransaksi);
+    
+    // Automatically load the currently selected type in dropdown
+    const selectEl = document.getElementById('riwayat-transaksi-select');
+    if (selectEl) {
+      loadInputHistory(selectEl.value, 'riwayat-transaksi-content');
+      // Set up onchange once
+      if (!selectEl.hasAttribute('data-initialized')) {
+        selectEl.addEventListener('change', (e) => {
+          loadInputHistory(e.target.value, 'riwayat-transaksi-content');
+        });
+        const btnRefresh = document.getElementById('btn-refresh-riwayat');
+        if (btnRefresh) {
+          btnRefresh.addEventListener('click', () => {
+            loadInputHistory(selectEl.value, 'riwayat-transaksi-content');
+          });
+        }
+        selectEl.setAttribute('data-initialized', 'true');
+      }
+    }
   }
   else if (menuName === 'pengaturan') {
     pengaturanView.classList.remove('hidden');

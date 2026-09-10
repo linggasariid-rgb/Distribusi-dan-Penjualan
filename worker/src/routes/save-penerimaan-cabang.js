@@ -30,20 +30,14 @@ export async function handle(db, body) {
 
   const headers = data[0].map(h => String(h).trim());
   const productCols = buildProductColumnMap(headers);
-  const jumlahCol = headers.findIndex(h => h.toUpperCase() === 'JUMLAH');
 
-  // Cari kolom tanggal, gudang, cabang
   const tglCol = headers.findIndex(h => h.toUpperCase().includes('TANGGAL'));
   const gudangCol = headers.findIndex(h => h.toUpperCase().includes('GUDANG'));
   const cabangCol = headers.findIndex(h => h.toUpperCase().includes('CABANG'));
 
-  if (Object.keys(productCols).length === 0 && jumlahCol === -1) {
-    return {
-      status: 'error',
-      message: 'Header kolom produk tidak dikenali. Pastikan baris pertama yang dipaste adalah baris header asli dari Excel.',
-    };
+  if (Object.keys(productCols).length === 0) {
+    return { status: 'error', message: 'Header kolom produk tidak dikenali.' };
   }
-
   if (tglCol === -1 || cabangCol === -1) {
     return { status: 'error', message: 'Kolom TANGGAL atau CABANG tidak ditemukan di baris header.' };
   }
@@ -65,39 +59,16 @@ export async function handle(db, body) {
       products[key] = parseNum(r[idx]);
     }
 
-    const jumlah = jumlahCol >= 0 ? parseNum(r[jumlahCol]) : Object.values(products).reduce((s, v) => s + v, 0);
-
-    rows.push({
-      tanggal,
-      gudang,
-      cabang,
-      products,
-      jumlah,
-      status: 'SHIPPED'
-    });
+    rows.push({ tanggal, gudang, cabang, products });
   }
 
   if (rows.length === 0) {
     return { status: 'error', message: 'Tidak ada baris data valid' };
   }
 
-  const rowsToInsert = rows; // We skip dedup for now, assuming frontend handles double click, like penjualan-who
-
-  for (let i = 0; i < rowsToInsert.length; i += 500) {
-    const chunk = rowsToInsert.slice(i, i + 500);
-    
-    // 1. Simpan ke tabel distribusi
-    await db.request('POST', 'distribusi', { data: chunk });
-    
-    // 2. Otomatis simpan juga ke tabel penerimaan_cabang
-    const penerimaanChunk = chunk.map(r => ({
-      tanggal: r.tanggal,
-      gudang: r.gudang,
-      cabang: r.cabang,
-      products: r.products
-    }));
-    await db.request('POST', 'penerimaan_cabang', { data: penerimaanChunk });
+  for (let i = 0; i < rows.length; i += 500) {
+    await db.request('POST', 'penerimaan_cabang', { data: rows.slice(i, i + 500) });
   }
 
-  return { status: 'success', message: `${rowsToInsert.length} baris data distribusi & penerimaan cabang berhasil disimpan otomatis` };
+  return { status: 'success', message: `${rows.length} baris data penerimaan cabang berhasil disimpan` };
 }

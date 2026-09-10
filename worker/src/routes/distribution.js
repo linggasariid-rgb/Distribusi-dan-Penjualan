@@ -17,12 +17,14 @@ export async function handle(db, whp) {
   });
 
   const stockRows = await db.query('stock', {
-    select: 'cabang,products',
+    select: 'cabang,products,in_transit',
   });
 
   const stockByBranch = {};
+  const inTransitByBranch = {};
   for (const r of stockRows) {
     stockByBranch[r.cabang] = r.products || {};
+    inTransitByBranch[r.cabang] = r.in_transit || {};
   }
 
   const branches = await db.query('branches', {
@@ -71,6 +73,7 @@ export async function handle(db, whp) {
 
     for (const p of productKeys) {
       const currentStock = stockByBranch[cabang]?.[p] || 0;
+      const inTransit = inTransitByBranch[cabang]?.[p] || 0;
       const ds = prodLists[p] || [];
       let salesTotal = 0;
       if (ds.length >= 3) {
@@ -83,7 +86,7 @@ export async function handle(db, whp) {
       } else {
         salesTotal = ds.reduce((s, v) => s + v, 0);
       }
-      produk[p] = { salesTotal, currentStock };
+      produk[p] = { salesTotal, currentStock, inTransit };
     }
 
     result[cabang] = { nama: cabang, pembagi, produk };

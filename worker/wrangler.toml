@@ -3,6 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-07-04"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
+account_id = "5abef4e6e9eacfa50bb07174bbae5d75"
 
 [vars]
 SUPABASE_URL = "https://qszgpfzajkdherkitraq.supabase.co"

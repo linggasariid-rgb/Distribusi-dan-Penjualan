@@ -70,10 +70,10 @@
         <i class="fas fa-truck-loading w-5 text-center" style="font-size:0.9rem"></i><span>Distribusi</span>
       </div>
 
-      <!-- INPUT Group -->
+      <!-- TRANSAKSI Group -->
       <div class="menu-group">
         <a data-action="toggle-menu-group" class="sidebar-group-toggle">
-          <span class="font-bold text-[10px] uppercase tracking-widest"><i class="fas fa-keyboard mr-2" style="font-size:0.75rem"></i>INPUT</span>
+          <span class="font-bold text-[10px] uppercase tracking-widest"><i class="fas fa-exchange-alt mr-2" style="font-size:0.75rem"></i>TRANSAKSI</span>
           <i class="fas fa-chevron-right text-[10px] transition-transform" style="transition:transform 200ms"></i>
         </a>
         <div class="sub-menu hidden space-y-0.5 mt-0.5" style="margin-left:0.75rem">
@@ -83,14 +83,40 @@
           <div id="menu-input-distribusi" class="sidebar-item-sub">
             <i class="fas fa-arrow-right-arrow-left w-4 text-center"></i><span>Input Distribusi</span>
           </div>
+          <div id="menu-penerimaan-cabang" class="sidebar-item-sub">
+            <i class="fas fa-box-open w-4 text-center"></i><span>Penerimaan Cabang</span>
+          </div>
+          <div id="menu-mutasi" class="sidebar-item-sub">
+            <i class="fas fa-truck w-4 text-center"></i><span>Mutasi Antar Cabang</span>
+          </div>
+          <div id="menu-retur" class="sidebar-item-sub">
+            <i class="fas fa-undo-alt w-4 text-center"></i><span>Retur / Kerugian</span>
+          </div>
+          <div id="menu-penjualan-who" class="sidebar-item-sub">
+            <i class="fas fa-file-import w-4 text-center"></i><span>Input Penjualan</span>
+          </div>
+          <div class="my-1 border-b" style="border-color:var(--color-border);opacity:0.5"></div>
+          <div id="menu-riwayat-transaksi" class="sidebar-item-sub">
+            <i class="fas fa-history w-4 text-center"></i><span>Riwayat Transaksi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOK & ORDER Group -->
+      <div class="menu-group">
+        <a data-action="toggle-menu-group" class="sidebar-group-toggle">
+          <span class="font-bold text-[10px] uppercase tracking-widest"><i class="fas fa-boxes mr-2" style="font-size:0.75rem"></i>STOK & ORDER</span>
+          <i class="fas fa-chevron-right text-[10px] transition-transform" style="transition:transform 200ms"></i>
+        </a>
+        <div class="sub-menu hidden space-y-0.5 mt-0.5" style="margin-left:0.75rem">
           <div id="menu-input-stok-excel" class="sidebar-item-sub">
             <i class="fas fa-file-excel w-4 text-center"></i><span>Input Stok Excel</span>
           </div>
           <div id="menu-input-stok-biz" class="sidebar-item-sub">
             <i class="fas fa-database w-4 text-center"></i><span>Input Stok BIZ</span>
           </div>
-          <div id="menu-penjualan-who" class="sidebar-item-sub">
-            <i class="fas fa-file-import w-4 text-center"></i><span>Input Penjualan</span>
+          <div id="menu-form-order" class="sidebar-item-sub">
+            <i class="fas fa-shopping-cart w-4 text-center"></i><span>Form Order Kopi</span>
           </div>
         </div>
       </div>
@@ -377,6 +403,11 @@
       <div id="stock-summary-content" class="card overflow-hidden"></div>
     </div>
 
+    <!-- Form Order View -->
+    <div id="form-order-view" class="hidden animate-fade-in">
+      <div id="form-order-content"></div>
+    </div>
+
     <!-- Penjualan WHO View -->
     <div id="penjualan-who-view" class="hidden animate-fade-in">
       <div class="card p-6">
@@ -402,11 +433,6 @@
         <div class="mt-6 hidden" id="penjualan-who-submit-container">
            <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="who"><i class="fas fa-save mr-2"></i> Simpan Data</button>
         </div>
-      </div>
-      <div class="card p-6 mt-6">
-        <h3 class="text-sm font-bold mb-1" style="color:var(--color-text)"><i class="fas fa-history mr-2"></i>Riwayat Input (3 Hari Terakhir)</h3>
-        <p class="text-xs mb-3" style="color:var(--color-text-muted)">Kalau tidak sengaja input dobel, hapus batch yang salah di sini.</p>
-        <div id="penjualan-who-history"></div>
       </div>
     </div>
 
@@ -665,14 +691,14 @@
     <div id="penerimaan-pabrik-view" class="hidden animate-fade-in">
       <div class="card p-6">
         <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Penerimaan dari Pabrik</h2>
-        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Pilih Gudang, atur Tanggal (otomatis hari ini), lalu paste Jumlah dari Excel.</p>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan <i>Copy</i> data penerimaan beserta rincian produk dari Excel, lalu <i>Paste</i> di kotak bawah.</p>
         <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-success-light);color:var(--color-success);border:1px solid rgba(5,150,105,0.15)">
           <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Cara Input:</p>
           <ol class="list-decimal list-inside space-y-1 ml-2">
             <li>Pilih <b>Gudang</b> tujuan.</li>
             <li><b>Tanggal</b> otomatis terisi hari ini, bisa diubah jika perlu.</li>
-            <li>Copy kolom <b>Jumlah</b> dari Excel, paste ke kotak di bawah.</li>
-            <li>Atau paste <b>TANGGAL + Jumlah</b> (2 kolom) jika tanggal per baris berbeda.</li>
+            <li>Copy baris data dari Excel Laporan Penerimaan (pastikan header produk ikut tercopy).</li>
+            <li>Paste ke dalam kotak di bawah ini, lalu klik <b>Proses & Preview</b>.</li>
           </ol>
         </div>
 
@@ -685,18 +711,7 @@
           <input type="date" id="penerimaan-pabrik-tanggal" class="input" style="width:100%;min-width:12rem">
         </div>
 
-        <textarea id="penerimaan-pabrik-paste-area" class="input font-mono" style="height:8rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste Jumlah dari Excel di sini...
-Bisa juga paste TANGGAL + Jumlah (2 kolom).
-
-Contoh (Jumlah saja):
-5000
-3000
-2000
-
-Atau (TANGGAL + Jumlah):
-TANGGAL  Jumlah
-01/06/2026  5000
-02/06/2026  3000"></textarea>
+        <textarea id="penerimaan-pabrik-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data Excel beserta header produk di sini..."></textarea>
         
         <div class="mt-4 flex gap-3">
           <button data-action="process-paste" data-form="pabrik" class="btn btn-success"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
@@ -708,25 +723,21 @@ TANGGAL  Jumlah
            <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="pabrik"><i class="fas fa-save mr-2"></i> Simpan Data Penerimaan Pabrik</button>
         </div>
       </div>
-      <div class="card p-6 mt-6">
-        <h3 class="text-sm font-bold mb-1" style="color:var(--color-text)"><i class="fas fa-history mr-2"></i>Riwayat Input (3 Hari Terakhir)</h3>
-        <p class="text-xs mb-3" style="color:var(--color-text-muted)">Kalau tidak sengaja input dobel, hapus batch yang salah di sini.</p>
-        <div id="penerimaan-pabrik-history"></div>
-      </div>
+
     </div>
 
     <!-- Input Distribusi -->
     <div id="input-distribusi-view" class="hidden animate-fade-in">
       <div class="card p-6">
         <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Distribusi</h2>
-        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Pilih Gudang & Tanggal, lalu tulis Cabang dan Jumlah langsung di kolom input.</p>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan <i>Copy</i> data distribusi beserta rincian produk dari Excel, lalu <i>Paste</i> di kotak bawah.</p>
         <div class="p-4 rounded-xl mb-6 text-xs" style="background:var(--color-success-light);color:var(--color-success);border:1px solid rgba(5,150,105,0.15)">
           <p class="font-bold mb-2"><i class="fas fa-info-circle mr-2"></i>Cara Input:</p>
           <ol class="list-decimal list-inside space-y-1 ml-2">
             <li>Pilih <b>Gudang</b> tujuan.</li>
             <li><b>Tanggal</b> otomatis terisi hari ini, bisa diubah jika perlu.</li>
-            <li>Tulis <b>Nama Cabang</b> (TAB) <b>Jumlah</b> per baris di kotak bawah.</li>
-            <li>Klik <b>Proses & Preview</b>, lalu <b>Simpan</b>.</li>
+            <li>Copy baris data dari Excel Laporan Distribusi (pastikan header produk ikut tercopy).</li>
+            <li>Paste ke dalam kotak di bawah ini, lalu klik <b>Proses & Preview</b>.</li>
           </ol>
         </div>
 
@@ -739,13 +750,7 @@ TANGGAL  Jumlah
           <input type="date" id="distribusi-tanggal" class="input" style="width:100%;min-width:12rem">
         </div>
 
-        <textarea id="distribusi-paste-area" class="input font-mono" style="height:8rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Tulis: Nama Cabang (TAB) Jumlah
-
-Contoh:
-BANDUNG	5000000
-PURWAKARTA	3000000
-BOGOR	7500000
-TASIKMALAYA	4200000"></textarea>
+        <textarea id="distribusi-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data Excel beserta header produk di sini..."></textarea>
         
         <div class="mt-4 flex gap-3">
           <button data-action="process-paste" data-form="distribusi" class="btn btn-primary"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
@@ -757,10 +762,107 @@ TASIKMALAYA	4200000"></textarea>
            <button class="btn btn-primary w-full btn-lg" data-action="submit-data" data-form="distribusi"><i class="fas fa-save mr-2"></i> Simpan Data Distribusi</button>
         </div>
       </div>
-      <div class="card p-6 mt-6">
-        <h3 class="text-sm font-bold mb-1" style="color:var(--color-text)"><i class="fas fa-history mr-2"></i>Riwayat Input (3 Hari Terakhir)</h3>
-        <p class="text-xs mb-3" style="color:var(--color-text-muted)">Kalau tidak sengaja input dobel, hapus batch yang salah di sini.</p>
-        <div id="distribusi-history"></div>
+
+    </div>
+
+    <!-- Penerimaan Cabang -->
+    <div id="penerimaan-cabang-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Penerimaan Cabang</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan paste data penerimaan cabang dari Excel.</p>
+        <textarea id="penerimaan-cabang-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data Excel beserta header di sini..."></textarea>
+        <div class="mt-4 flex gap-3">
+          <button data-action="process-paste" data-form="penerimaan-cabang" class="btn btn-primary"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="penerimaan-cabang" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        <div id="penerimaan-cabang-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
+        <div class="mt-6 hidden" id="penerimaan-cabang-submit-container">
+           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="penerimaan-cabang"><i class="fas fa-save mr-2"></i> Simpan Data</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mutasi Cabang -->
+    <div id="mutasi-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Mutasi Antar Cabang</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan paste data mutasi dari Excel (pastikan ada kolom ASAL dan TUJUAN).</p>
+        <textarea id="mutasi-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data Excel beserta header di sini..."></textarea>
+        <div class="mt-4 flex gap-3">
+          <button data-action="process-paste" data-form="mutasi" class="btn btn-primary"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="mutasi" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        <div id="mutasi-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
+        <div class="mt-6 hidden" id="mutasi-submit-container">
+           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="mutasi"><i class="fas fa-save mr-2"></i> Simpan Data</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Retur Cabang -->
+    <div id="retur-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <h2 class="text-lg font-bold mb-2" style="color:var(--color-text)">Input Retur / Kerugian</h2>
+        <p class="text-xs mb-6" style="color:var(--color-text-muted)">Silakan paste data retur/barang rusak dari Excel.</p>
+        <textarea id="retur-paste-area" class="input font-mono" style="height:10rem;white-space:pre;resize:vertical;font-size:0.75rem" placeholder="Paste data Excel beserta header di sini..."></textarea>
+        <div class="mt-4 flex gap-3">
+          <button data-action="process-paste" data-form="retur" class="btn btn-primary"><i class="fas fa-table mr-2"></i> Proses & Preview Data</button>
+          <button data-action="clear-form" data-form="retur" class="btn btn-ghost"><i class="fas fa-eraser mr-2"></i> Bersihkan</button>
+        </div>
+        <div id="retur-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
+        <div class="mt-6 hidden" id="retur-submit-container">
+           <button class="btn btn-danger w-full btn-lg" data-action="submit-data" data-form="retur"><i class="fas fa-save mr-2"></i> Simpan Data</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Riwayat Transaksi View -->
+    <div id="riwayat-transaksi-view" class="hidden animate-fade-in">
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold" style="color:var(--color-text)">Riwayat Input Transaksi</h2>
+            <p class="text-xs" style="color:var(--color-text-muted)">Riwayat detail seluruh data transaksi yang masuk.</p>
+          </div>
+          <button id="btn-refresh-riwayat" class="btn btn-outline btn-sm"><i class="fas fa-sync-alt mr-2"></i>Refresh</button>
+        </div>
+        
+        <div class="mb-6 flex flex-wrap gap-4 items-end">
+          <div style="flex:1;min-width:14rem">
+            <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Pilih Jenis Transaksi</label>
+            <select id="riwayat-transaksi-select" class="input select" style="width:100%">
+              <option value="penjualan_who">Penjualan</option>
+              <option value="penerimaan">Penerimaan Pabrik</option>
+              <option value="distribusi">Distribusi</option>
+              <option value="penerimaan_cabang">Penerimaan Cabang</option>
+              <option value="mutasi_cabang">Mutasi Antar Cabang</option>
+              <option value="retur_cabang">Retur / Kerugian</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:10rem">
+            <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Dari Tanggal</label>
+            <input type="date" id="riwayat-start-date" class="input" style="width:100%">
+          </div>
+          <div style="flex:1;min-width:10rem">
+            <label class="text-xs font-semibold block mb-1" style="color:var(--color-text-muted)">Sampai Tanggal</label>
+            <input type="date" id="riwayat-end-date" class="input" style="width:100%">
+          </div>
+        </div>
+        
+        <div id="riwayat-transaksi-content" class="overflow-x-auto" style="border:1px solid var(--color-border);border-radius:var(--radius-lg)">
+          <!-- Table will be rendered here -->
+        </div>
+
+        <div id="riwayat-pagination" class="mt-4 flex items-center justify-between text-xs" style="color:var(--color-text-muted)">
+          <div id="riwayat-page-info">Halaman 1 dari 1</div>
+          <div class="flex gap-2">
+            <button id="btn-riwayat-prev" class="btn btn-outline btn-sm" disabled><i class="fas fa-chevron-left"></i></button>
+            <button id="btn-riwayat-next" class="btn btn-outline btn-sm" disabled><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -807,8 +909,7 @@ TASIKMALAYA	4200000"></textarea>
                   <tr class="bg-slate-50 border-b border-slate-200">
                     <th class="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Nama Produk</th>
                     <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Master Stokis</th>
-                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Stokis</th>
-                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Karyawan</th>
+                    <th class="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Harga Karyawan (ORE)</th>
                   </tr>
                 </thead>
                 <tbody id="price-table-body" class="divide-y divide-slate-100 text-sm">

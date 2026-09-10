@@ -1,12 +1,12 @@
-// Tabel input yang boleh dilihat/dihapus histori-nya lewat menu ini -- dibatasi ke
-// tabel yang bersifat "append" (riwayat menumpuk per submit), BUKAN biz_stock/stock
-// yang selalu di-replace utuh setiap paste (tidak ada histori batch untuk dihapus).
-export const ALLOWED_TABLES = ['penjualan_who', 'distribusi', 'penerimaan'];
+export const ALLOWED_TABLES = ['penjualan_who', 'distribusi', 'penerimaan', 'penerimaan_cabang', 'mutasi_cabang', 'retur_cabang'];
 
 const SELECT_COLS = {
-  penjualan_who: 'cabang,jumlah,created_at',
-  distribusi: 'cabang,jumlah,created_at',
-  penerimaan: 'gudang,jumlah,created_at',
+  penjualan_who: 'id,cabang,jumlah,created_at,tanggal,products',
+  distribusi: 'id,cabang,jumlah,created_at,tanggal,products,gudang',
+  penerimaan: 'id,gudang,jumlah,created_at,tanggal,products',
+  penerimaan_cabang: 'id,cabang,created_at,tanggal,products,gudang',
+  mutasi_cabang: 'id,cabang_asal,cabang_tujuan,created_at,tanggal,products',
+  retur_cabang: 'id,cabang,created_at,tanggal,products,keterangan'
 };
 
 export async function handle(db, table) {

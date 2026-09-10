@@ -8,6 +8,9 @@ import * as controlPoint from './routes/control-point.js';
 import * as distribution from './routes/distribution.js';
 import * as savePenerimaanPabrik from './routes/save-penerimaan-pabrik.js';
 import * as saveDistribusi from './routes/save-distribusi.js';
+import * as savePenerimaanCabang from './routes/save-penerimaan-cabang.js';
+import * as saveMutasi from './routes/save-mutasi.js';
+import * as saveRetur from './routes/save-retur.js';
 import * as savePenjualanWho from './routes/save-penjualan-who.js';
 import * as saveBiz from './routes/save-biz.js';
 import * as saveStock from './routes/save-stock.js';
@@ -15,7 +18,9 @@ import * as chat from './routes/chat.js';
 import * as login from './routes/login.js';
 import * as users from './routes/users.js';
 import * as inputHistory from './routes/input-history.js';
+import * as transactionHistory from './routes/transaction-history.js';
 import * as deleteBatch from './routes/delete-batch.js';
+import * as deleteRow from './routes/delete-row.js';
 import * as prices from './routes/prices.js';
 import * as reportBelanjaStokis from './routes/report-belanja-stokis.js';
 
@@ -93,6 +98,15 @@ export default {
         return json(await inputHistory.handle(db, table));
       }
 
+      if (path === '/api/transaction-history') {
+        const table = url.searchParams.get('table') || '';
+        const page = parseInt(url.searchParams.get('page') || '1', 10);
+        const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+        const startDate = url.searchParams.get('startDate') || '';
+        const endDate = url.searchParams.get('endDate') || '';
+        return json(await transactionHistory.handle(db, table, page, limit, startDate, endDate));
+      }
+
       if (path === '/api/login' || path === '/api/login/') {
         if (request.method !== 'POST') return error('Method not allowed', 405);
         const body = await request.json();
@@ -143,6 +157,15 @@ export default {
         if (path === '/api/save/distribusi') {
           return json(await saveDistribusi.handle(db, body));
         }
+        if (path === '/api/save/penerimaan-cabang') {
+          return json(await savePenerimaanCabang.handle(db, body));
+        }
+        if (path === '/api/save/mutasi') {
+          return json(await saveMutasi.handle(db, body));
+        }
+        if (path === '/api/save/retur') {
+          return json(await saveRetur.handle(db, body));
+        }
         if (path === '/api/save/penjualan-who') {
           return json(await savePenjualanWho.handle(db, body));
         }
@@ -157,6 +180,9 @@ export default {
         }
         if (path === '/api/delete-batch') {
           return json(await deleteBatch.handle(db, body));
+        }
+        if (path === '/api/delete-row') {
+          return json(await deleteRow.handle(db, body));
         }
 
         return json({ status: 'error', message: 'Not found' }, 404);

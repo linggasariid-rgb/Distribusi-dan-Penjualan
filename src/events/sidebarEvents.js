@@ -4,8 +4,9 @@ import { toggleMenuGroup } from '../ui/sidebar.js';
 
 const MENU_IDS = [
   'beranda', 'distribusi', 'penerimaan-pabrik', 'input-distribusi',
+  'penerimaan-cabang', 'mutasi', 'retur', 'riwayat-transaksi',
   'input-stok-excel', 'input-stok-biz', 'penjualan-who', 'sales-dashboard',
-  'sales-hub', 'daily-report', 'sales-per-date', 'stok', 'control-point',
+  'sales-hub', 'daily-report', 'sales-per-date', 'stok', 'form-order', 'control-point',
   'best-products', 'rekap-belanja', 'pengaturan', 'chat-ai'
 ];
 

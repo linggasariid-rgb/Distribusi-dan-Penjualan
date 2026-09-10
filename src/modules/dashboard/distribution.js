@@ -86,20 +86,44 @@ export function initFilter() {
 export function calculateLogic(cabangKey, p) {
   let cb = state.gData.result[cabangKey];
   let pInfo = state.gData.productInfo[p] || {ctn:10, targetStock:8};
-  let targetDays = branchDays[cabangKey] || 8;
-  let bufferDays = branchBuffers[cabangKey] !== undefined ? branchBuffers[cabangKey] : 4;
+  
+  // As per original logic, targetDays and bufferDays are mapped from UI.
+  let targetDays = branchDays[cabangKey] || 8; // Acts as DISTRIBUTION CYCLE
+  let bufferDays = branchBuffers[cabangKey] !== undefined ? branchBuffers[cabangKey] : 4; // Acts as SAFETY DAYS
   let leadTime = state.gData.leadTime && state.gData.leadTime[cabangKey] !== undefined ? state.gData.leadTime[cabangKey] : 1;
-  let totalDays = targetDays + bufferDays;
+  
+  let totalDays = targetDays + bufferDays; // Acts as PROTECTION DAYS = LEAD TIME (ignored in original totalDays?) Wait, user formula: PROTECTION DAYS = LEAD TIME + SAFETY DAYS + DISTRIBUTION CYCLE.
+  // I will use totalDays = targetDays + bufferDays + leadTime to match user's PROTECTION DAYS formula exactly.
+  let protectionDays = leadTime + bufferDays + targetDays;
+  
   let hasSalesData = cb.produk[p].salesTotal > 0;
-  let dsr = hasSalesData ? Math.ceil(cb.produk[p].salesTotal / cb.pembagi) : 0;
-  let stok = cb.produk[p].currentStock;
+  let dsr = hasSalesData ? Math.ceil(cb.produk[p].salesTotal / cb.pembagi) : 0; // AVG
+  
+  let stok = cb.produk[p].currentStock; // SOH
+  let inTransit = cb.produk[p].inTransit || 0; // IN TRANSIT
+  let availablePosition = stok + inTransit; // AVAILABLE POSITION
+  
+  let safetyStock = dsr * bufferDays;
+  let rop = (dsr * leadTime) + safetyStock;
+  let targetStock = dsr * protectionDays;
+  
+  let sisaHari = hasSalesData ? (dsr > 0 ? (availablePosition / dsr) : 99) : null; // COVERAGE DAYS using Available Position
+  
+  let rawRecommendedQty = hasSalesData ? Math.max(0, targetStock - availablePosition) : 0;
+  let qtyReguler = 0;
+  
+  if (hasSalesData) {
+      if (availablePosition > rop) {
+          qtyReguler = 0;
+      } else {
+          qtyReguler = rawRecommendedQty;
+      }
+  }
 
-  let sisaHari = hasSalesData ? (dsr > 0 ? (stok / dsr) : 99) : null;
-  let qtyReguler = hasSalesData ? Math.max(0, (dsr * totalDays) - stok) : 0;
-
+  // Mendesak logic (sama seperti sebelumnya, tapi pakai available position)
   let qtyMendesak = 0;
   if (hasSalesData && sisaHari !== null && sisaHari <= leadTime + 0.5) {
-    qtyMendesak = Math.max(0, (dsr * (leadTime + 1)) - stok);
+    qtyMendesak = Math.max(0, (dsr * (leadTime + 1)) - availablePosition);
   }
 
   const pembulatan = (q) => {
@@ -114,12 +138,16 @@ export function calculateLogic(cabangKey, p) {
   return {
     dsr: dsr,
     stok: stok,
-    sisaHari: sisaHari,
+    inTransit: inTransit,
+    availablePosition: availablePosition,
+    rop: rop,
+    sisaHari: sisaHari, // Coverage Days
     kirimReguler: hasSalesData ? pembulatan(qtyReguler) : 0,
     kirimMendesak: hasSalesData ? pembulatan(qtyMendesak) : 0,
     isCritical: hasSalesData && sisaHari !== null && sisaHari <= 1.0,
     isWarning: hasSalesData && sisaHari !== null && sisaHari > 1.0 && sisaHari <= 2.0,
-    noSalesData: !hasSalesData
+    noSalesData: !hasSalesData,
+    rawRecommendedQty: hasSalesData ? pembulatan(rawRecommendedQty) : 0
   };
 }
 
@@ -242,13 +270,27 @@ export function renderCards() {
       let regulerDisplay = noData ? '-' : (res.kirimMendesak > 0 ? '-' : qtyDisplay);
       let sisaHariDisplay = noData ? 'N/A' : (res.sisaHari.toFixed(1) + ' Hari');
 
+      let inTransitDisplay = res.inTransit > 0 ? `<span class="text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded-md" title="Sedang dalam perjalanan">${res.inTransit}</span>` : '-';
+      let availablePositionDisplay = noData ? '-' : `<span class="text-blue-700 font-bold">${res.availablePosition}</span>`;
+      
+      let rowWarning = '';
+      if (res.inTransit > 0 && reqIdeal > 0) {
+        rowWarning = `<i class="fas fa-exclamation-triangle text-amber-500 ml-2" title="In Transit belum cukup, tetap direkomendasikan pengiriman tambahan."></i>`;
+      }
+      if (res.inTransit > 0 && reqIdeal === 0 && res.stok < res.rop) {
+         rowWarning = `<i class="fas fa-shield-alt text-emerald-500 ml-2" title="Double Distribution dicegah! (Barang dalam perjalanan menutupi kekurangan stok)"></i>`;
+      }
+
       rows += `
         <tr style="${rowStyle}">
           <td class="px-5 py-3 whitespace-nowrap font-bold" style="color:var(--color-text)">${p}</td>
           <td class="px-5 py-3 whitespace-nowrap font-medium" style="color:var(--color-text-secondary)">${res.dsr}</td>
-          <td class="px-5 py-3 whitespace-nowrap font-medium" style="color:var(--color-text-secondary)">${res.stok}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-medium text-slate-500">${res.stok}</td>
+          <td class="px-5 py-3 whitespace-nowrap">${inTransitDisplay}</td>
+          <td class="px-5 py-3 whitespace-nowrap">${availablePositionDisplay}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-medium text-slate-400">${Math.round(res.rop)}</td>
           <td class="px-5 py-3 whitespace-nowrap rounded-lg text-sm" style="${dayStyle}">${sisaHariDisplay}</td>
-          <td class="px-5 py-3 whitespace-nowrap font-extrabold" style="color:var(--color-text)">${regulerDisplay}</td>
+          <td class="px-5 py-3 whitespace-nowrap font-extrabold" style="color:var(--color-text)">${regulerDisplay}${rowWarning}</td>
           <td class="px-5 py-3 whitespace-nowrap font-extrabold" style="color:var(--color-danger)">${mendesakDisplay}</td>
         </tr>`;
     });
@@ -289,8 +331,11 @@ export function renderCards() {
               <tr class="bg-slate-100/50 text-slate-500 text-[10px] uppercase tracking-wider border-b border-slate-200">
                 <th class="px-5 py-3 font-bold">Produk</th>
                 <th class="px-5 py-3 font-bold">Avg /H</th>
-                <th class="px-5 py-3 font-bold">Stok</th>
-                <th class="px-5 py-3 font-bold">Kecukupan Produk</th>
+                <th class="px-5 py-3 font-bold">SOH</th>
+                <th class="px-5 py-3 font-bold">In Transit</th>
+                <th class="px-5 py-3 font-bold">Available Position</th>
+                <th class="px-5 py-3 font-bold">ROP</th>
+                <th class="px-5 py-3 font-bold">Coverage</th>
                 <th class="px-5 py-3 font-bold">Kirim (${branchDays[key]}H + ${branchBuffers[key]}H)</th>
                 <th class="px-5 py-3 font-bold">Mendesak</th>
               </tr>

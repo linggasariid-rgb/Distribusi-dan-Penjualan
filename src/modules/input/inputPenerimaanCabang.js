@@ -1,16 +1,12 @@
 import { state } from '../../state/appState.js';
 import { submitPastedData } from './submitHelper.js';
 
-export function initInputDistribusi() {
-  // Not needed anymore since user will paste the full table with dates
-}
+export function processPastePenerimaanCabang() {
+  const text = document.getElementById('penerimaan-cabang-paste-area').value.trim();
+  const container = document.getElementById('penerimaan-cabang-preview');
+  const submitContainer = document.getElementById('penerimaan-cabang-submit-container');
 
-export function processPasteDistribusi() {
-  const text = document.getElementById('distribusi-paste-area').value.trim();
-  const container = document.getElementById('distribusi-preview');
-  const submitContainer = document.getElementById('distribusi-submit-container');
-
-  state.pastedDataCache['distribusi'] = null;
+  state.pastedDataCache['penerimaan_cabang'] = null;
 
   if (!text) {
     container.innerHTML = '<p class="text-red-500 font-semibold p-4 bg-red-50 rounded-lg border border-red-200">Silakan paste data terlebih dahulu.</p>';
@@ -27,7 +23,7 @@ export function processPasteDistribusi() {
     return;
   }
 
-  state.pastedDataCache['distribusi'] = data;
+  state.pastedDataCache['penerimaan_cabang'] = data;
 
   let tableHTML = '<table class="w-full text-xs text-left border-collapse border border-slate-200"><thead class="bg-slate-100 sticky top-0"><tr class="text-slate-600 uppercase text-[10px] tracking-wider">';
   let htmlBody = '<tbody class="divide-y divide-slate-100">';
@@ -48,22 +44,22 @@ export function processPasteDistribusi() {
   submitContainer.classList.remove('hidden');
 }
 
-export function submitDataDistribusi() {
-  const button = document.querySelector('#distribusi-submit-container button');
+export function submitDataPenerimaanCabang() {
+  const button = document.querySelector('#penerimaan-cabang-submit-container button');
   submitPastedData({
-    rpcName: 'saveDistribusi',
-    cacheKey: 'distribusi',
-    idPrefix: 'distribusi',
+    rpcName: 'savePenerimaanCabang',
+    cacheKey: 'penerimaan_cabang',
+    idPrefix: 'penerimaan-cabang',
     button: button,
     offerReload: true,
-    historyTable: 'distribusi',
-    historyContainerId: 'distribusi-history',
+    historyTable: 'penerimaan_cabang',
+    historyContainerId: 'penerimaan-cabang-history',
   });
 }
 
-export function clearDistribusiForm() {
-  document.getElementById('distribusi-paste-area').value = '';
-  document.getElementById('distribusi-preview').innerHTML = '';
-  document.getElementById('distribusi-submit-container').classList.add('hidden');
-  state.pastedDataCache['distribusi'] = null;
+export function clearPenerimaanCabangForm() {
+  document.getElementById('penerimaan-cabang-paste-area').value = '';
+  document.getElementById('penerimaan-cabang-preview').innerHTML = '';
+  document.getElementById('penerimaan-cabang-submit-container').classList.add('hidden');
+  state.pastedDataCache['penerimaan_cabang'] = null;
 }
