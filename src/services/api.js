@@ -42,10 +42,15 @@ export function callApi(name, ...args) {
       return;
     }
 
-    const opts = { method };
+    const opts = { method, cache: 'no-store' };
     if (body) {
       opts.headers = { 'Content-Type': 'application/json' };
       opts.body = body;
+    }
+
+    if (method === 'GET') {
+      const sep = url.includes('?') ? '&' : '?';
+      url += sep + '_t=' + Date.now();
     }
 
     fetch(url, opts)

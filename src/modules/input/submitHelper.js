@@ -31,6 +31,9 @@ export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, b
       document.getElementById(idPrefix + '-preview').innerHTML = '';
       document.getElementById(idPrefix + '-submit-container').classList.add('hidden');
       state.pastedDataCache[cacheKey] = null;
+      
+      // Invalidasi cache agar Ringkasan Stok & Dashboard mengambil data terbaru dari server
+      state.gData = null;
 
       if (historyTable && historyContainerId) loadInputHistory(historyTable, historyContainerId);
 
