@@ -132,6 +132,12 @@ export function switchMenu(menuName) {
   berandaView.classList.add('hidden');
   pengaturanView.classList.add('hidden');
   riwayatTransaksiView.classList.add('hidden');
+  
+  const salesHubView = document.getElementById('sales-hub-view');
+  if (salesHubView) salesHubView.classList.add('hidden');
+  if (rekapBelanjaView) rekapBelanjaView.classList.add('hidden');
+  if (formOrderView) formOrderView.classList.add('hidden');
+
   branchFilter.classList.add('hidden');
   if (summarySection) {
     summarySection.classList.add('hidden');
