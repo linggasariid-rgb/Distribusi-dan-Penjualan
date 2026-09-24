@@ -187,7 +187,6 @@ export function exportRekapBelanja() {
   const kategoriFilter = katExEl ? katExEl.value : 'ALL';
   const month = document.getElementById('rekap-belanja-month').value;
 
-  // Label dinamis
   const katLabel = kategoriFilter === 'ALL' ? 'Semua' : kategoriFilter.replace(' ', '-');
   const katHeader = kategoriFilter === 'ALL' ? 'MASTER STOKIS & STOKIS' : kategoriFilter.toUpperCase();
   const cabangHeader = branchFilter === 'ALL' ? 'SEMUA CABANG' : branchFilter;
@@ -195,7 +194,7 @@ export function exportRekapBelanja() {
   const BULAN_NAMES = ['','JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
   const bulanLabel = `${BULAN_NAMES[parseInt(mo)]} ${yr}`;
 
-  const groups = groupByCustomer(filtered);
+  const sections = groupPerCabang(filtered);
   const rows = [];
 
   // === HEADER ATAS ===
@@ -203,82 +202,50 @@ export function exportRekapBelanja() {
   rows.push([`REKAP BELANJA ${katHeader}`]);
   rows.push([cabangHeader]);
   rows.push([`PERIODE ${bulanLabel}`]);
-  rows.push([]); // baris kosong
+  rows.push([]);
 
-  // === HEADER KOLOM TABEL ===
-  // Urutan: Tanggal | Cabang | Nama | Produk... | Total Bungkus | Total Nominal
-  rows.push(['TANGGAL', 'CABANG', 'NAMA', ...PRODUCT_COLS, 'TOTAL BUNGKUS', 'TOTAL NOMINAL (Rp)']);
+  // === HEADER KOLOM ===
+  rows.push(['NAMA', 'TIPE', 'CABANG', ...PRODUCT_COLS, 'TOTAL BUNGKUS', 'TOTAL NOMINAL (Rp)']);
 
   const grandProds = {};
   PRODUCT_COLS.forEach(p => grandProds[p] = 0);
   let grandBungkus = 0;
   let grandNominal = 0;
 
-  let branchGroupsMap = {};
-  groups.forEach(([nama, group]) => {
-    const cab = group.cabang;
-    if (!branchGroupsMap[cab]) branchGroupsMap[cab] = [];
-    branchGroupsMap[cab].push([nama, group]);
-  });
-  
-  const sortedBranches = Object.keys(branchGroupsMap).sort();
+  sections.forEach(sec => {
+    rows.push([`=== CABANG: ${sec.cabang} ===`]);
 
-  sortedBranches.forEach(cabangName => {
-    if (branchFilter === 'ALL') {
-      rows.push([`=== CABANG: ${cabangName} ===`]);
-    }
+    const cabProds = {};
+    PRODUCT_COLS.forEach(p => cabProds[p] = 0);
+    let cabBungkus = 0;
+    let cabNominal = 0;
 
-    let branchProds = {};
-    PRODUCT_COLS.forEach(p => branchProds[p] = 0);
-    let branchBungkus = 0;
-    let branchNominal = 0;
-
-    branchGroupsMap[cabangName].forEach(([nama, group]) => {
-      const subProds = {};
-      PRODUCT_COLS.forEach(p => subProds[p] = 0);
-      let subBungkus = 0;
-      let subNominal = 0;
-
-      group.rows.forEach((t, idx) => {
-        const row = [t.tanggal, t.cabang, idx === 0 ? nama : ''];
-        PRODUCT_COLS.forEach(p => {
-          const qty = t.products[p] || 0;
-          subProds[p] += qty;
-          branchProds[p] += qty;
-          grandProds[p] += qty;
-          row.push(qty || '');
-        });
-        row.push(t.total_bungkus);
-        row.push(t.total_nominal);
-        subBungkus += t.total_bungkus;
-        subNominal += t.total_nominal;
-        branchBungkus += t.total_bungkus;
-        branchNominal += t.total_nominal;
-        grandBungkus += t.total_bungkus;
-        grandNominal += t.total_nominal;
-        rows.push(row);
+    sec.items.forEach(item => {
+      const row = [item.nama_customer, item.kategori, item.cabang];
+      PRODUCT_COLS.forEach(p => {
+        const qty = item.products[p] || 0;
+        cabProds[p] += qty;
+        grandProds[p] += qty;
+        row.push(qty || '');
       });
-
-      const subtotalRow = ['', '', `GRAND TOTAL ${nama}`];
-      PRODUCT_COLS.forEach(p => subtotalRow.push(subProds[p] || ''));
-      subtotalRow.push(subBungkus);
-      subtotalRow.push(subNominal);
-      rows.push(subtotalRow);
-      rows.push([]);
+      row.push(item.total_bungkus);
+      row.push(item.total_nominal);
+      cabBungkus += item.total_bungkus;
+      cabNominal += item.total_nominal;
+      grandBungkus += item.total_bungkus;
+      grandNominal += item.total_nominal;
+      rows.push(row);
     });
 
-    if (branchFilter === 'ALL') {
-      const branchSubtotal = ['', '', `SUBTOTAL CABANG ${cabangName}`];
-      PRODUCT_COLS.forEach(p => branchSubtotal.push(branchProds[p] || ''));
-      branchSubtotal.push(branchBungkus);
-      branchSubtotal.push(branchNominal);
-      rows.push(branchSubtotal);
-      rows.push([]); 
-      rows.push([]);
-    }
+    const cabSub = ['', '', `SUBTOTAL CABANG ${sec.cabang}`];
+    PRODUCT_COLS.forEach(p => cabSub.push(cabProds[p] || ''));
+    cabSub.push(cabBungkus);
+    cabSub.push(cabNominal);
+    rows.push(cabSub);
+    rows.push([]);
+    rows.push([]);
   });
 
-  // Grand total keseluruhan
   const grandRow = ['', '', 'GRAND TOTAL KESELURUHAN'];
   PRODUCT_COLS.forEach(p => grandRow.push(grandProds[p] || ''));
   grandRow.push(grandBungkus);
@@ -287,43 +254,32 @@ export function exportRekapBelanja() {
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
 
-  // Styling dan Formatting
+  // Styling & formatting (pola lama dipertahankan)
   const numCols = 3 + PRODUCT_COLS.length + 2;
-  const colWidths = [];
-  
-  // Loop semua sel untuk apply style/format
   for (const key in ws) {
     if (key.startsWith('!')) continue;
     const cell = ws[key];
-    const colStr = key.replace(/[0-9]/g, '');
-    const rowNum = parseInt(key.replace(/[^0-9]/g, ''), 10) - 1; // 0-indexed
+    const rowNum = parseInt(key.replace(/[^0-9]/g, ''), 10) - 1;
 
-    // Format angka dengan pemisah ribuan
-    if (typeof cell.v === 'number') {
-      cell.z = '#,##0';
-    }
+    if (typeof cell.v === 'number') cell.z = '#,##0';
 
-    // Styling Header Tabel (Baris ke-6 / index 5)
     if (rowNum === 5) {
       cell.s = {
         font: { bold: true, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "1E293B" } }, // slate-800
+        fill: { fgColor: { rgb: "1E293B" } },
         alignment: { horizontal: "center", vertical: "center" }
       };
     }
-    
-    // Styling baris Subtotal, Subtotal Cabang & Grand Total
+
     if (rowNum > 5 && typeof cell.v === 'string' && (cell.v.includes('GRAND TOTAL') || cell.v.includes('SUBTOTAL CABANG') || cell.v.includes('=== CABANG'))) {
       cell.s = { font: { bold: true } };
-      // Beri warna khusus untuk header cabang
       if (cell.v.includes('=== CABANG')) {
-        cell.s.fill = { fgColor: { rgb: "E2E8F0" } }; // slate-200
+        cell.s.fill = { fgColor: { rgb: "E2E8F0" } };
         cell.s.color = { rgb: "0F172A" };
       }
     }
   }
 
-  // Tambahkan background untuk baris subtotal secara penuh
   rows.forEach((rData, rIdx) => {
     if (rIdx > 5 && rData[0] && String(rData[0]).includes('=== CABANG')) {
       for (let c = 0; c < numCols; c++) {
@@ -331,18 +287,16 @@ export function exportRekapBelanja() {
         if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
         ws[cellRef].s = {
           font: { bold: true, color: { rgb: "0F172A" } },
-          fill: { fgColor: { rgb: "E2E8F0" } } // slate-200
+          fill: { fgColor: { rgb: "E2E8F0" } }
         };
       }
     } else if (rIdx > 5 && rData[2] && (String(rData[2]).includes('GRAND TOTAL') || String(rData[2]).includes('SUBTOTAL CABANG'))) {
       for (let c = 0; c < numCols; c++) {
         const cellRef = XLSX.utils.encode_cell({ c: c, r: rIdx });
         if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
-        
-        let bgColor = "F1F5F9"; // slate-100 default
-        if (String(rData[2]).includes('KESELURUHAN') || String(rData[2]).includes('SUBTOTAL CABANG')) {
-          bgColor = "CBD5E1"; // slate-300 untuk grand total & subtotal cabang
-        };
+
+        let bgColor = "F1F5F9";
+        if (String(rData[2]).includes('KESELURUHAN') || String(rData[2]).includes('SUBTOTAL CABANG')) bgColor = "CBD5E1";
         ws[cellRef].s = {
           font: { bold: true },
           fill: { fgColor: { rgb: bgColor } }
@@ -351,20 +305,19 @@ export function exportRekapBelanja() {
     }
   });
 
-  // Hitung lebar kolom berdasarkan isi data
+  const colWidths = [];
   for (let ci = 0; ci < numCols; ci++) {
     let minWidth;
-    if (ci === 0) minWidth = 14;       // TANGGAL
-    else if (ci === 1) minWidth = 16;  // CABANG
-    else if (ci === 2) minWidth = 32;  // NAMA
+    if (ci === 0) minWidth = 32;               // NAMA
+    else if (ci === 1) minWidth = 14;          // TIPE
+    else if (ci === 2) minWidth = 16;          // CABANG
     else if (ci >= numCols - 2) minWidth = 16; // TOTAL
-    else minWidth = 10;                // PRODUK
+    else minWidth = 10;                        // PRODUK
 
     const maxContent = Math.max(
       minWidth,
       ...rows.map(r => {
         let val = r[ci] || '';
-        // Jika angka yang diformat, hitung panjang estimasi dengan titik
         if (typeof val === 'number') val = val.toLocaleString('id-ID');
         return String(val).length;
       })
@@ -375,7 +328,6 @@ export function exportRekapBelanja() {
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Rekap Belanja");
-  
-  const filename = `Rekap_Belanja_${branchFilter}_${katLabel}_${month}.xlsx`;
-  XLSX.writeFile(wb, filename);
+
+  XLSX.writeFile(wb, `Rekap_Belanja_${branchFilter}_${katLabel}_${month}.xlsx`);
 }
