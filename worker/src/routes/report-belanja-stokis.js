@@ -1,7 +1,70 @@
-import { toDateStr, CONFIG } from '../config.js';
+export function detectCategory(tipeUpper) {
+  if (tipeUpper.startsWith('MST') || tipeUpper.startsWith('MSI')) return 'Master Stokis';
+  if (tipeUpper.startsWith('STK') || tipeUpper === 'STOKIS') return 'Stokis';
+  if (tipeUpper.startsWith('KARYAWAN') || tipeUpper.startsWith('ORE') || tipeUpper === 'TSIEMPLOYEE') return 'Karyawan';
+  if (tipeUpper.startsWith('APPS') || tipeUpper.startsWith('ORM') || tipeUpper === 'TSIAPPS') return 'Apps';
+  return '';
+}
+
+export function computeTransaction(r, priceMap, targetMonth) {
+  if (!r.tanggal || !r.tanggal.startsWith(targetMonth)) return null;
+  const tipe = r.tipe_customer;
+  if (!tipe) return null;
+  const kategori = detectCategory(tipe.toUpperCase());
+  if (!kategori) return null;
+
+  const prods = r.products || {};
+  let totalNominal = 0;
+  let totalBungkus = 0;
+  for (const [prodName, qty] of Object.entries(prods)) {
+    if (qty > 0) {
+      if (prodName !== 'HU') totalBungkus += qty;
+      if (priceMap[prodName]) {
+        const price = kategori === 'Karyawan' ? priceMap[prodName].karyawan : priceMap[prodName].mst;
+        totalNominal += (qty * price);
+      }
+    }
+  }
+  return {
+    tanggal: r.tanggal,
+    cabang: r.cabang,
+    nama_customer: tipe,
+    kategori,
+    products: prods,
+    total_bungkus: totalBungkus,
+    total_nominal: totalNominal,
+  };
+}
+
+export function aggregateSummary(transactions) {
+  const map = {};
+  for (const t of transactions) {
+    const key = `${t.cabang}||${t.nama_customer}`;
+    let g = map[key];
+    if (!g) {
+      g = {
+        nama_customer: t.nama_customer,
+        kategori: t.kategori,
+        cabang: t.cabang,
+        products: {},
+        total_bungkus: 0,
+        total_nominal: 0,
+      };
+      map[key] = g;
+    }
+    g.total_bungkus += t.total_bungkus;
+    g.total_nominal += t.total_nominal;
+    for (const [p, qty] of Object.entries(t.products)) {
+      g.products[p] = (g.products[p] || 0) + qty;
+    }
+  }
+  return Object.values(map).sort((a, b) => {
+    if (a.cabang !== b.cabang) return a.cabang.localeCompare(b.cabang);
+    return a.nama_customer.localeCompare(b.nama_customer);
+  });
+}
 
 export async function handle(db, monthFilter) {
-  // 1. Dapatkan tanggal rentang pencarian
   let targetMonth = monthFilter;
   if (!targetMonth) {
     const now = new Date();
@@ -13,16 +76,14 @@ export async function handle(db, monthFilter) {
   const lteDate = `${targetMonth}-${String(lastDay).padStart(2, '0')}`;
   const gteDate = `${targetMonth}-01`;
 
-    // 2. Tarik harga produk dari database (price_stk akan kita pakai untuk Karyawan)
-    const pricesRaw = await db.query('product_prices', {
-      select: 'product_name,price_mst,price_stk'
-    });
-    const priceMap = {};
-    for (const p of pricesRaw) {
-      priceMap[p.product_name] = { mst: p.price_mst, karyawan: p.price_stk };
-    }
+  const pricesRaw = await db.query('product_prices', {
+    select: 'product_name,price_mst,price_stk'
+  });
+  const priceMap = {};
+  for (const p of pricesRaw) {
+    priceMap[p.product_name] = { mst: p.price_mst, karyawan: p.price_stk };
+  }
 
-  // 3. Tarik data penjualan WHO
   const rows = await db.query('penjualan_who', {
     select: 'cabang,tipe_customer,tanggal,products,jumlah',
     gte: { tanggal: gteDate },
@@ -30,67 +91,10 @@ export async function handle(db, monthFilter) {
   });
 
   const transactions = [];
-
   for (const r of rows) {
-    if (!r.tanggal || !r.tanggal.startsWith(targetMonth)) continue;
-    if (!r.tipe_customer) continue;
-
-    const tipeUpper = r.tipe_customer.toUpperCase();
-    
-    // Gabungkan MST/MSI jadi "Master Stokis", STK tetap "Stokis"
-    // ORE/Karyawan jadi "Karyawan", ORM/TsiApps jadi "Apps"
-    let category = '';
-    let isMst = false;
-
-    if (tipeUpper.startsWith('MST') || tipeUpper.startsWith('MSI')) {
-      category = 'Master Stokis';
-      isMst = true;
-    } else if (tipeUpper.startsWith('STK') || tipeUpper === 'STOKIS') {
-      category = 'Stokis';
-    } else if (tipeUpper.startsWith('KARYAWAN') || tipeUpper.startsWith('ORE') || tipeUpper === 'TSIEMPLOYEE') {
-      category = 'Karyawan';
-    } else if (tipeUpper.startsWith('APPS') || tipeUpper.startsWith('ORM') || tipeUpper === 'TSIAPPS') {
-      category = 'Apps';
-    }
-
-    if (!category) continue; // Skip tipe lain yang tidak dikenal
-
-    const prods = r.products || {};
-    let totalNominal = 0;
-    let totalBungkus = 0;
-    
-    // Hitung nominal dan bungkus per produk
-    for (const [prodName, qty] of Object.entries(prods)) {
-      if (qty > 0) {
-        if (prodName !== 'HU') {
-          totalBungkus += qty;
-        }
-        if (priceMap[prodName]) {
-          let price = 0;
-          if (category === 'Master Stokis' || category === 'Stokis' || category === 'Apps') price = priceMap[prodName].mst;
-          else if (category === 'Karyawan') price = priceMap[prodName].karyawan; // Mengambil dari kolom price_stk
-          
-          totalNominal += (qty * price);
-        }
-      }
-    }
-
-    transactions.push({
-      tanggal: r.tanggal,
-      cabang: r.cabang,
-      nama_customer: r.tipe_customer, // simpan nama asli
-      kategori: category,
-      products: prods,
-      total_bungkus: totalBungkus, // pakai hitungan manual tanpa HU
-      total_nominal: totalNominal
-    });
+    const t = computeTransaction(r, priceMap, targetMonth);
+    if (t) transactions.push(t);
   }
 
-  // Sort: Terbaru di atas, lalu abjad cabang
-  transactions.sort((a, b) => {
-    if (a.tanggal !== b.tanggal) return b.tanggal.localeCompare(a.tanggal);
-    return a.cabang.localeCompare(b.cabang);
-  });
-
-  return { status: 'success', data: transactions };
+  return { status: 'success', data: aggregateSummary(transactions) };
 }
