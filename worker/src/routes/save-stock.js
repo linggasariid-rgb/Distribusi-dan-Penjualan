@@ -51,7 +51,7 @@ export async function handle(db, body) {
 
     try {
       await db.request('POST', 'stock', {
-        data: { cabang, products },
+        data: { cabang, products, excel_products: products },
         onConflict: 'cabang',
       });
       count++;

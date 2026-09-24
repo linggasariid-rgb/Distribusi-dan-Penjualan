@@ -20,6 +20,16 @@ function getVal(products, key) {
   return parseInt(v) || 0;
 }
 
+// Kolom "EXCEL" di Control Point harus menampilkan SNAPSHOT paste Stok Excel
+// terakhir (excel_products), BUKAN products yang merupakan SOH live yang terus
+// diubah trigger penjualan/distribusi/mutasi/retur. Kalau belum ada snapshot
+// (row lama / hasil migrate), fallback ke products supaya tetap menampilkan data.
+function excelSnapshotOf(stockRow) {
+  const snapshot = stockRow.excel_products;
+  if (snapshot !== null && snapshot !== undefined) return snapshot;
+  return stockRow.products;
+}
+
 function sumProducts(...productObjs) {
   const sums = {};
   for (const obj of productObjs) {
@@ -56,7 +66,7 @@ const BANDUNG_BIZ_NAMES = ['GUDANG BDG', 'GUDANG BANDUNG', 'GDG BANDUNG', 'WHP B
 export async function handle(db) {
   try {
     const period = await getLatestBizPeriod(db);
-    const stockRows = await db.query('stock', { select: 'cabang,products' });
+    const stockRows = await db.query('stock', { select: 'cabang,products,excel_products' });
     const bizRows = await db.query('biz_stock', {
       select: 'cabang,products,periode',
       eq: { periode: period },
@@ -70,10 +80,11 @@ export async function handle(db) {
     let tasikStock = null, whpTasikStock = null, whpBandungStock = null;
     for (const r of stockRows) {
       const cabang = r.cabang;
-      if (cabang === 'TASIKMALAYA') tasikStock = r.products;
-      else if (cabang === 'WHP TASIKMALAYA' || cabang.includes('WHP TASIK')) whpTasikStock = r.products;
-      else if (cabang.includes('WHP BANDUNG')) whpBandungStock = r.products;
-      else stockByBranch[cabang] = r.products || {};
+      const prods = excelSnapshotOf(r);
+      if (cabang === 'TASIKMALAYA') tasikStock = prods;
+      else if (cabang === 'WHP TASIKMALAYA' || cabang.includes('WHP TASIK')) whpTasikStock = prods;
+      else if (cabang.includes('WHP BANDUNG')) whpBandungStock = prods;
+      else stockByBranch[cabang] = prods || {};
     }
 
     let tasikBiz = null, bandungBiz = null;
