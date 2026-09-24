@@ -28,6 +28,13 @@ function parseNum(v) {
   return parseInt(String(v).trim().replace(/\./g,''), 10) || 0;
 }
 
+export function findNamaColumn(headers) {
+  return headers.findIndex(h => {
+    const u = String(h || '').toUpperCase().trim();
+    return u === 'NAMA PDM' || u === 'NAMA CUSTOMER' || (u.includes('NAMA') && (u.includes('PDM') || u.includes('CUSTOMER')));
+  });
+}
+
 export async function handle(db, body) {
   const data = body.data;
   if (!Array.isArray(data) || data.length < 2) {
@@ -52,12 +59,8 @@ export async function handle(db, body) {
     };
   }
 
-  // Cari kolom NAMA PDM secara spesifik -- harus mengandung "NAMA" DAN "PDM"
-  // atau tepat bernama "NAMA PDM". Hindari mencocokkan kolom lain yang ada kata "NAMA".
-  const namaPdmCol = headers.findIndex(h => {
-    const u = h.toUpperCase();
-    return u === 'NAMA PDM' || (u.includes('NAMA') && u.includes('PDM'));
-  });
+  // Cari kolom nama customer: "NAMA PDM" ATAU "NAMA CUSTOMER" (nama header asli sheet).
+  const namaPdmCol = findNamaColumn(headers);
 
   const rows = [];
   for (let i = 1; i < data.length; i++) {
