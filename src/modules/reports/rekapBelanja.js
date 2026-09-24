@@ -64,18 +64,18 @@ function getFiltered() {
   return filtered;
 }
 
-// Kelompokkan transaksi per nama_customer, urutkan abjad nama
-function groupByCustomer(filtered) {
-  const groups = {};
-  filtered.forEach(t => {
-    const key = t.nama_customer;
-    if (!groups[key]) groups[key] = { kategori: t.kategori, cabang: t.cabang, rows: [] };
-    groups[key].rows.push(t);
-  });
-  // Urutkan tiap grup berdasarkan tanggal
-  Object.values(groups).forEach(g => g.rows.sort((a, b) => a.tanggal.localeCompare(b.tanggal)));
-  // Urutkan nama abjad
-  return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
+// Kelompokkan ringkasan per cabang (abjad), lalu customer di dalamnya (abjad nama)
+export function groupPerCabang(items) {
+  const map = {};
+  for (const t of items) {
+    const cab = t.cabang || '(TANPA CABANG)';
+    if (!map[cab]) map[cab] = [];
+    map[cab].push(t);
+  }
+  return Object.keys(map).sort().map(cab => ({
+    cabang: cab,
+    items: map[cab].sort((a, b) => String(a.nama_customer || '').localeCompare(String(b.nama_customer || ''))),
+  }));
 }
 
 function renderRekapBelanja() {
@@ -83,10 +83,10 @@ function renderRekapBelanja() {
   const tbody = document.getElementById('rekap-belanja-tbody');
   const tfoot = document.getElementById('rekap-belanja-tfoot');
 
-  // 1. Header — Nama | Tanggal | Cabang | Produk... | Total Bungkus | Total Nominal
+  // 1. Header — Nama | Tipe | Cabang | Produk... | Total Bungkus | Total Nominal
   let headHtml = `<tr>
     <th class="px-4 py-3 text-left whitespace-nowrap">Nama</th>
-    <th class="px-4 py-3 text-left whitespace-nowrap">Tanggal</th>
+    <th class="px-4 py-3 text-left whitespace-nowrap">Tipe</th>
     <th class="px-4 py-3 text-left whitespace-nowrap">Cabang</th>`;
   PRODUCT_COLS.forEach(p => {
     headHtml += `<th class="px-2 py-3 text-right whitespace-nowrap">${p}</th>`;
@@ -103,74 +103,59 @@ function renderRekapBelanja() {
     return;
   }
 
-  const groups = groupByCustomer(filtered);
+  const sections = groupPerCabang(filtered);
   let bodyHtml = '';
   let grandSumBungkus = 0;
   let grandSumNominal = 0;
   const grandSumProds = {};
   PRODUCT_COLS.forEach(p => grandSumProds[p] = 0);
 
-  groups.forEach(([nama, group]) => {
-    let namaCls = 'text-slate-700 font-bold';
-    let subtotalBg = 'bg-slate-50';
-    if (group.kategori === 'Master Stokis') {
-      namaCls = 'text-amber-700 font-bold';
-      subtotalBg = 'bg-amber-50';
-    } else if (group.kategori === 'Stokis') {
-      namaCls = 'text-blue-700 font-bold';
-      subtotalBg = 'bg-blue-50';
-    } else if (group.kategori === 'Karyawan') {
-      namaCls = 'text-purple-700 font-bold';
-      subtotalBg = 'bg-purple-50';
-    } else if (group.kategori === 'Apps') {
-      namaCls = 'text-emerald-700 font-bold';
-      subtotalBg = 'bg-emerald-50';
-    }
-    const rows = group.rows;
-    
-    let subBungkus = 0;
-    let subNominal = 0;
-    const subProds = {};
-    PRODUCT_COLS.forEach(p => subProds[p] = 0);
+  sections.forEach(sec => {
+    const cabProds = {};
+    PRODUCT_COLS.forEach(p => cabProds[p] = 0);
+    let cabBungkus = 0;
+    let cabNominal = 0;
 
-    rows.forEach((t, idx) => {
-      subBungkus += t.total_bungkus;
-      subNominal += t.total_nominal;
-      grandSumBungkus += t.total_bungkus;
-      grandSumNominal += t.total_nominal;
+    bodyHtml += `<tr class="bg-slate-800 text-white">
+      <td colspan="${3 + TOTAL_COLS}" class="px-4 py-2 font-bold uppercase tracking-wider">=== CABANG: ${sec.cabang} ===</td>
+    </tr>`;
 
-      // Nama hanya tampil di baris pertama grup (cell digabung visual lewat rowspan)
-      const nameCell = idx === 0
-        ? `<td class="px-4 py-2 ${namaCls} whitespace-nowrap align-top border-t-2 border-slate-200" rowspan="${rows.length}">${nama}</td>`
-        : '';
-      const borderTop = idx === 0 ? 'border-t-2 border-slate-200' : '';
+    sec.items.forEach(item => {
+      let namaCls = 'text-slate-700 font-bold';
+      if (item.kategori === 'Master Stokis') namaCls = 'text-amber-700 font-bold';
+      else if (item.kategori === 'Stokis') namaCls = 'text-blue-700 font-bold';
+      else if (item.kategori === 'Karyawan') namaCls = 'text-purple-700 font-bold';
+      else if (item.kategori === 'Apps') namaCls = 'text-emerald-700 font-bold';
+
+      cabBungkus += item.total_bungkus;
+      cabNominal += item.total_nominal;
+      grandSumBungkus += item.total_bungkus;
+      grandSumNominal += item.total_nominal;
 
       bodyHtml += `<tr class="hover:bg-slate-50 transition-colors">
-        ${nameCell}
-        <td class="px-4 py-2 font-mono whitespace-nowrap ${borderTop}">${t.tanggal}</td>
-        <td class="px-4 py-2 whitespace-nowrap ${borderTop}">${t.cabang}</td>`;
-      
+        <td class="px-4 py-2 ${namaCls} whitespace-nowrap">${item.nama_customer}</td>
+        <td class="px-4 py-2 whitespace-nowrap">${item.kategori}</td>
+        <td class="px-4 py-2 whitespace-nowrap">${item.cabang}</td>`;
+
       PRODUCT_COLS.forEach(p => {
-        const qty = t.products[p] || 0;
-        subProds[p] += qty;
+        const qty = item.products[p] || 0;
+        cabProds[p] += qty;
         grandSumProds[p] += qty;
-        bodyHtml += `<td class="px-2 py-2 text-right font-mono ${borderTop} ${qty > 0 ? 'text-slate-800' : 'text-slate-300'}">${qty > 0 ? qty.toLocaleString('id-ID') : '-'}</td>`;
+        bodyHtml += `<td class="px-2 py-2 text-right font-mono ${qty > 0 ? 'text-slate-800' : 'text-slate-300'}">${qty > 0 ? qty.toLocaleString('id-ID') : '-'}</td>`;
       });
 
-      bodyHtml += `<td class="px-4 py-2 text-right font-bold text-slate-700 font-mono ${borderTop}">${t.total_bungkus.toLocaleString('id-ID')}</td>
-        <td class="px-4 py-2 text-right font-bold text-emerald-600 font-mono ${borderTop}">${t.total_nominal.toLocaleString('id-ID')}</td>
-      </tr>`;
+      bodyHtml += `<td class="px-4 py-2 text-right font-bold text-slate-700 font-mono">${item.total_bungkus.toLocaleString('id-ID')}</td>
+        <td class="px-4 py-2 text-right font-bold text-emerald-600 font-mono">${item.total_nominal.toLocaleString('id-ID')}</td></tr>`;
     });
 
-    // Baris subtotal per customer
-    bodyHtml += `<tr class="${subtotalBg} font-bold text-sm">
-      <td class="px-4 py-2 ${namaCls}" colspan="3">GRAND TOTAL ${nama}</td>`;
+    // Subtotal per cabang
+    bodyHtml += `<tr class="bg-slate-100 font-bold text-sm">
+      <td class="px-4 py-2 uppercase tracking-wider" colspan="3">SUBTOTAL CABANG ${sec.cabang}</td>`;
     PRODUCT_COLS.forEach(p => {
-      bodyHtml += `<td class="px-2 py-2 text-right font-mono">${subProds[p] > 0 ? subProds[p].toLocaleString('id-ID') : '-'}</td>`;
+      bodyHtml += `<td class="px-2 py-2 text-right font-mono">${cabProds[p] > 0 ? cabProds[p].toLocaleString('id-ID') : '-'}</td>`;
     });
-    bodyHtml += `<td class="px-4 py-2 text-right font-mono">${subBungkus.toLocaleString('id-ID')}</td>
-      <td class="px-4 py-2 text-right text-emerald-700 font-mono">${subNominal.toLocaleString('id-ID')}</td>
-    </tr>`;
+    bodyHtml += `<td class="px-4 py-2 text-right font-mono">${cabBungkus.toLocaleString('id-ID')}</td>
+      <td class="px-4 py-2 text-right text-emerald-700 font-mono">${cabNominal.toLocaleString('id-ID')}</td></tr>`;
   });
 
   tbody.innerHTML = bodyHtml;
