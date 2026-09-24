@@ -20,7 +20,7 @@ export function computeTransaction(r, priceMap, targetMonth) {
     if (qty > 0) {
       if (prodName !== 'HU') totalBungkus += qty;
       if (priceMap[prodName]) {
-        const price = kategori === 'Karyawan' ? priceMap[prodName].karyawan : priceMap[prodName].mst;
+        const price = (kategori === 'Karyawan' && prodName !== 'HU') ? priceMap[prodName].karyawan : priceMap[prodName].mst;
         totalNominal += (qty * price);
       }
     }
@@ -59,7 +59,7 @@ export function aggregateSummary(transactions) {
     }
   }
   return Object.values(map).sort((a, b) => {
-    if (a.cabang !== b.cabang) return a.cabang.localeCompare(b.cabang);
+    if ((a.cabang || '') !== (b.cabang || '')) return (a.cabang || '').localeCompare(b.cabang || '');
     return a.nama_customer.localeCompare(b.nama_customer);
   });
 }

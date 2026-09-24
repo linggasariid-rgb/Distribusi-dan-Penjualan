@@ -13,7 +13,7 @@ assert.equal(detectCategory('TSIAPPS'), 'Apps');
 assert.equal(detectCategory('PELANGGAN'), '');
 
 // computeTransaction
-const priceMap = { 'SPS TSI': { mst: 10000, karyawan: 8000 }, HU: { mst: 9000, karyawan: 9000 } };
+const priceMap = { 'SPS TSI': { mst: 10000, karyawan: 8000 }, HU: { mst: 9000, karyawan: 8000 } };
 const t = computeTransaction(
   { tanggal: '2026-09-23', cabang: 'BANDUNG', tipe_customer: 'MST X', products: { 'SPS TSI': 50, HU: 2 } },
   priceMap, '2026-09'
@@ -23,6 +23,13 @@ assert.equal(t.total_bungkus, 50, 'HU tidak dihitung bungkus');
 assert.equal(t.total_nominal, 50 * 10000 + 2 * 9000, 'HU tetap dihitung nominal');
 assert.equal(computeTransaction({ tanggal: '2026-08-01', cabang: 'B', tipe_customer: 'MST', products: {} }, priceMap, '2026-09'), null, 'tanggal di luar bulan -> null');
 assert.equal(computeTransaction({ tanggal: '2026-09-01', cabang: 'B', tipe_customer: 'ASING', products: {} }, priceMap, '2026-09'), null, 'tipe tak dikenal -> null');
+
+const k = computeTransaction(
+  { tanggal: '2026-09-23', cabang: 'BANDUNG', tipe_customer: 'KARYAWAN Y', products: { 'SPS TSI': 10, HU: 1 } },
+  priceMap, '2026-09'
+);
+assert.equal(k.total_bungkus, 10, 'Karyawan: HU tetap tidak dihitung bungkus');
+assert.equal(k.total_nominal, 10 * 8000 + 1 * 9000, 'Karyawan: HU tetap pakai price_mst');
 
 // aggregateSummary
 const rows = [
@@ -39,5 +46,11 @@ assert.equal(s[0].products['HU'], 3);
 assert.equal(s[0].total_bungkus, 15);
 assert.equal(s[0].total_nominal, 150000);
 assert.equal(s[1].cabang, 'GARUT');
+
+const sameName = aggregateSummary([
+  { tanggal: '2026-09-01', cabang: 'BANDUNG', nama_customer: 'MST X', kategori: 'Master Stokis', products: { 'SPS TSI': 1 }, total_bungkus: 1, total_nominal: 10000 },
+  { tanggal: '2026-09-02', cabang: 'GARUT', nama_customer: 'MST X', kategori: 'Master Stokis', products: { 'SPS TSI': 2 }, total_bungkus: 2, total_nominal: 20000 },
+]);
+assert.equal(sameName.length, 2, 'satu grup per (cabang, nama_customer)');
 
 console.log('OK: semua tes backend rekap belanja lolos');

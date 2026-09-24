@@ -135,7 +135,7 @@ function renderRekapBelanja() {
       bodyHtml += `<tr class="hover:bg-slate-50 transition-colors">
         <td class="px-4 py-2 ${namaCls} whitespace-nowrap">${item.nama_customer}</td>
         <td class="px-4 py-2 whitespace-nowrap">${item.kategori}</td>
-        <td class="px-4 py-2 whitespace-nowrap">${item.cabang}</td>`;
+        <td class="px-4 py-2 whitespace-nowrap">${item.cabang || '(TANPA CABANG)'}</td>`;
 
       PRODUCT_COLS.forEach(p => {
         const qty = item.products[p] || 0;
@@ -221,7 +221,7 @@ export function exportRekapBelanja() {
     let cabNominal = 0;
 
     sec.items.forEach(item => {
-      const row = [item.nama_customer, item.kategori, item.cabang];
+      const row = [item.nama_customer, item.kategori, item.cabang || '(TANPA CABANG)'];
       PRODUCT_COLS.forEach(p => {
         const qty = item.products[p] || 0;
         cabProds[p] += qty;
