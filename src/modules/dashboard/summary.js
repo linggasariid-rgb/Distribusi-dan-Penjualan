@@ -61,7 +61,12 @@ export function renderStockSummaryTable() {
 
       productList.forEach(p => {
           let stock = 0;
-          if (branch.type === 'whp') {
+          // Ringkasan Stok = snapshot paste Input Stok Excel apa adanya, tidak ikut
+          // dikurangi/ditambah input penjualan, distribusi, mutasi, retur.
+          const excel = state.gData.excelStockData && state.gData.excelStockData[branch.name];
+          if (excel) {
+              stock = Number(excel[p]) || 0;
+          } else if (branch.type === 'whp') {
               stock = branch.data[p] || 0;
           } else {
               stock = branch.data.produk[p] ? branch.data.produk[p].currentStock : 0;

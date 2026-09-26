@@ -29,7 +29,7 @@ export function loadData() {
   summary.classList.add('hidden');
   summary.classList.remove('grid');
 
-  callApi('getDistributionData', getUserWHP()).then(function(resp) {
+  return callApi('getDistributionData', getUserWHP()).then(function(resp) {
     loader.classList.add('hidden');
     loader.classList.remove('flex');
     if (resp.status === "error") {

@@ -176,8 +176,9 @@ export function switchMenu(menuName) {
     pageIcon.className = "fas fa-boxes";
     branchFilter.classList.remove('hidden');
     setActiveMenu(menuStok);
-    if (!state.gData) loadData();
-    else renderStockSummaryTable();
+    // Selalu ambil ulang dari server: stok bisa berubah dari tab/perangkat lain
+    // (Input Stok Excel, BIZ, penjualan) sehingga cache gData tidak bisa dipercaya.
+    loadData();
   }
   else if (menuName === 'form-order') {
     if (formOrderView) formOrderView.classList.remove('hidden');

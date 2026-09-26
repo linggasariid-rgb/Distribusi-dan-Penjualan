@@ -17,14 +17,19 @@ export async function handle(db, whp) {
   });
 
   const stockRows = await db.query('stock', {
-    select: 'cabang,products,in_transit',
+    select: 'cabang,products,excel_products,in_transit',
   });
 
   const stockByBranch = {};
   const inTransitByBranch = {};
+  // Snapshot paste terakhir Input Stok Excel (tidak disentuh trigger penjualan/distribusi/dst) --
+  // dipakai Ringkasan Stok. Fallback ke products untuk baris yang belum pernah di-paste sejak
+  // kolom excel_products ditambahkan.
+  const excelByBranch = {};
   for (const r of stockRows) {
     stockByBranch[r.cabang] = r.products || {};
     inTransitByBranch[r.cabang] = r.in_transit || {};
+    excelByBranch[r.cabang] = r.excel_products || r.products || {};
   }
 
   const branches = await db.query('branches', {
@@ -103,6 +108,13 @@ export async function handle(db, whp) {
     ? (whpStockData[whp] ? { [whp]: whpStockData[whp] } : {})
     : whpStockData;
 
+  const excelStockData = {};
+  for (const cabang of Object.keys(result)) excelStockData[cabang] = excelByBranch[cabang] || {};
+  for (const whpKey of Object.keys(filteredWhpStockData)) {
+    const row = Object.keys(excelByBranch).find(c => c.includes(whpKey));
+    excelStockData[whpKey] = row ? excelByBranch[row] : {};
+  }
+
   const whpMapping = {};
   for (const [whpName, cabangs] of Object.entries(CONFIG.WHP_MAPPING)) {
     whpMapping[whpName] = cabangs;
@@ -117,6 +129,7 @@ export async function handle(db, whp) {
       whpMapping,
       specialRoundUp,
       whpStockData: filteredWhpStockData,
+      excelStockData,
       leadTime: CONFIG.LEAD_TIME,
     },
   };

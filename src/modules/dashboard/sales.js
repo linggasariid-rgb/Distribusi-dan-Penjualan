@@ -66,8 +66,9 @@ export function renderSalesCharts(data) {
   const ctxRank = document.getElementById('branchRankingChart').getContext('2d');
   if (state.branchRankingChart) state.branchRankingChart.destroy();
 
-  const rankLabels = data.ranking.slice(0, 10).map(item => item.branch);
-  const rankValues = data.ranking.slice(0, 10).map(item => item.total);
+  // Tampilkan semua cabang (dulu dibatasi 10 -> cabang ke-11 seperti GARUT hilang).
+  const rankLabels = data.ranking.map(item => item.branch);
+  const rankValues = data.ranking.map(item => item.total);
 
   if (rankLabels.length === 0) return;
 
@@ -86,6 +87,7 @@ export function renderSalesCharts(data) {
     options: {
       indexAxis: 'y',
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         datalabels: {
