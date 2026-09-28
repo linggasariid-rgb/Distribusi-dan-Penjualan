@@ -101,9 +101,22 @@ CREATE TABLE IF NOT EXISTS public.kontak_mitra (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS idx_kontak_mitra_nama_key ON public.kontak_mitra (nama_key);
+
+-- Kolom UNIQUE sudah membuat indeks sendiri; tidak perlu idx_kontak_mitra_nama_key.
+
 ALTER TABLE public.kontak_mitra ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "anon select kontak_mitra" ON public.kontak_mitra FOR SELECT TO anon USING (true);
+CREATE POLICY "anon insert kontak_mitra" ON public.kontak_mitra FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "anon update kontak_mitra" ON public.kontak_mitra FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon delete kontak_mitra" ON public.kontak_mitra FOR DELETE TO anon USING (true);
 ```
+
+Empat policy itu wajib, bukan hiasan. Worker memakai `SUPABASE_ANON_KEY`, bukan service
+key (`worker/src/index.js:52`), sehingga RLS benar-benar ditegakkan: tabel yang ada tapi
+tanpa policy akan mengembalikan 0 baris atau error `42501` dari Worker. Gejalanya
+menipu — data kontak terlihat tidak pernah tersimpan, padahal sebenarnya tidak pernah
+terbaca. Pola ini sama dengan `worker/create-users-table.sql`.
 
 `nama_key` adalah kunci pencocokan yang dihitung server dari `TYPE` + `NAMA`
 (lihat `buildNamaKey`). Disimpan sudah ternormalisasi sehingga perbandingan di memori
@@ -138,14 +151,23 @@ trim. Contoh: `('MSI', ' Independen 12 ')` → `'MSI INDEPENDEN 12'`.
 **`handleList(db)`** — `GET` → `{ status: 'success', data: [...], total: n }`, urutan
 `nama_key` asc.
 
-**`handle(db, rows)`** — `POST` dengan body `{ rows: [{ nama, type, pemilik, kontak }] }`
-(raw, belum ternormalisasi) → backend yang menghitung `nama_key` agar client tidak perlu
-tahu aturan normalisasi. Melakukan **bulk upsert** per baris:
-`upsert ?nama_key=eq.<key>` dengan body `{ nama, type, pemilik, kontak, updated_at }`,
-`on_conflict: nama_key`. Baris tanpa `nama_key` dihitung sebagai `skipped` dan dilaporkan
-di response, bukan menggagalkan seluruh import.
+**`handle(db, body)`** — `POST`. Body `{ clear: true }` → hapus semua
+(`db.request('DELETE', 'kontak_mitra', {})`). Body `{ rows: [...] }` → **bulk upsert
+satu request**: `db.request('POST', 'kontak_mitra', { data: payload, onConflict: 'nama_key' })`
+dengan `payload` berupa array semua baris sekaligus, sehingga tidak ada N request.
+`rows` berisi bentuk mentah `{ nama, type, pemilik, kontak }`; `nama_key` dihitung
+backend agar client tidak perlu tahu aturan normalisasi. Baris tanpa `nama_key`_valid
+dihitung sebagai `skipped` dan dilaporkan di response, bukan menggagalkan seluruh import.
+Body tanpa `rows` dan tanpa `clear` → `400`.
 
-Response: `{ status: 'success', data: { saved: n, skipped: m } }`.
+Response upsert: `{ status: 'success', data: { saved: n, skipped: m } }`.
+Response clear: `{ status: 'success', data: { cleared: n } }`.
+
+**Kenapa bukan `DELETE`.** `callApi()` di `src/services/api.js` hanya bisa GET (via
+`READ`) dan POST (via `WRITE`) — tidak ada jalur DELETE. Menambah dukungan DELETE ke
+`api.js` berarti menyentuh infrastruktur bersama yang dipakai semua menu, demi satu
+tombol. Karena itu "Hapus Semua" dikirim sebagai `POST` dengan body `{ clear: true }`
+dan `worker/src/index.js` meneruskan method POST apa adanya ke `kontakMitra.handle()`.
 
 ### 3. `worker/src/routes/report-belanja-banding.js` (baru)
 
@@ -177,14 +199,26 @@ Tidak ada harga, tidak ada `product_prices`.
 Mengembalikan `Map<key, { cabang, nama_customer, tipe, total }>`.
 
 **`detectPunyaNama(groups)`** — mengembalikan `false` bila **satu saja** grup pada bulan
-pembanding namanya persis sama dengan kode tipenya, dengan syarat jumlah grup ≥ 3.
-Kode tipe selalu ≤ 5 karakter (`MST`, `MSI`, `STK`, `ORE`, `ORM`, `STOKIS`), jadi
-syaratnya cukup `u.length <= 5` — data ≥ 6 karakter pasti ber-nama. Guard jumlah minimum
-3 grup mencegah bulan dengan sample sangat kecil (1–2 grup) salah dibaca.
+pembanding namanya persis salah satu kode tipe telanjang:
+`MST`, `MSI`, `STK`, `STOKIS`, `ORE`, `ORM`, `KARYAWAN`, `TSIEMPLOYEE`, `TSIAPPS`, `APPS`.
+
+Dua aturan yang sempat dipertimbangkan dan ditolak karena salah:
+
+- **Deteksi lewat panjang karakter (`u.length <= 5`).** Terlihat elegan karena semua
+  kode tipe memang pendek, tapi menyalahklasifikasikan nama asli yang pendek —
+  `MST B`, `STK A`, `MST Z` semuanya 5 karakter. Kalau salah tangkap, bulan yang
+  justru punya nama akan dilaporkan "belum punya nama", dan kolom Pemilik/Kontak
+  ikut hilang — kebalikan dari yang diinginkan. Verifikasi terhadap data September
+  2026 menunjukkan nama terpendek saat ini 6 karakter (`STK Dm`), jadi aturan
+  panjang kebetulan belum salah pada data sekarang; itu keberuntungan, bukan jaminan.
+- **Guard jumlah grup minimum.** Justru menyembunyikan peringatan yang benar: bulan
+  dengan 2 grup berkode akan lolos tanpa tanda peringatan.
+
+Daftar eksak lebih benar dan tidak perlu tebakan. Baris dengan nama kosong diabaikan.
 
 Alasan pakai aturan "ada satu saja", bukan persentase: begitu **satu** baris berkode
 telah muncul, ada baris di bulan ini yang tidak akan punya pasangan, sehingga tabel
-sudah tidak akurat. Ambang persentase hanya postponement masalah, bukan-solusinya.
+sudah tidak akurat. Ambang persentase hanya menunda masalah, bukan menyelesaikannya.
 
 **`mergeRows(mapIni, mapBanding, kontakMap)`** — union kunci dari kedua bulan:
 
@@ -294,13 +328,14 @@ di-`router.js` memakai styling hijau yang sama.
 ### 6. `src/config/routes.js` — API map
 
 ```js
-READ['getBandingkanBelanja']  = '/api/report-belanja-banding?month=${0}&banding=${1}'
-WRITE['simpanKontakMitra']    = '/api/kontak-mitra'
-WRITE['hapusKontakMitra']     = '/api/kontak-mitra'
+READ['getBandingkanBelanja'] = { url: '/api/report-belanja-banding', params: ['month', 'banding'] }
+READ['getKontakMitra']       = { url: '/api/kontak-mitra', params: [] }
+WRITE['simpanKontakMitra']   = { url: '/api/kontak-mitra', params: ['rows'] }
+WRITE['hapusKontakMitra']    = { url: '/api/kontak-mitra', params: ['clear'] }
 ```
 
-(bentuk pemanggilan `callApi` mengikuti entry yang sudah ada di file tersebut; `WRITE`
-`hapusKontakMitra` memakai `DELETE`.)
+Dua entri `WRITE` menunjuk URL yang sama; `callApi` membedakannya lewat isi body
+(`{ rows: [...] }` vs `{ clear: true }`). `api.js` **tidak diubah**.
 
 ### 7. `src/events/sidebarEvents.js`
 
@@ -411,8 +446,9 @@ Ekspor: `initKontakMitra`, `kontakToRows`, `saveKontakMitra`, `hapusKontakMitra`
 - Tabel: `No | NAMA | TYPE | PEMILIK | HP / Telepon`, baris `—` untuk `pemilik`/`kontak`
   kosong, plus teks ajakan bila tabel kosong:
   `Belum ada data kontak. Tempel blok dari Excel lalu klik Simpan.`
-- `Hapus Semua` meminta konfirmasi via `confirm()` lalu `DELETE /api/kontak-mitra`,
-  METHOD `truncate` di `db` (RLS sudah aktif; anon key memakai service-role dari Worker).
+- `Hapus Semua` meminta konfirmasi via `confirm()` lalu
+  `callApi('hapusKontakMitra', true)`, dan `worker/src/index.js` meneruskan POST ke
+  `kontakMitra.handle()` yang memanggil `db.request('DELETE', 'kontak_mitra', {})`.
 
 ### 11. Export Excel — `exportBandingkanBelanja` di `bandingkanBelanja.js`
 
@@ -498,8 +534,9 @@ peringatan tidak muncul. **Tidak ada backfill** — sesuai keputusan spec
   (Cloudflare Pages). Yang penting tidak ada menu yatim: `sidebarEvents.js` memasang
   listener dengan penjaga `if (el)`, sehingga `#menu-*` yang tidak ada view-nya aman
   seperti `#menu-rekap-belanja` di file itu sekarang.
-- Tidak ada paginasi: jumlah baris maksimum ± 570 per bulan, masih aman untuk dirender
-  sebagai satu tabel. Kalau nanti sudah lewat ± 2.000 baris, barulah perlu dipaginasi.
+- Tidak ada paginasi: jumlah baris maksimum ± 577 per perbandingan (terverifikasi
+  pada data September vs Agustus 2026), masih aman untuk dirender sebagai satu tabel.
+  Kalau nanti sudah lewat ± 2.000 baris, barulah perlu dipaginasi.
 - `buildNamaKey` dan normalisasi hanya ada di backend — client tidak pernah
   membangun kunci sendiri.
 
@@ -508,8 +545,22 @@ peringatan tidak muncul. **Tidak ada backfill** — sesuai keputusan spec
 1. `node tests/kontak-mitra-backend.test.mjs` — semua lulus.
 2. `node tests/bandingkan-belanja-backend.test.mjs` — semua lulus.
 3. Smoke test `GET /api/report-belanja-banding?month=2026-09&banding=2026-08` terhadap
-   data nyata: `punya_nama` harus `false` (Agustus masih berkode),
-   `nama_bulan_banding` = `Agustus 2026`.
+   data nyata. Angka di bawah sudah diverifikasi langsung ke `penjualan_who` memakai
+   query dan agregasi yang sama dengan route ini:
+
+   | Nilai | Angka terverifikasi |
+   |---|---|
+   | Baris mentah 2026-08-01 s/d 2026-09-30 | 5.205 |
+   | Grup agregat Agustus 2026 | 29 |
+   | Grup agregat September 2026 | 548 |
+   | Baris union | 577 |
+   | Total bungkus September 2026 | 1.024.944 |
+
+   `punya_nama` harus `false` (Agustus masih berkode), `nama_bulan_banding` =
+   `Agustus 2026`, `rows` = 577, dan **pasangan** (`ini > 0` dan `banding > 0`)
+   = **0**. Nol pasangan itu fakta data, bukan cacat: Agustus tersimpan sebagai kode
+   `MST`/`MSI`/`STK`, September sebagai nama asli, jadi tidak ada baris yang bisa
+   dipasangkan. Justru itulah sebabnya banner peringatan wajib ada.
 4. Smoke test `?month=2026-09&banding=2026-09`: `punya_nama = true`, seluruh
    `banding_bungkus = 0`, tidak ada pengali ganda.
 5. `POST /api/kontak-mitra` dengan blok Excel berisi header
