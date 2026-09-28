@@ -8,7 +8,7 @@ import { loadInputHistory } from './inputHistory.js';
 // Shared "paste -> submit -> toast -> optionally offer dashboard reload"
 // tail shared verbatim by Penerimaan Pabrik, Input Distribusi and Penjualan
 // WHO (the other two input forms don't offer a reload, so offerReload=false).
-export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, button, offerReload = false, historyTable, historyContainerId }) {
+export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, button, offerReload = false, historyTable, historyContainerId, extraArgs = [] }) {
   const dataToSubmit = state.pastedDataCache[cacheKey];
   const originalButtonText = button.innerHTML;
 
@@ -20,7 +20,7 @@ export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, b
   button.disabled = true;
   button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan data...';
 
-  callApi(rpcName, dataToSubmit).then(function(response) {
+  callApi(rpcName, dataToSubmit, ...extraArgs).then(function(response) {
     if (response.status === 'success') {
       const toast = document.getElementById('toast');
       toast.querySelector('span').innerText = response.message;

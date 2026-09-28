@@ -107,6 +107,42 @@ export async function handle(db, body) {
   // asli (insiden 2026-07-04: 4130 baris asli sempat terhapus karena disangka duplikat).
   // Proteksi klik-ganda tombol Simpan sudah ditangani di frontend (tombol di-disable
   // saat submit), jadi tidak perlu diulang di sini.
+  //
+  // Mode "ganti": sebelum insert, hapus SELURUH baris bulan-bulan yang ada di upload.
+  // Tanpa ini, upload ulang hanya menambah baris di atas baris lama sehingga total bulan
+  // jadi sekitar dobel -- justru penyebab utama data Agustus lama (yang hanya berisi kode
+  // MST/MSI/STK tanpa nama) tidak bisa dikoreksi.
+  //
+  // Pengaman penting:
+  // 1. Hapus hanya bulan yang BENAR-BENAR ada di baris hasil parse. Kalau daftar ini
+  //    kosong, jangan hapus apa pun -- cek dilakukan SEBELUM delete.
+  // 2. Parse dan validasi harus sudah selesai sebelum delete, supaya tidak ada keadaan
+  //    "sudah terhapus tapi tidak ada yang bisa dimasukkan lagi" akibat header/format
+  //    yang salah.
+  // 3. Hapus per bulan, bukan sekaligus semua, supaya pesan hasil bisa menyebutkan bulan
+  //    mana saja yang terpengaruh.
+  if (body.replace === true) {
+    // Samakan konvensi bulan dengan parseDate: '-' berarti kosong, bukan nama bulan.
+    // Tanpa ini, baris dengan BULAN='-' menghasilkan bulan='-' yang truthy, dan
+    // DELETE WHERE bulan='-' akan ikut dijalankan.
+    const months = [...new Set(rows.map(r => r.bulan).filter(b => b && b !== '-').map(b => String(b).trim()).filter(Boolean))].sort();
+    if (months.length === 0) {
+      return { status: 'error', message: 'Tidak ada bulan valid di data, tidak ada yang dihapus.' };
+    }
+
+    for (const bulan of months) {
+      await db.request('DELETE', 'penjualan_who', { eq: { bulan } });
+    }
+
+    for (let i = 0; i < rows.length; i += 500) {
+      await db.request('POST', 'penjualan_who', { data: rows.slice(i, i + 500) });
+    }
+    return {
+      status: 'success',
+      message: `${rows.length} baris disimpan. Data lama bulan ${months.join(', ')} dihapus terlebih dahulu.`,
+    };
+  }
+
   for (let i = 0; i < rows.length; i += 500) {
     await db.request('POST', 'penjualan_who', { data: rows.slice(i, i + 500) });
   }

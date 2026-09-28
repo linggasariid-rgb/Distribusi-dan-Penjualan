@@ -1,5 +1,6 @@
 import { state } from '../../state/appState.js';
 import { submitPastedData } from './submitHelper.js';
+import { showConfirmModal } from '../../ui/modal.js';
 
 export function processPasteWHO() {
   const text = document.getElementById('penjualan-who-paste-area').value.trim();
@@ -46,15 +47,35 @@ export function processPasteWHO() {
 
 export function submitDataWHO() {
   const button = document.querySelector('#penjualan-who-submit-container button');
-  submitPastedData({
-    rpcName: 'savePastedDataWHO',
-    cacheKey: 'penjualan_who',
-    idPrefix: 'penjualan-who',
-    button: button,
-    offerReload: true,
-    historyTable: 'penjualan_who',
-    historyContainerId: 'penjualan-who-history',
-  });
+  const replaceBox = document.getElementById('penjualan-who-replace');
+  const replace = !!(replaceBox && replaceBox.checked);
+
+  const doSubmit = () => {
+    submitPastedData({
+      rpcName: 'savePastedDataWHO',
+      cacheKey: 'penjualan_who',
+      idPrefix: 'penjualan-who',
+      button: button,
+      offerReload: true,
+      historyTable: 'penjualan_who',
+      historyContainerId: 'penjualan-who-history',
+      extraArgs: [replace],
+    });
+  };
+
+  // Mengganti bulan menghapus seluruh baris bulan tersebut sebelum menulis yang
+  // baru, dan operation itu tidak bisa dibatalkan. Karena itu wajib ada konfirmasi
+  // eksplisit -- checkbox centang saja belum cukup.
+  if (replace) {
+    showConfirmModal(
+      'Seluruh data bulan yang ada di data yang sedang di-paste akan DIHAPUS PERMANEN, lalu diganti dengan data baru. Data bulan lain tidak tersentuh. Lanjutkan?',
+      doSubmit,
+      { title: 'Ganti data bulan?', yesText: 'Ya, hapus dan ganti', yesStyle: { background: '#dc2626' } }
+    );
+    return;
+  }
+
+  doSubmit();
 }
 
 export function clearWhoForm() {

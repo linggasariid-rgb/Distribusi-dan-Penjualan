@@ -437,7 +437,14 @@
         
         <div id="penjualan-who-preview" class="mt-8 overflow-auto" style="max-height:50vh;border-radius:var(--radius-md)"></div>
         <div class="mt-6 hidden" id="penjualan-who-submit-container">
-           <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="who"><i class="fas fa-save mr-2"></i> Simpan Data</button>
+          <label class="flex items-start gap-3 mb-4 p-3 rounded-lg border border-amber-200 bg-amber-50 cursor-pointer">
+            <input type="checkbox" id="penjualan-who-replace" class="mt-1 w-4 h-4 accent-red-600 flex-shrink-0">
+            <span class="text-sm text-amber-900">
+              <span class="font-bold">Ganti data bulan ini (hapus data lama)</span><br>
+              Centang kalau Anda meng-upload ulang bulan yang SUDAH pernah diinput, misalnya untuk mengisi kolom NAMA PDM yang tadinya kosong. Data bulan tersebut akan dihapus permanen lalu diganti. Jangan centang kalau ini genuinely data baru.
+            </span>
+          </label>
+          <button class="btn btn-success w-full btn-lg" data-action="submit-data" data-form="who"><i class="fas fa-save mr-2"></i> Simpan Data</button>
         </div>
       </div>
     </div>

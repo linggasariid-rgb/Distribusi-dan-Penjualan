@@ -23,7 +23,7 @@ export const WRITE = {
   savePenerimaanCabang: { url: '/api/save/penerimaan-cabang', params: ['data'] },
   saveMutasi: { url: '/api/save/mutasi', params: ['data'] },
   saveRetur: { url: '/api/save/retur', params: ['data'] },
-  savePastedDataWHO: { url: '/api/save/penjualan-who', params: ['data'] },
+  savePastedDataWHO: { url: '/api/save/penjualan-who', params: ['data', 'replace'] },
   savePastedDataBIZ: { url: '/api/save/biz', params: ['data'] },
   savePastedDataUpdateStock: { url: '/api/save/stock', params: ['data'] },
   chatWithSalesAI: { url: '/api/chat', params: ['pesan', 'riwayat', 'userWHP'] },
