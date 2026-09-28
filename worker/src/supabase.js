@@ -61,15 +61,31 @@ export class Supabase {
     return res.json();
   }
 
-  async request(method, table, { data, onConflict, select } = {}) {
-    const path = `/rest/v1/${table}`;
+  async request(method, table, { data, onConflict, select, eq, notNull } = {}) {
+    let path = `/rest/v1/${table}`;
+    // PostgREST menolak DELETE tanpa WHERE clause, jadi "hapus semua" harus
+    // tetap menyertakan filter. Pakai `not.is.null` karena kolomnya NOT NULL,
+    // sehingga match semua baris tanpa bergantung pada parsing nilai kosong.
+    let qs = '';
+    if (eq) {
+      for (const [col, val] of Object.entries(eq)) {
+        qs += `${qs ? '&' : '?'}${encodeURIComponent(col)}=eq.${encodeURIComponent(val)}`;
+      }
+    }
+    if (notNull) {
+      for (const col of notNull) {
+        qs += `${qs ? '&' : '?'}${encodeURIComponent(col)}=not.is.null`;
+      }
+    }
+    if (select) qs += `${qs ? '&' : '?'}select=${encodeURIComponent(select)}`;
+
     const headers = { ...this.headers, Prefer: 'return=minimal' };
     if (method === 'POST' && onConflict) {
       headers.Prefer = 'resolution=merge-duplicates';
-      let qs = `?on_conflict=${encodeURIComponent(onConflict)}`;
-      return this._fetch(path + qs, 'POST', data, headers);
+      if (!qs) qs = `?on_conflict=${encodeURIComponent(onConflict)}`;
+      else qs += `&on_conflict=${encodeURIComponent(onConflict)}`;
     }
-    return this._fetch(path, method, data, headers);
+    return this._fetch(path + qs, method, data, headers);
   }
 
   async _fetch(path, method, body, headers) {

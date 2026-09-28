@@ -90,7 +90,10 @@ export async function handle(db, body) {
   // "Hapus Semua" dikirim sebagai POST { clear: true } karena callApi()
   // di frontend tidak punya jalur DELETE.
   if (body && body.clear === true) {
-    await db.request('DELETE', 'kontak_mitra', {});
+    // Filter `nama_key not.is.null` wajib: PostgREST menolak DELETE tanpa
+    // WHERE clause, jadi request tanpa filter akan 400 dan tombol "Hapus
+    // Semua" tidak pernah berhasil. nama_key NOT NULL, jadi ini match semua.
+    await db.request('DELETE', 'kontak_mitra', { notNull: ['nama_key'] });
     return { status: 'success', data: { cleared: true } };
   }
 
