@@ -23,6 +23,7 @@ import * as deleteBatch from './routes/delete-batch.js';
 import * as deleteRow from './routes/delete-row.js';
 import * as prices from './routes/prices.js';
 import * as reportBelanjaStokis from './routes/report-belanja-stokis.js';
+import * as kontakMitra from './routes/kontak-mitra.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -122,6 +123,14 @@ export default {
       if (path === '/api/report-belanja-stokis') {
         const monthFilter = url.searchParams.get('month') || '';
         return json(await reportBelanjaStokis.handle(db, monthFilter));
+      }
+
+      if (path === '/api/kontak-mitra' || path === '/api/kontak-mitra/') {
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return json(await kontakMitra.handle(db, body));
+        }
+        return json(await kontakMitra.handleList(db));
       }
 
       // ──── USER MANAGEMENT ──────────────────────────────────────────

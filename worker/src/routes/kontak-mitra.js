@@ -77,3 +77,39 @@ export function parseKontakRows(rows, headers) {
   }
   return out;
 }
+
+export async function handleList(db) {
+  const rows = await db.query('kontak_mitra', {
+    select: 'nama_key,nama,type,pemilik,kontak',
+    order: 'nama_key.asc',
+  });
+  return { status: 'success', data: rows, total: rows.length };
+}
+
+export async function handle(db, body) {
+  // "Hapus Semua" dikirim sebagai POST { clear: true } karena callApi()
+  // di frontend tidak punya jalur DELETE.
+  if (body && body.clear === true) {
+    await db.request('DELETE', 'kontak_mitra', {});
+    return { status: 'success', data: { cleared: true } };
+  }
+
+  const rows = body && body.rows;
+  if (!Array.isArray(rows)) {
+    return { status: 'error', message: 'Data tidak valid: rows array tidak ditemukan' };
+  }
+
+  const parsed = parseKontakRows(rows, rows[0]);
+  if (parsed.length === 0) {
+    return { status: 'error', message: 'Header tidak dikenali. Pastikan baris pertama berisi kolom NAMA dan TYPE.' };
+  }
+
+  const now = new Date().toISOString();
+  // Satu request untuk seluruh baris: array payload + on_conflict = upsert.
+  await db.request('POST', 'kontak_mitra', {
+    data: parsed.map(p => ({ ...p, updated_at: now })),
+    onConflict: 'nama_key',
+  });
+
+  return { status: 'success', data: { saved: parsed.length, skipped: rows.length - 1 - parsed.length } };
+}
