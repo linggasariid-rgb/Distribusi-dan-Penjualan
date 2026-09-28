@@ -106,6 +106,11 @@ CREATE TABLE IF NOT EXISTS public.kontak_mitra (
 
 ALTER TABLE public.kontak_mitra ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "anon select kontak_mitra" ON public.kontak_mitra;
+DROP POLICY IF EXISTS "anon insert kontak_mitra" ON public.kontak_mitra;
+DROP POLICY IF EXISTS "anon update kontak_mitra" ON public.kontak_mitra;
+DROP POLICY IF EXISTS "anon delete kontak_mitra" ON public.kontak_mitra;
+
 CREATE POLICY "anon select kontak_mitra" ON public.kontak_mitra FOR SELECT TO anon USING (true);
 CREATE POLICY "anon insert kontak_mitra" ON public.kontak_mitra FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "anon update kontak_mitra" ON public.kontak_mitra FOR UPDATE TO anon USING (true) WITH CHECK (true);
@@ -117,6 +122,11 @@ key (`worker/src/index.js:52`), sehingga RLS benar-benar ditegakkan: tabel yang 
 tanpa policy akan mengembalikan 0 baris atau error `42501` dari Worker. Gejalanya
 menipu — data kontak terlihat tidak pernah tersimpan, padahal sebenarnya tidak pernah
 terbaca. Pola ini sama dengan `worker/create-users-table.sql`.
+
+`DROP POLICY IF EXISTS` ada karena Postgres tidak punya `CREATE POLICY IF NOT EXISTS`.
+Tanpa drop terlebih dahulu, menjalankan ulang blok ini berhenti di error
+`policy already exists`, dan karena satu error membatalkan seluruh batch,
+`CREATE TABLE` bisa ikut gagal sehingga tabel tertinggal tidak ada sama sekali.
 
 `nama_key` adalah kunci pencocokan yang dihitung server dari `TYPE` + `NAMA`
 (lihat `buildNamaKey`). Disimpan sudah ternormalisasi sehingga perbandingan di memori

@@ -149,6 +149,11 @@ Expected: FAIL dengan `Cannot find module '../worker/src/routes/kontak-mitra.js'
 -- Master kontak mitra (MST / MSI / STK).
 -- Dipakai oleh menu "Kontak Mitra" (input paste dari Excel) dan
 -- ditampilkan di menu "Bandingkan Belanja" sebagai kolom Pemilik + Kontak.
+--
+-- SELURUH blok ini aman diulang: Supabase/Postgres tidak punya
+-- "CREATE POLICY IF NOT EXISTS", jadi policy-nya di-drop dulu. Tanpa ini, jalan
+-- kedua berhenti di error "policy already exists" -- dan karena satu error
+-- membatalkan seluruh batch, tabel pun bisa tertinggal tidak tercreated.
 
 CREATE TABLE IF NOT EXISTS public.kontak_mitra (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -170,15 +175,25 @@ ALTER TABLE public.kontak_mitra ENABLE ROW LEVEL SECURITY;
 -- setiap query dari Worker mengembalikan 0 baris atau error 42501 -- gejalanya
 -- seperti "kontak tidak pernah tersimpan", padahal datanya sudah masuk.
 -- Ikuti pola yang sama dengan create-users-table.sql.
+DROP POLICY IF EXISTS "anon select kontak_mitra" ON public.kontak_mitra;
+DROP POLICY IF EXISTS "anon insert kontak_mitra" ON public.kontak_mitra;
+DROP POLICY IF EXISTS "anon update kontak_mitra" ON public.kontak_mitra;
+DROP POLICY IF EXISTS "anon delete kontak_mitra" ON public.kontak_mitra;
+
 CREATE POLICY "anon select kontak_mitra" ON public.kontak_mitra FOR SELECT TO anon USING (true);
 CREATE POLICY "anon insert kontak_mitra" ON public.kontak_mitra FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "anon update kontak_mitra" ON public.kontak_mitra FOR UPDATE TO anon USING (true) WITH CHECK (true);
 CREATE POLICY "anon delete kontak_mitra" ON public.kontak_mitra FOR DELETE TO anon USING (true);
 ```
 
-`CREATE TABLE IF NOT EXISTS` + `CREATE POLICY` tanpa `IF NOT EXISTS` akan gagal diulang kalau policy sudah ada. Supabase tidak punya `CREATE POLICY IF NOT EXISTS`; kalau SQL diulang dan muncul error `duplicate policy`, itu aman -- lewati saja, tabel dan policy-nya sudah benar. Alternatif yang idempoten penuh: `DROP POLICY IF EXISTS "anon select kontak_mitra" ON public.kontak_mitra;` di atas tiap `CREATE POLICY`.
+**Penting: pastikan tidak ada sisa SQL lain di baris yang sama.** Kalau SQL
+Editor complains soal `users` atau tabel lain yang tidak ada hubungannya dengan
+`kontak_mitra`, berarti blok yang dijalankan bukan yang di atas. Blok di atas
+hanya boleh berisi `CREATE TABLE`, `ALTER TABLE`, `DROP POLICY`, `CREATE POLICY`
+untuk `kontak_mitra`.
 
-Jalankan SQL ini di Supabase SQL Editor **sebelum** Task 2, karena Task 2 akan query ke tabel ini. Verifikasi:
+Jalankan di Supabase SQL Editor **sebelum** Task 2, karena Task 2 akan query ke
+tabel ini. Verifikasi:
 
 Run di Supabase SQL Editor: `select count(*) from public.kontak_mitra;`
 Expected: `0` (tabel ada, kosong).
