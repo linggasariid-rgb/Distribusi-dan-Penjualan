@@ -54,7 +54,7 @@ Dashboard monitoring distribusi, penjualan, dan stok wilayah Jawa Barat.
 | `migrate.js` | Script migrasi Google Sheets → Supabase |
 | `Main.js` - `Sales.js` - dll | Backend GAS (legacy, masih dipakai) |
 | `index.html` | Halaman utama SPA (login, sidebar, routing, seluruh konten dashboard) |
-| `dashboard.html` | Salinan identik `index.html`, dijaga tetap sinkron |
+| `dashboard.html` | Salinan lama `index.html`, **tidak** dijaga sinkron. Fitur baru hanya masuk `index.html`. Sudah tertinggal 7 view/menu (`mutasi`, `retur`, `penerimaan-cabang`, `pengaturan`, `riwayat-transaksi`, `kontak-mitra`, `bandingkan-belanja`) |
 | `worker/rls-setup.sql` | Row Level Security policy untuk Supabase |
 
 ## Setup Cloudflare Workers
