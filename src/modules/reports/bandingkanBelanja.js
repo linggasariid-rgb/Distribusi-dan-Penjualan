@@ -1,4 +1,5 @@
 import { callApi } from '../../services/api.js';
+import { showToast } from '../../ui/toast.js';
 
 let state = {
   bulanIni: '',
@@ -290,6 +291,155 @@ export function initBandingkanBelanja() {
   document.getElementById('btn-banding-terapkan').addEventListener('click', loadBandingkanBelanja);
   // Filter cabang hanya render ulang; tidak menembak API lagi.
   document.getElementById('banding-cabang').addEventListener('change', renderBanding);
+  document.getElementById('btn-banding-export').addEventListener('click', exportBandingkanBelanja);
 
   loadBandingkanBelanja();
+}
+
+const BULAN_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+function kapitalisasi(teks) {
+  return teks.replace(/\b[a-z]/g, c => c.toUpperCase());
+}
+
+function bulanTeks(ym) {
+  const parts = String(ym || '').split('-');
+  if (parts.length !== 2) return String(ym || '');
+  return (BULAN_NAMES[Number(parts[1]) - 1] || parts[1]) + ' ' + parts[0];
+}
+
+export function exportBandingkanBelanja() {
+  if (typeof XLSX === 'undefined') {
+    alert('Library Excel belum siap. Silakan refresh halaman.');
+    return;
+  }
+
+  const filtered = getFiltered();
+  if (filtered.length === 0) {
+    alert('Tidak ada data untuk diexport.');
+    return;
+  }
+
+  const cabangFilter = document.getElementById('banding-cabang').value;
+  const cabangHeader = cabangFilter === 'ALL' ? 'SEMUA CABANG' : cabangFilter;
+  const kolom = kolomAktif();
+
+  const rows = [];
+  rows.push(['PT TRIDAYA SINERGI INDONESIA']);
+  rows.push([`PERBANDINGAN BELANJA ${cabangHeader}`]);
+  rows.push([`BULAN INI: ${bulanTeks(state.bulanIni)}`]);
+  rows.push([`BULAN BANDING: ${bulanTeks(state.bulanBanding)}`]);
+  rows.push([]);
+
+  const header = ['NAMA', 'TIPE', 'CABANG'];
+  if (state.punyaNama) header.push('PEMILIK', 'HP / TELEPON');
+  header.push(
+    `TOTAL ${bulanTeks(state.bulanIni)}`,
+    `TOTAL ${bulanTeks(state.bulanBanding)}`,
+    'SELISIH', '%', 'TREN'
+  );
+  rows.push(header);
+
+  const sections = groupPerCabang(filtered, state.sortKey);
+  let grandIni = 0, grandBanding = 0, grandSelisih = 0;
+
+  sections.forEach(sec => {
+    rows.push([`=== CABANG: ${sec.cabang} ===`]);
+    let cabIni = 0, cabBanding = 0;
+
+    sec.items.forEach(item => {
+      const s = hitungSelisih(item);
+      cabIni += item.ini_bungkus;
+      cabBanding += item.banding_bungkus;
+      grandIni += item.ini_bungkus;
+      grandBanding += item.banding_bungkus;
+      grandSelisih += s.selisih;
+
+      const row = [item.nama_customer, item.tipe, item.cabang || '(TANPA CABANG)'];
+      if (state.punyaNama) row.push(item.pemilik || '', item.kontak || '');
+      row.push(
+        item.ini_bungkus,
+        item.banding_bungkus,
+        s.selisih,
+        s.persen === null ? '' : Number(s.persen.toFixed(1)),
+        TREN[s.tren].simbol
+      );
+      rows.push(row);
+    });
+
+    const sub = ['', '', `SUBTOTAL CABANG ${sec.cabang}`];
+    if (state.punyaNama) sub.push('', '');
+    sub.push(cabIni, cabBanding, cabIni - cabBanding, '', '');
+    rows.push(sub);
+    rows.push([]);
+  });
+
+  const grand = ['', '', 'GRAND TOTAL KESELURUHAN'];
+  if (state.punyaNama) grand.push('', '');
+  grand.push(grandIni, grandBanding, grandSelisih, '', '');
+  rows.push(grand);
+
+  if (!state.punyaNama) {
+    rows.push([]);
+    rows.push([]);
+    rows.push(['CATATAN: Bulan pembanding masih menggunakan data tanpa nama mitra. Selisih per mitra tidak akurat.']);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Styling mengikuti exportRekapBelanja() di rekapBelanja.js
+  for (const key in ws) {
+    if (key.startsWith('!')) continue;
+    const cell = ws[key];
+    const rowNum = parseInt(key.replace(/[^0-9]/g, ''), 10) - 1;
+    if (typeof cell.v === 'number') cell.z = '#,##0';
+
+    if (rowNum === 5) {
+      cell.s = {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+      };
+    }
+  }
+
+  rows.forEach((rData, rIdx) => {
+    if (rIdx <= 5) return;
+    // Label cabang ada di kolom 0; label subtotal & grand total ada di kolom 2.
+    const isCabang = rData[0] && String(rData[0]).includes('=== CABANG');
+    const isTotal = rData[2] && (String(rData[2]).includes('GRAND TOTAL') || String(rData[2]).includes('SUBTOTAL CABANG'));
+    if (!isCabang && !isTotal) return;
+
+    for (let c = 0; c < kolom; c++) {
+      const ref = XLSX.utils.encode_cell({ c, r: rIdx });
+      if (!ws[ref]) ws[ref] = { v: '', t: 's' };
+      ws[ref].s = isCabang
+        ? { font: { bold: true, color: { rgb: '0F172A' } }, fill: { fgColor: { rgb: 'E2E8F0' } } }
+        : { font: { bold: true }, fill: { fgColor: { rgb: 'CBD5E1' } } };
+    }
+  });
+
+  const colWidths = [];
+  for (let c = 0; c < kolom; c++) {
+    let min = 10;
+    if (c === 0) min = 32;            // NAMA
+    else if (c === 1) min = 10;       // TIPE
+    else if (c === 2) min = 16;       // CABANG
+    else if (c >= kolom - 5) min = 18; // kolom angka + header
+    const max = Math.max(min, ...rows.map(r => String(r[c] == null ? '' : r[c]).length));
+    colWidths.push({ wch: max });
+  }
+  ws['!cols'] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Bandingkan Belanja');
+
+  // Nama file dinamis mengikuti bulan yang dipilih user, bukan bulan default.
+  const namaIni = bulanTeks(state.bulanIni).toLowerCase();
+  const namaBanding = bulanTeks(state.bulanBanding).toLowerCase();
+  const fileName = `Data Belanja ${kapitalisasi(namaBanding)} VS ${kapitalisasi(namaIni)}.xlsx`;
+
+  XLSX.writeFile(wb, fileName);
+  showToast('File Excel berhasil diunduh: ' + fileName, 'success');
 }
