@@ -24,6 +24,7 @@ import * as deleteRow from './routes/delete-row.js';
 import * as prices from './routes/prices.js';
 import * as reportBelanjaStokis from './routes/report-belanja-stokis.js';
 import * as kontakMitra from './routes/kontak-mitra.js';
+import * as reportBelanjaBanding from './routes/report-belanja-banding.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -131,6 +132,12 @@ export default {
           return json(await kontakMitra.handle(db, body));
         }
         return json(await kontakMitra.handleList(db));
+      }
+
+      if (path === '/api/report-belanja-banding') {
+        const monthFilter = url.searchParams.get('month') || '';
+        const bandingFilter = url.searchParams.get('banding') || '';
+        return json(await reportBelanjaBanding.handle(db, monthFilter, bandingFilter));
       }
 
       // ──── USER MANAGEMENT ──────────────────────────────────────────
