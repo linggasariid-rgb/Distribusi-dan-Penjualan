@@ -83,8 +83,10 @@ export function switchMenu(menuName) {
   const returView = document.getElementById('retur-view');
   const berandaView = document.getElementById('beranda-view');
   const pengaturanView = document.getElementById('pengaturan-view');
-  const rekapBelanjaView = document.getElementById('rekap-belanja-view');
-  const formOrderView = document.getElementById('form-order-view');
+const rekapBelanjaView = document.getElementById('rekap-belanja-view');
+const formOrderView = document.getElementById('form-order-view');
+const kontakMitraView = document.getElementById('kontak-mitra-view');
+const bandingkanBelanjaView = document.getElementById('bandingkan-belanja-view');
   const riwayatTransaksiView = document.getElementById('riwayat-transaksi-view');
 
   const menuDist = document.getElementById('menu-distribusi');
@@ -103,8 +105,10 @@ export function switchMenu(menuName) {
   const menuInputDistribusi = document.getElementById('menu-input-distribusi');
   const menuBeranda = document.getElementById('menu-beranda');
   const menuPengaturan = document.getElementById('menu-pengaturan');
-  const menuRekapBelanja = document.getElementById('menu-rekap-belanja');
-  const menuFormOrder = document.getElementById('menu-form-order');
+const menuRekapBelanja = document.getElementById('menu-rekap-belanja');
+const menuFormOrder = document.getElementById('menu-form-order');
+const menuKontakMitra = document.getElementById('menu-kontak-mitra');
+const menuBandingkanBelanja = document.getElementById('menu-bandingkan-belanja');
 
   const pageTitle = document.getElementById('page-title');
   const pageIcon = document.getElementById('page-icon');
@@ -137,6 +141,8 @@ export function switchMenu(menuName) {
   if (salesHubView) salesHubView.classList.add('hidden');
   if (rekapBelanjaView) rekapBelanjaView.classList.add('hidden');
   if (formOrderView) formOrderView.classList.add('hidden');
+  if (kontakMitraView) kontakMitraView.classList.add('hidden');
+  if (bandingkanBelanjaView) bandingkanBelanjaView.classList.add('hidden');
 
   branchFilter.classList.add('hidden');
   if (summarySection) {
@@ -154,7 +160,8 @@ export function switchMenu(menuName) {
     menuSalesDash, menuBestProducts, menuDailyReport, menuSalesPerDate,
     menuControlPoint, menuChatAi, menuInputStokBiz, menuInputStokExcel,
     menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan, 
-    menuRekapBelanja, menuFormOrder, menuPenerimaanCabang, menuMutasi, menuRetur, menuRiwayatTransaksi];
+    menuRekapBelanja, menuFormOrder, menuPenerimaanCabang, menuMutasi, menuRetur, menuRiwayatTransaksi,
+    menuKontakMitra, menuBandingkanBelanja];
 
   allMenus.forEach(function(m) {
     if (!m) return;
@@ -340,6 +347,26 @@ export function switchMenu(menuName) {
     const rbContent = document.getElementById('rekap-belanja-tbody');
     if (!rbContent || rbContent.innerHTML.trim() === '') {
       import('./modules/reports/rekapBelanja.js').then(m => m.initRekapBelanja());
+    }
+  }
+  else if (menuName === 'kontak-mitra') {
+    if (kontakMitraView) kontakMitraView.classList.remove('hidden');
+    pageTitle.innerText = "Kontak Mitra";
+    pageIcon.className = "fas fa-address-book";
+    setActiveMenu(menuKontakMitra);
+    const kcBody = document.getElementById('kontak-tbody');
+    if (!kcBody || kcBody.innerHTML.trim() === '') {
+      import('./modules/kontakMitra/kontakMitra.js').then(m => m.initKontakMitra());
+    }
+  }
+  else if (menuName === 'bandingkan-belanja') {
+    if (bandingkanBelanjaView) bandingkanBelanjaView.classList.remove('hidden');
+    pageTitle.innerText = "Bandingkan Belanja";
+    pageIcon.className = "fas fa-right-left";
+    setActiveMenu(menuBandingkanBelanja);
+    const bbBody = document.getElementById('banding-tbody');
+    if (!bbBody || bbBody.innerHTML.trim() === '') {
+      import('./modules/reports/bandingkanBelanja.js').then(m => m.initBandingkanBelanja());
     }
   }
   else { // 'distribusi'

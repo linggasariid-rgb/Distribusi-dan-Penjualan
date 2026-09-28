@@ -12,6 +12,8 @@ export const READ = {
   getUsers: { url: '/api/users', params: [] },
   getPrices: { url: '/api/prices', params: [] },
   getRekapBelanja: { url: '/api/report-belanja-stokis', params: ['month'] },
+  getBandingkanBelanja: { url: '/api/report-belanja-banding', params: ['month', 'banding'] },
+  getKontakMitra: { url: '/api/kontak-mitra', params: [] },
   getTransactionHistory: { url: '/api/transaction-history', params: ['table', 'page', 'limit', 'startDate', 'endDate'] }
 };
 
@@ -28,7 +30,9 @@ export const WRITE = {
   login: { url: '/api/login', params: ['username', 'password'] },
   deleteInputBatch: { url: '/api/delete-batch', params: ['table', 'createdAt'] },
   deleteRow: { url: '/api/delete-row', params: ['table', 'id'] },
-  savePrices: { url: '/api/prices', params: ['prices'] }
+  savePrices: { url: '/api/prices', params: ['prices'] },
+  simpanKontakMitra: { url: '/api/kontak-mitra', params: ['rows'] },
+  hapusKontakMitra: { url: '/api/kontak-mitra', params: ['clear'] }
 };
 
 export const BERANDA = ['getBerandaData', 'getSalesDashboardData'];

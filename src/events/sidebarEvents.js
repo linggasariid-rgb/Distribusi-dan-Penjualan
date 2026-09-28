@@ -7,7 +7,8 @@ const MENU_IDS = [
   'penerimaan-cabang', 'mutasi', 'retur', 'riwayat-transaksi',
   'input-stok-excel', 'input-stok-biz', 'penjualan-who', 'sales-dashboard',
   'sales-hub', 'daily-report', 'sales-per-date', 'stok', 'form-order', 'control-point',
-  'best-products', 'rekap-belanja', 'pengaturan', 'chat-ai'
+  'best-products', 'rekap-belanja', 'kontak-mitra', 'bandingkan-belanja',
+  'pengaturan', 'chat-ai'
 ];
 
 export function initSidebarEvents() {
