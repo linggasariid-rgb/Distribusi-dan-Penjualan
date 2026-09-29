@@ -10,30 +10,50 @@ export function initSalesHubDates() {
   if (!endInput || endInput.value) return;
 
   var now = new Date();
-  var y = now.getFullYear();
-  var m = String(now.getMonth() + 1).padStart(2, '0');
-  var d = String(now.getDate()).padStart(2, '0');
-  endInput.value = y + '-' + m + '-' + d;
-  if (backdateInput) backdateInput.value = y + '-' + m + '-' + d;
-  syncPrevDate();
+  var today = hitungTanggalSalesHub(
+    now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0')
+  );
+  endInput.value = today.end;
+  if (prevInput) prevInput.value = today.prev;
+  if (backdateInput) backdateInput.value = today.back;
+  // Tidak memanggil syncPrevDate() di sini: init dipanggil dari router yang
+  // sudah memanggil loadSalesHubData() sendiri, jadi memanggilnya lagi hanya
+  // menyebabkan satu request API ganda setiap kali menu dibuka.
+}
+
+// Satu sumber kebenaran untuk tiga kolom tanggal. "Periode Lalu" dihitung mundur satu
+// bulan dari "Tanggal Berakhir" dan di-clamp ke panjang bulan tujuan (31 Mar -> 28 Feb),
+// sedangkan "Backdate" sengaja disamakan dengan "Tanggal Berakhir": keduanya sama-sama
+// berarti "per tanggal berapa", dan kalau terpisah keduanya bisa melenceng sendiri --
+// tabel Penjualan Harian lalu melaporkan tanggal yang berbeda dari tabel bulanan.
+export function hitungTanggalSalesHub(endValue) {
+  if (!endValue) return { end: '', prev: '', back: '' };
+  var parts = String(endValue).split('-');
+  if (parts.length !== 3) return { end: String(endValue), prev: String(endValue), back: String(endValue) };
+  var y = parseInt(parts[0], 10);
+  var m = parseInt(parts[1], 10) - 1;
+  var d = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return { end: String(endValue), prev: String(endValue), back: String(endValue) };
+  m--;
+  if (m < 0) { m = 11; y--; }
+  var maxD = new Date(y, m + 1, 0).getDate();
+  var prevD = Math.min(d, maxD);
+  return {
+    end: String(endValue),
+    prev: y + '-' + String(m + 1).padStart(2, '0') + '-' + String(prevD).padStart(2, '0'),
+    back: String(endValue),
+  };
 }
 
 export function syncPrevDate() {
   var endInput = document.getElementById('sh-end-date');
   var prevInput = document.getElementById('sh-prev-date');
+  var backdateInput = document.getElementById('sh-backdate');
   if (!endInput || !prevInput) return;
-  var val = endInput.value;
-  if (!val) return;
-  var parts = val.split('-');
-  var y = parseInt(parts[0]);
-  var m = parseInt(parts[1]) - 1;
-  var d = parseInt(parts[2]);
-  // mundur 1 bulan
-  m--;
-  if (m < 0) { m = 11; y--; }
-  var maxD = new Date(y, m + 1, 0).getDate();
-  var prevD = Math.min(d, maxD);
-  prevInput.value = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(prevD).padStart(2, '0');
+  if (!endInput.value) return;
+  var t = hitungTanggalSalesHub(endInput.value);
+  prevInput.value = t.prev;
+  if (backdateInput) backdateInput.value = t.back;
   loadSalesHubData();
 }
 

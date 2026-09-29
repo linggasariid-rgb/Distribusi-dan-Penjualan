@@ -75,9 +75,27 @@ export async function handle(db, whp, currDateStr, prevDateStr, backdateStr) {
     lte: { tanggal: prevEnd },
   });
 
+  // Snapshot per tanggal spesifik (bukan seluruh hari bulan berjalan) -- satu query per tanggal.
+  // Diambil DI AWAL, sebelum daftar cabang dibentuk, karena cabang juga harus dihitung dari
+  // tanggal-tanggal snapshot. Cabang seperti CIBADUYUT belum punya transaksi di jendela
+  // bulanan, sehingga hilang dari tabel Penjualan Harian -- tabel yang justru sedang
+  // menampilkan tanggal tersebut -- kalau daftar cabangnya hanya diturunkan dari
+  // bulan berjalan + bulan lalu.
+  const snapRows = [];
+  for (const d of snapDates) {
+    snapRows.push({
+      date: snapshotLabel(d),
+      rows: await db.query('penjualan_who', {
+        select: 'cabang,tipe_customer,tanggal,jumlah',
+        eq: { tanggal: toDateStr(d) },
+      }),
+    });
+  }
+
   const allCabang = [...new Set([
     ...currRows.map(r => r.cabang),
     ...prevRows.map(r => r.cabang),
+    ...snapRows.flatMap(s => s.rows.map(r => r.cabang)),
   ].filter(c => c && !isIgnoredBranch(c)))].sort();
   const cabangList = filterBranchesByWHP(allCabang, whp);
 
@@ -110,19 +128,13 @@ export async function handle(db, whp, currDateStr, prevDateStr, backdateStr) {
   const delta = currTotal - prevTotal;
   const growthPct = prevTotal > 0 ? Math.round((delta / prevTotal) * 10000) / 100 : 0;
 
-  // Snapshot per tanggal spesifik (bukan seluruh hari bulan berjalan) -- satu query per tanggal.
-  const dateSnapshots = [];
-  let todayTotal = 0;
-  for (let i = 0; i < snapDates.length; i++) {
-    const dateKey = toDateStr(snapDates[i]);
-    const dayRows = await db.query('penjualan_who', {
-      select: 'cabang,tipe_customer,tanggal,jumlah',
-      eq: { tanggal: dateKey },
-    });
-    const snapData = aggregate(dayRows.filter(r => cabangList.includes(r.cabang)));
-    dateSnapshots.push({ date: snapshotLabel(snapDates[i]), data: snapData });
-    if (i === 0) todayTotal = snapData.reduce((s, r) => s + r.total, 0);
-  }
+  const dateSnapshots = snapRows.map(s => ({
+    date: s.date,
+    data: aggregate(s.rows.filter(r => cabangList.includes(r.cabang))),
+  }));
+  const todayTotal = dateSnapshots.length
+    ? dateSnapshots[0].data.reduce((s, r) => s + r.total, 0)
+    : 0;
 
   // Daily comparison (current month vs previous month same days)
   const dailyComparison = [];
