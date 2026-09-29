@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {
-  detectTipe, computeBungkus, aggregateBulan, detectPunyaNama, mergeRows, buildKontakKey
+  detectTipe, computeBungkus, aggregateBulan, detectPunyaNama, mergeRows, buildKontakKey, handle
 } from '../worker/src/routes/report-belanja-banding.js';
 
 // --- detectTipe: MST / MSI harus TERPISAH ---
@@ -96,5 +96,57 @@ assert.equal(m2[0].banding_bungkus, 42);
 // baris tanpa cabang tidak boleh crash
 const noCab = new Map([['||MST X', { cabang: null, nama_customer: 'MST X', tipe: 'MST', total: 5 }]]);
 assert.equal(mergeRows(noCab, new Map(), new Map())[0].cabang, null);
+
+// --- punya_nama di handle(): kedua sisi wajib diperiksa ---
+// Regression: hanya mapBanding yang diperiksa, jadi "Bulan Ini = Agustus" vs
+// "Bulan Banding = September" melaporkan punya_nama=true, banner peringatan
+// disembunyikan, dan kolom Selisih/%/Tren dibaca user sebagai perubahan
+// penjualan padahal tidak satu pun pasangan yang bisa dibentuk.
+const AGU_BERSAMA_NAMA = [
+  { tanggal: '2026-08-05', cabang: 'BANDUNG', tipe_customer: 'MST',        products: { 'SPS TSI': 99 } },
+  { tanggal: '2026-08-06', cabang: 'BANDUNG', tipe_customer: 'MSI',        products: { 'SPS TSI': 40 } },
+  { tanggal: '2026-08-07', cabang: 'BANDUNG', tipe_customer: 'STK',        products: { 'SPS TSI': 20 } },
+];
+const SEP_BERSAMA_NAMA = [
+  { tanggal: '2026-09-01', cabang: 'BANDUNG', tipe_customer: 'MST B',      products: { 'SPS TSI': 10 } },
+  { tanggal: '2026-09-02', cabang: 'BANDUNG', tipe_customer: 'MSI C',      products: { 'SPS TSI': 30 } },
+];
+function fakeDb(rows) {
+  return {
+    query: (table) => (table === 'kontak_mitra' ? Promise.resolve([]) : Promise.resolve(rows)),
+  };
+}
+
+// Arah terbalik dari insiden Agustus: bulan INI yang tanpa nama.
+{
+  const r = await handle(fakeDb([...AGU_BERSAMA_NAMA, ...SEP_BERSAMA_NAMA]), '2026-08', '2026-09');
+  assert.equal(r.status, 'success');
+  assert.equal(r.data.punya_nama, false,
+    'bulan INI tanpa nama -> punya_nama harus false walau bulan pembanding bernama');
+  assert.deepEqual(r.data.bulan_tanpa_nama, ['Agustus 2026'],
+    'harus menyebut bulan yang sebenarnya tanpa nama');
+}
+// Arah yang sudah tertangkap sebelumnya: bulan BANDING yang tanpa nama.
+{
+  const r = await handle(fakeDb([...AGU_BERSAMA_NAMA, ...SEP_BERSAMA_NAMA]), '2026-09', '2026-08');
+  assert.equal(r.data.punya_nama, false);
+  assert.deepEqual(r.data.bulan_tanpa_nama, ['Agustus 2026']);
+}
+// Kedua bulan tanpa nama -> keduanya wajib disebut.
+{
+  const agu2 = [
+    { tanggal: '2026-08-05', cabang: 'BANDUNG', tipe_customer: 'MST', products: { 'SPS TSI': 1 } },
+    { tanggal: '2026-07-05', cabang: 'BANDUNG', tipe_customer: 'MST', products: { 'SPS TSI': 1 } },
+  ];
+  const r = await handle(fakeDb(agu2), '2026-08', '2026-07');
+  assert.equal(r.data.punya_nama, false);
+  assert.deepEqual(r.data.bulan_tanpa_nama, ['Juli 2026', 'Agustus 2026']);
+}
+// Kedua bulan bernama -> tidak ada peringatan sama sekali.
+{
+  const r = await handle(fakeDb(SEP_BERSAMA_NAMA), '2026-09', '2026-09');
+  assert.equal(r.data.punya_nama, true);
+  assert.deepEqual(r.data.bulan_tanpa_nama, []);
+}
 
 console.log('OK: semua tes backend bandingkan belanja lolos');

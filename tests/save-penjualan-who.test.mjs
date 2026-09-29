@@ -6,6 +6,23 @@ assert.equal(findNamaColumn(['BULAN', 'cabang', 'TIPE CUSTOMER', 'TANGGAL', 'NAM
 assert.equal(findNamaColumn(['NAMA PEMBELI CUSTOMER', 'SPS TSI']), 0, 'header mengandung NAMA+CUSTOMER');
 assert.equal(findNamaColumn(['BULAN', 'cabang', 'TIPE CUSTOMER', 'SPS TSI']), -1, 'tanpa kolom nama');
 
+// --- deteksi kolom nama: ejaan yang wajar harus dikenali ---
+// Regression 2026-09-28: hanya NAMA PDM / NAMA CUSTOMER yang dikenali, sehingga
+// 2787 baris AGUSTUS tersimpan sebagai kode polos tanpa nama, tanpa error.
+for (const h of ['NAMA PDM', 'NAMA CUSTOMER', 'NAMA PEMBELI CUSTOMER', 'NAMA MITRA', 'NAMA PELANGGAN', 'NAMA TOKO', 'NAMA DISTRIBUTOR']) {
+  assert.equal(findNamaColumn(['BULAN', 'CABANG', 'TIPE CUSTOMER', 'TANGGAL', h, 'JUMLAH']), 4,
+    `"${h}" harus terdeteksi sebagai kolom nama`);
+}
+assert.equal(findNamaColumn(['BULAN', 'CABANG', 'TIPE CUSTOMER', 'TANGGAL', 'NAMA', 'JUMLAH']), -1,
+  '"NAMA" polos tidak cukup, agar tidak tertangkap kolom lain');
+// "NAMA PEMILIK" sengaja TIDAK ikut keyword: pemilik itu orang di balik mitra,
+// bukan nama mitranya. Memetakannya ke kolom nama customer akan menyimpan data
+// dengan nama yang salah -- bug senyap dengan jenis berbeda, lebih buruk daripada
+// kosong karena tidak terlihat di kolom Pemilik/Kontak.
+assert.equal(findNamaColumn(['BULAN', 'CABANG', 'TIPE CUSTOMER', 'TANGGAL', 'NAMA PEMILIK', 'JUMLAH']), -1,
+  '"NAMA PEMILIK" bukan nama mitra, harus diabaikan');
+assert.equal(findNamaColumn(['BULAN', 'JUMLAH', 'CABANG']), -1, 'tanpa kolom nama sama sekali');
+
 // --- rekaman request, untuk memeriksa urutan DELETE lalu POST ---
 function recorder() {
   const calls = [];
@@ -96,6 +113,44 @@ const HEAD = ['BULAN', 'CABANG', 'TIPE CUSTOMER', 'TANGGAL', 'NAMA PDM', 'JUMLAH
   const res = await handle(db, { replace: true, data: [['A', 'B'], ['1', '2']] });
   assert.equal(res.status, 'error', 'header tidak dikenali -> error');
   assert.equal(calls.filter(c => c[0] === 'DELETE').length, 0, 'header salah tidak boleh menghapus data');
+}
+
+// --- peringatan backend menyala hanya saat kolom nama tidak terdeteksi ---
+{
+  const { db } = recorder();
+  const tanpaNama = await handle(db, { data: [HEAD, ['AGUSTUS', 'BANDUNG', 'MSI', '1 Ags 26', '', '10']] });
+  assert.equal(tanpaNama.status, 'success', 'tetap disimpan, tidak ditolak');
+  assert.ok(tanpaNama.peringatan, 'kolom nama kosong -> harus ada peringatan');
+  assert.ok(tanpaNama.peringatan.includes('NAMA PDM'), 'peringatan menyebut kolom yang benar');
+
+  const denganNama = await handle(db, { data: [HEAD, makeRow('AGUSTUS', 'MSI', 'Independen 12', '10')] });
+  assert.equal(denganNama.peringatan, null, 'tidak ada peringatan kalau nama terdeteksi');
+}
+{
+  // Header bermirip harus ikut disebut supaya pesan peringatan bersifat konkret.
+  // Pakai "NAMA PEMILIK": sengaja TIDAK dikenali sebagai kolom nama (lihat blok
+  // di atas), tapi tetap mengandung kata NAMA sehingga masuk daftar kandidat.
+  // "NAMA TOKO" tidak bisa dipakai di sini -- sejak NAMA_KEYWORDS diperluas, ia
+  // sudah jadi kolom nama yang sah, jadi tidak lagi memicu peringatan.
+  const t = ['BULAN', 'CABANG', 'TIPE CUSTOMER', 'TANGGAL', 'NAMA PEMILIK', 'JUMLAH'];
+  const { db } = recorder();
+  const res = await handle(db, { data: [t, ['AGUSTUS', 'BANDUNG', 'MSI', '1 Ags 26', 'Budi', '10']] });
+  assert.equal(res.status, 'success');
+  assert.ok(res.peringatan, 'NAMA PEMILIK tidak dikenali -> peringatan');
+  assert.ok(res.peringatan.includes('NAMA PEMILIK'), 'peringatan menyebut NAMA PEMILIK sebagai kandidat');
+}
+
+// --- peringatan hanya menyala kalau SEPENUHNYA kosong, bukan sebagian ---
+// Kalau hanya satu sel yang kosong di antara ribuan baris bernama,CONDATE itu
+// kondisi normal di data ini -- menyalakan peringatan akan membuat user
+// kewalahan oleh peringatan palsu setiap kali upload.
+{
+  const { db } = recorder();
+  const campur = await handle(db, {
+    data: [HEAD, makeRow('AGUSTUS', 'MSI', 'Independen 12', '10'), ['AGUSTUS', 'BANDUNG', 'MSI', '1 Ags 26', '', '7']],
+  });
+  assert.equal(campur.status, 'success');
+  assert.equal(campur.peringatan, null, 'sebagian nama terisi -> bukan kondisi tanpa nama');
 }
 
 console.log('OK: tes save penjualan WHO lolos');

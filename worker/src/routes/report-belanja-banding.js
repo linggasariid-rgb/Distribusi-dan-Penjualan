@@ -161,6 +161,22 @@ export async function handle(db, monthFilter, bandingFilter) {
   }
   const kontakMap = new Map(kontakRows.map(c => [c.nama_key, c]));
 
+  // Kedua sisi wajib diperiksa, bukan hanya bulan pembanding. Memeriksa satu
+  // sisi membuat "Bulan Ini = Agustus" vs "Bulan Banding = September" lolos
+  // sebagai punya_nama=true: banner peringatan disembunyikan dan kolom
+  // Selisih/%/Tren ditampilkan seolah-olah bisa dibaca, padahal nol baris pun
+  // berhasil berpasangan.
+  //
+  // mapBanding sengaja Map kosong saat bulan sama (lihat di atas), dan Map
+  // kosong selalu lolos detectPunyaNama, jadi bulan yang sama tidak terhitung
+  // dua kali di daftar ini.
+  const tanpaNama = [];
+  if (!detectPunyaNama(mapIni)) tanpaNama.push([bulanIni, namaBulan(bulanIni)]);
+  if (!detectPunyaNama(mapBanding)) {
+    tanpaNama.push([bulanBanding, namaBulan(bulanBanding)]);
+  }
+  tanpaNama.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+
   return {
     status: 'success',
     data: {
@@ -168,7 +184,10 @@ export async function handle(db, monthFilter, bandingFilter) {
       bulan_banding: bulanBanding,
       nama_bulan_ini: namaBulan(bulanIni),
       nama_bulan_banding: namaBulan(bulanBanding),
-      punya_nama: bulanIni === bulanBanding ? true : detectPunyaNama(mapBanding),
+      punya_nama: tanpaNama.length === 0,
+      // Nama bulan yang benar-benar jadi penyebab, supaya pesan peringatan
+      // tidak pernah menyebut bulan yang salah.
+      bulan_tanpa_nama: tanpaNama.map(x => x[1]),
       rows: mergeRows(mapIni, mapBanding, kontakMap),
     },
   };

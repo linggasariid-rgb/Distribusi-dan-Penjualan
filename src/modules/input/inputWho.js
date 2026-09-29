@@ -2,6 +2,23 @@ import { state } from '../../state/appState.js';
 import { submitPastedData } from './submitHelper.js';
 import { showConfirmModal } from '../../ui/modal.js';
 
+// Cerminan findNamaColumn() di worker/src/routes/save-penjualan-who.js. Kalau
+// keduanya berbeda, peringatan di layar tidak akan cocok dengan perilaku server.
+const NAMA_KEYWORDS = ['PDM', 'CUSTOMER', 'MITRA', 'PELANGGAN', 'TOKO', 'DISTRIBUTOR', 'PEMBELI', 'NASABAH', 'SUPLIER'];
+
+function findNamaColumn(headers) {
+  const exact = headers.findIndex(h => {
+    const u = String(h || '').toUpperCase().trim();
+    return u === 'NAMA PDM' || u === 'NAMA CUSTOMER' || u === 'NAMA MITRA' || u === 'NAMA PELANGGAN';
+  });
+  if (exact >= 0) return exact;
+  return headers.findIndex(h => {
+    const u = String(h || '').toUpperCase().trim();
+    if (!u.includes('NAMA')) return false;
+    return NAMA_KEYWORDS.some(k => u.includes(k));
+  });
+}
+
 export function processPasteWHO() {
   const text = document.getElementById('penjualan-who-paste-area').value.trim();
   const container = document.getElementById('penjualan-who-preview');
@@ -42,6 +59,24 @@ export function processPasteWHO() {
 
   htmlBody += '</tbody></table>';
   container.innerHTML = tableHTML + htmlBody;
+
+  // Peringatan SEBELUM simpan. Ini yang paling penting: tanpa ini, user baru
+  // tahu setelah 2787 baris tersimpan tanpa nama (kejadian Agustus 2026).
+  if (findNamaColumn(data[0].map(h => String(h || '').trim())) < 0) {
+    const mirip = data[0].filter(h => /NAMA|CUSTOMER|MITRA|PELANGGAN|TOKO|DISTRIBUTOR|PEMBELI/i.test(String(h || '')));
+    container.innerHTML += '<div class="mt-3 p-3 rounded-lg border border-red-300 bg-red-50 text-sm text-red-800">'
+      + '<p class="font-bold mb-1">Kolom nama mitra tidak ditemukan pada baris header.</p>'
+      + '<p>Semua baris akan tersimpan hanya sebagai kode (MST/MSI/STK) tanpa nama, dan kolom '
+      + 'Pemilik/Kontak tidak akan muncul di menu Bandingkan Belanja.</p>'
+      + '<p class="mt-1">Sertakan kolom <span class="font-mono font-bold">NAMA PDM</span>, '
+      + '<span class="font-mono font-bold">NAMA CUSTOMER</span>, atau '
+      + '<span class="font-mono font-bold">NAMA MITRA</span> di baris header.</p>'
+      + (mirip.length ? '<p class="mt-1">Kolom yang mirip tapi tidak dikenali: <span class="font-mono">'
+        + mirip.map(h => String(h)).join(', ') + '</span></p>' : '')
+      + '<p class="mt-1 font-semibold">Pastikan baris pertama yang dipaste adalah header asli dari Excel, bukan baris data.</p>'
+      + '</div>';
+  }
+
   submitContainer.classList.remove('hidden');
 }
 

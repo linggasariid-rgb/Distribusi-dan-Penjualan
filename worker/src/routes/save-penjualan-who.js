@@ -28,10 +28,26 @@ function parseNum(v) {
   return parseInt(String(v).trim().replace(/\./g,''), 10) || 0;
 }
 
+// Kata yang menandai kolom nama mitra. Daftar ini diperluas karena kondisi
+// sebelumnya hanya menerima "NAMA PDM"/"NAMA CUSTOMER" -- ejaan lain seperti
+// "NAMA MITRA" atau "NAMA PELANGGAN" dilewati tanpa error, dan semua baris
+//Incident 2026-09-28: bulan AGUSTUS 2026 (2787 baris, 100%) tersimpan hanya
+// sebagai kode MST/MSI/STK/ORE/ORM tanpa nama, padahal September memakai nama
+// asli dengan cara input yang sama persis.
+const NAMA_KEYWORDS = ['PDM', 'CUSTOMER', 'MITRA', 'PELANGGAN', 'TOKO', 'DISTRIBUTOR', 'PEMBELI', 'NASABAH', 'SUPLIER'];
+
 export function findNamaColumn(headers) {
+  // Dua pintu: yang persis sama, lalu yang cukup mengandung NAMA + kata penanda.
+  const exact = headers.findIndex(h => {
+    const u = String(h || '').toUpperCase().trim();
+    return u === 'NAMA PDM' || u === 'NAMA CUSTOMER' || u === 'NAMA MITRA' || u === 'NAMA PELANGGAN';
+  });
+  if (exact >= 0) return exact;
+
   return headers.findIndex(h => {
     const u = String(h || '').toUpperCase().trim();
-    return u === 'NAMA PDM' || u === 'NAMA CUSTOMER' || (u.includes('NAMA') && (u.includes('PDM') || u.includes('CUSTOMER')));
+    if (!u.includes('NAMA')) return false;
+    return NAMA_KEYWORDS.some(k => u.includes(k));
   });
 }
 
@@ -61,8 +77,25 @@ export async function handle(db, body) {
 
   // Cari kolom nama customer: "NAMA PDM" ATAU "NAMA CUSTOMER" (nama header asli sheet).
   const namaPdmCol = findNamaColumn(headers);
+  // Tidak berhenti di sini. Data tanpa nama TETAP disimpan (user boleh sengaja
+  // menginput kode), tapi frontend diberi tahu supaya bisa menampilkan
+  // peringatan. Sebelumnya kondisi ini diam-diam saja, dan itu penyebab 2787
+  // baris Agustus tersimpan tanpa nama tanpa ada yang menyadarinya.
+  const namaColTidakDitemukan = namaPdmCol < 0;
+  // Header yang MIRIP tapi bukan kolom nama ikut dihitung, supaya pesan
+  // peringatan bisa memberi petunjuk konkret.
+  const headerMirip = namaColTidakDitemukan
+    ? headers.filter(h => {
+        const u = String(h || '').toUpperCase().trim();
+        return u && /NAMA|CUSTOMER|MITRA|PELANGGAN|TOKO|DISTRIBUTOR|PEMBELI/.test(u);
+      }).join(', ')
+    : '';
 
   const rows = [];
+  // Berapa baris yang benar-benar menghasilkan nama. Kolom nama bisa ADA tapi
+  // isinya kosong -- itu menghasilkan 100% kode polos persis seperti kolom yang
+  // tidak terdeteksi, jadi keduanya harus bisa memicu peringatan.
+  let namaTerisi = 0;
   for (let i = 1; i < data.length; i++) {
     const r = data[i];
     if (!r || r.length < 4) continue;
@@ -83,6 +116,7 @@ export async function handle(db, body) {
       const namaPdm = String(r[namaPdmCol] || '').trim();
       if (namaPdm) {
         tipeCustomer = `${tipe} ${namaPdm}`.trim(); // contoh: "MST Sinergi Kautsar"
+        namaTerisi++;
       }
     }
 
@@ -140,11 +174,37 @@ export async function handle(db, body) {
     return {
       status: 'success',
       message: `${rows.length} baris disimpan. Data lama bulan ${months.join(', ')} dihapus terlebih dahulu.`,
+      peringatan: pesanPeringatanNama(namaColTidakDitemukan, headerMirip, namaTerisi, rows.length, headers[namaPdmCol]),
     };
   }
 
   for (let i = 0; i < rows.length; i += 500) {
     await db.request('POST', 'penjualan_who', { data: rows.slice(i, i + 500) });
   }
-  return { status: 'success', message: `${rows.length} baris data penjualan WHO berhasil disimpan` };
+  return {
+    status: 'success',
+    message: `${rows.length} baris data penjualan WHO berhasil disimpan`,
+    peringatan: pesanPeringatanNama(namaColTidakDitemukan, headerMirip, namaTerisi, rows.length, headers[namaPdmCol]),
+  };
+}
+
+function pesanPeringatanNama(tidakDitemukan, headerMirip, namaTerisi, totalBaris, namaTerdeteksi) {
+  if (tidakDitemukan) {
+    return 'Kolom nama mitra tidak ditemukan pada baris header, jadi SEMUA baris tersimpan '
+      + 'hanya sebagai kode (MST/MSI/STK) tanpa nama. Perbandingan Belanja tidak akan '
+      + 'menampilkan kolom Pemilik/Kontak untuk data ini. Pastikan baris pertama yang '
+      + 'dipaste adalah header asli dari Excel dan kolomnya bernama NAMA PDM, NAMA CUSTOMER, '
+      + 'atau NAMA MITRA.'
+      + (headerMirip ? ` Kolom yang mirip nama tapi tidak dikenali: "${headerMirip}".` : '');
+  }
+  if (namaTerisi === 0 && totalBaris > 0) {
+    // Sebut nama kolomnya yang persis. "Kolom nama mitra" saja tidak cukup --
+    // user perlu tahu sel mana di file Excel-nya yang harus diisi, dan file bisa
+    // punya beberapa kolom mirip nama sekaligus.
+    return `Kolom "${namaTerdeteksi || 'nama mitra'}" ditemukan pada header, tetapi SEMUA `
+      + totalBaris + ' baris kosong di kolom itu, jadi semua data tersimpan hanya sebagai '
+      + 'kode tanpa nama. Periksa lagi file Excel Anda: kemungkinan baris header ikut '
+      + 'ter-paste sebagai baris data, atau kolom nama belum diisi.';
+  }
+  return null;
 }

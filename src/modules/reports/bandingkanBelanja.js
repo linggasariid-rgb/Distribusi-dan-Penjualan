@@ -6,6 +6,7 @@ let state = {
   bulanBanding: '',
   namaBulanIni: '',
   namaBulanBanding: '',
+  bulanTanpaNama: [],
   punyaNama: true,
   rows: [],
   sortKey: 'selisih',
@@ -103,11 +104,15 @@ function renderWarning() {
     box.classList.remove('flex');
     return;
   }
-  txt.textContent = 'Bulan ' + state.namaBulanBanding +
-    ' masih tersimpan sebagai kode MST / MSI / STK, bukan nama mitra, sedangkan ' +
-    state.namaBulanIni + ' memakai nama asli. Karena kedua sisi tidak bisa dipasangkan, ' +
-    'kolom Selisih, % dan Tren di tabel ini tidak boleh dibaca sebagai perubahan penjualan. ' +
-    'Kolom Total ' + state.namaBulanIni + ' tetap akurat.';
+  // Sebut bulan yang benar-benar tanpa nama, bukan selalu bulan pembanding:
+  // "Bulan Ini = Agustus" vs "Bulan Banding = September" pasti salah kalau
+  // pesannya menyebut September.
+  const bulan = state.bulanTanpaNama.length ? state.bulanTanpaNama.join(' dan ')
+    : state.namaBulanBanding;
+  txt.textContent = bulan + ' masih tersimpan sebagai kode MST / MSI / STK, bukan nama mitra, '
+    + 'sedangkan bulan yang lain memakai nama asli. Karena kedua sisi tidak bisa dipasangkan, '
+    + 'kolom Selisih, % dan Tren di tabel ini tidak boleh dibaca sebagai perubahan penjualan. '
+    + 'Kolom Total per bulan tetap akurat.';
   box.classList.remove('hidden');
   box.classList.add('flex');
 }
@@ -256,6 +261,7 @@ export function loadBandingkanBelanja() {
       state.bulanBanding = d.bulan_banding || bulanBanding;
       state.namaBulanIni = d.nama_bulan_ini || bulanIni;
       state.namaBulanBanding = d.nama_bulan_banding || bulanBanding;
+      state.bulanTanpaNama = Array.isArray(d.bulan_tanpa_nama) ? d.bulan_tanpa_nama : [];
       state.punyaNama = d.punya_nama !== false;
       state.rows = d.rows || [];
       populateCabangFilter();
@@ -381,9 +387,11 @@ export function exportBandingkanBelanja() {
   rows.push(grand);
 
   if (!state.punyaNama) {
+    const bulan = state.bulanTanpaNama.length ? state.bulanTanpaNama.join(' dan ')
+      : state.namaBulanBanding;
     rows.push([]);
     rows.push([]);
-    rows.push(['CATATAN: Bulan pembanding masih menggunakan data tanpa nama mitra. Selisih per mitra tidak akurat.']);
+    rows.push([`CATATAN: ${bulan} masih menggunakan data tanpa nama mitra. Selisih per mitra tidak akurat.`]);
   }
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

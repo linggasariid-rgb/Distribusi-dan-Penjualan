@@ -27,6 +27,14 @@ export function submitPastedData({ rpcName, cacheKey, idPrefix, minLength = 2, b
       toast.classList.remove('translate-y-32', 'opacity-0');
       setTimeout(() => { toast.classList.add('translate-y-32', 'opacity-0'); }, 4000);
 
+      // Peringatan dari backend (mis. kolom nama mitra tidak ditemukan). Ini
+      // sengaja di.alert, bukan toast: toast hilang sendiri dalam 4 detik dan
+      // toast hijau di sebelah pesan "berhasil" akan dianggap aman, padahal
+      // semua baris tersimpan tanpa nama.
+      if (response.peringatan) {
+        alert('Data tersimpan, TAPI ada masalah:\n\n' + response.peringatan);
+      }
+
       document.getElementById(idPrefix + '-paste-area').value = '';
       document.getElementById(idPrefix + '-preview').innerHTML = '';
       document.getElementById(idPrefix + '-submit-container').classList.add('hidden');
