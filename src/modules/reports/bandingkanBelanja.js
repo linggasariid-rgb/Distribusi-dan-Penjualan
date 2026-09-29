@@ -26,10 +26,10 @@ function esc(v) {
 }
 
 // Jumlah kolom: Nama, Tipe, Cabang, Pemilik, Kontak, Total Ini,
-// Total Banding, Selisih, %, Tren. Kolom Pemilik+Kontak disembunyikan
-// saat punyaNama === false, jadi 8 kolom.
+// Total Banding, Selisih, Tren. Kolom Pemilik+Kontak disembunyikan
+// saat punyaNama === false, jadi 7 kolom.
 function kolomAktif() {
-  return state.punyaNama ? 10 : 8;
+  return state.punyaNama ? 9 : 7;
 }
 
 export function hitungSelisih(baris) {
@@ -37,13 +37,12 @@ export function hitungSelisih(baris) {
   const banding = Number(baris.banding_bungkus) || 0;
   const selisih = ini - banding;
 
-  if (banding === 0 && ini > 0) return { selisih, persen: null, tren: 'baru' };
-  if (ini === 0 && banding > 0) return { selisih, persen: -100, tren: 'berhenti' };
-  if (banding === 0 && ini === 0) return { selisih: 0, persen: null, tren: 'tetap' };
+  if (banding === 0 && ini > 0) return { selisih, tren: 'baru' };
+  if (ini === 0 && banding > 0) return { selisih, tren: 'berhenti' };
+  if (banding === 0 && ini === 0) return { selisih: 0, tren: 'tetap' };
 
   return {
     selisih,
-    persen: (selisih / banding) * 100,
     tren: selisih > 0 ? 'naik' : selisih < 0 ? 'turun' : 'tetap',
   };
 }
@@ -111,7 +110,7 @@ function renderWarning() {
     : state.namaBulanBanding;
   txt.textContent = bulan + ' masih tersimpan sebagai kode MST / MSI / STK, bukan nama mitra, '
     + 'sedangkan bulan yang lain memakai nama asli. Karena kedua sisi tidak bisa dipasangkan, '
-    + 'kolom Selisih, % dan Tren di tabel ini tidak boleh dibaca sebagai perubahan penjualan. '
+    + 'kolom Selisih dan Tren di tabel ini tidak boleh dibaca sebagai perubahan penjualan. '
     + 'Kolom Total per bulan tetap akurat.';
   box.classList.remove('hidden');
   box.classList.add('flex');
@@ -139,8 +138,7 @@ function renderBanding() {
   headHtml += thSort('ini_bungkus', 'Total ' + state.namaBulanIni, 'text-right')
     + thSort('banding_bungkus', 'Total ' + state.namaBulanBanding, 'text-right')
     + thSort('selisih', 'Selisih', 'text-right')
-    + `<th class="px-4 py-3 text-right whitespace-nowrap">%</th>
-    <th class="px-4 py-3 text-center whitespace-nowrap">Tren</th></tr>`;
+    + `<th class="px-4 py-3 text-center whitespace-nowrap">Tren</th></tr>`;
   thead.innerHTML = headHtml;
 
   thead.querySelectorAll('th[data-sort]').forEach(th => {
@@ -208,13 +206,9 @@ function renderBanding() {
           <td class="px-4 py-2 whitespace-nowrap">${kontak}</td>`;
       }
 
-      const persenTxt = s.persen === null ? '—'
-        : (s.persen > 0 ? '+' : '') + s.persen.toFixed(1) + '%';
-
       bodyHtml += `<td class="px-4 py-2 text-right font-mono text-slate-700">${num(item.ini_bungkus)}</td>
         <td class="px-4 py-2 text-right font-mono text-slate-500">${num(item.banding_bungkus)}</td>
         <td class="px-4 py-2 text-right font-mono font-bold ${tr.warna} ${redup}" title="${esc(title)}">${tr.simbol} ${s.selisih > 0 ? '+' : ''}${num(s.selisih)}</td>
-        <td class="px-4 py-2 text-right font-mono font-bold ${tr.warna} ${redup}" title="${esc(title)}">${persenTxt}</td>
         <td class="px-4 py-2 text-center font-bold ${tr.warna} ${redup}" title="${esc(title)}">${tr.simbol}<span class="sr-only">${tr.label}</span></td>
       </tr>`;
     });
@@ -225,7 +219,7 @@ function renderBanding() {
     bodyHtml += `<td class="px-4 py-2 text-right font-mono">${num(cabIni)}</td>
       <td class="px-4 py-2 text-right font-mono">${num(cabBanding)}</td>
       <td class="px-4 py-2 text-right font-mono">${cabIni - cabBanding > 0 ? '+' : ''}${num(cabIni - cabBanding)}</td>
-      <td colspan="2"></td></tr>`;
+      <td></td></tr>`;
   });
 
   tbody.innerHTML = bodyHtml;
@@ -236,7 +230,7 @@ function renderBanding() {
     <td class="px-4 py-3 text-right font-mono">${num(grandIni)}</td>
     <td class="px-4 py-3 text-right font-mono">${num(grandBanding)}</td>
     <td class="px-4 py-3 text-right font-mono">${grandSelisih > 0 ? '+' : ''}${num(grandSelisih)}</td>
-    <td colspan="2"></td></tr>`;
+    <td></td></tr>`;
 }
 
 export function loadBandingkanBelanja() {
@@ -343,7 +337,7 @@ export function exportBandingkanBelanja() {
   header.push(
     `TOTAL ${bulanTeks(state.bulanIni)}`,
     `TOTAL ${bulanTeks(state.bulanBanding)}`,
-    'SELISIH', '%', 'TREN'
+    'SELISIH', 'TREN'
   );
   rows.push(header);
 
@@ -368,7 +362,6 @@ export function exportBandingkanBelanja() {
         item.ini_bungkus,
         item.banding_bungkus,
         s.selisih,
-        s.persen === null ? '' : Number(s.persen.toFixed(1)),
         TREN[s.tren].simbol
       );
       rows.push(row);
@@ -376,14 +369,14 @@ export function exportBandingkanBelanja() {
 
     const sub = ['', '', `SUBTOTAL CABANG ${sec.cabang}`];
     if (state.punyaNama) sub.push('', '');
-    sub.push(cabIni, cabBanding, cabIni - cabBanding, '', '');
+    sub.push(cabIni, cabBanding, cabIni - cabBanding, '');
     rows.push(sub);
     rows.push([]);
   });
 
   const grand = ['', '', 'GRAND TOTAL KESELURUHAN'];
   if (state.punyaNama) grand.push('', '');
-  grand.push(grandIni, grandBanding, grandSelisih, '', '');
+  grand.push(grandIni, grandBanding, grandSelisih, '');
   rows.push(grand);
 
   if (!state.punyaNama) {
@@ -434,7 +427,7 @@ export function exportBandingkanBelanja() {
     if (c === 0) min = 32;            // NAMA
     else if (c === 1) min = 10;       // TIPE
     else if (c === 2) min = 16;       // CABANG
-    else if (c >= kolom - 5) min = 18; // kolom angka + header
+    else if (c >= kolom - 4) min = 18; // kolom angka + header (Total x2, Selisih, Tren)
     const max = Math.max(min, ...rows.map(r => String(r[c] == null ? '' : r[c]).length));
     colWidths.push({ wch: max });
   }
