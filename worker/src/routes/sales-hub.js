@@ -27,19 +27,35 @@ function snapshotLabel(d) {
   return `${String(d.getDate()).padStart(2, '0')} ${MONTH_ABBR_ID[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`;
 }
 
+// new Date('2026-02-31') tidak meng-clamp, tapi melompat ke 3 Maret -- bulan
+// yang dipilih user bergeser diam-diam. Frontend sudah meng-clamp sebelum
+// mengirim, tapi endpoint ini publik dan menerima string apa pun, jadi parsing
+// dilakukan manual: hari yang melebihi panjang bulan dipotong ke akhir bulan.
+// Tanggal dibangun di zona waktu lokal karena sisa kode membaca lewat
+// getFullYear/getMonth/getDate yang juga lokal.
+function parseTanggal(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+  if (!m) return null;
+  const y = +m[1];
+  const mon = +m[2];
+  if (mon < 1 || mon > 12) return null;
+  const maxDay = new Date(y, mon, 0).getDate();
+  return new Date(y, mon - 1, Math.min(+m[3], maxDay));
+}
+
 export async function handle(db, whp, currDateStr, prevDateStr, backdateStr) {
   const now = new Date();
 
-  const currDate = currDateStr ? new Date(currDateStr) : now;
+  const currDate = parseTanggal(currDateStr) || now;
   const currYear = currDate.getFullYear();
   const currMon = currDate.getMonth();
   const currDayNum = currDate.getDate();
 
-  const prevDate = prevDateStr ? new Date(prevDateStr) : new Date(currYear, currMon - 1, 1);
+  const prevDate = parseTanggal(prevDateStr) || new Date(currYear, currMon - 1, 1);
   const prevYear = prevDate.getFullYear();
   const prevMon = prevDate.getMonth();
 
-  const backDate = backdateStr ? new Date(backdateStr) : currDate;
+  const backDate = parseTanggal(backdateStr) || currDate;
   const snapDay = backDate.getDate();
 
   // 2 tanggal snapshot (backDate, M-1 relatif ke backDate) dengan day yang sama
@@ -57,9 +73,13 @@ export async function handle(db, whp, currDateStr, prevDateStr, backdateStr) {
   const currStart = toDateStr(new Date(currYear, currMon, 1));
   const currEnd = toDateStr(currDate);
 
-  // Potong bulan lalu sampai hari ke-currDayNum yang sama (apple-to-apple), bukan sebulan penuh.
+  // Jendela bulan lalu mengikuti tanggal yang dipilih user di kolom "Periode Lalu",
+  // di-clamp ke panjang bulan tujuan (pilih 31 di Februari -> 28 Feb, bukan melompat
+  // ke Maret). Sebelumnya hari-nya diambil dari currDayNum, yaitu hari dari
+  // "Tanggal Berakhir", sehingga memilih 31 Agt atau 15 Agt mengembalikan angka
+  // yang persis sama dan filter tidak pernah berefek.
   const prevMonthLastDay = new Date(prevYear, prevMon + 1, 0).getDate();
-  const prevCutoffDay = Math.min(currDayNum, prevMonthLastDay);
+  const prevCutoffDay = Math.min(prevDate.getDate(), prevMonthLastDay);
   const prevStart = toDateStr(new Date(prevYear, prevMon, 1));
   const prevEnd = toDateStr(new Date(prevYear, prevMon, prevCutoffDay));
 
@@ -137,8 +157,11 @@ export async function handle(db, whp, currDateStr, prevDateStr, backdateStr) {
     : 0;
 
   // Daily comparison (current month vs previous month same days)
+  // Terbentang sampai hari terbesar dari kedua sisi, supaya hari yang cuma ada
+  // di satu periode (mis. tanggal 31 saat bulan berjalan baru sampai tanggal 10)
+  // tetap tampil dengan sisi yang tersedia -- tidak disembunyikan.
   const dailyComparison = [];
-  const maxDay = Math.min(currDayNum, prevMonthLastDay);
+  const maxDay = Math.max(currDayNum, prevCutoffDay);
   for (let d = 1; d <= maxDay; d++) {
     const dayStrCurr = `${currYear}-${String(currMon + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const dayStrPrev = `${prevYear}-${String(prevMon + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;

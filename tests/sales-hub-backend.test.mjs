@@ -71,4 +71,46 @@ const rows = [
     'cabang dari snapshot ikut disaring oleh filter WHP');
 }
 
+// ─── Regression (30 Sep 2026): tanggal "Periode Lalu" diabaikan backend ───
+// Kolom "Periode Lalu" bisa diedit user, tapi backend memotong jendela bulan
+// lalu memakai currDayNum (hari dari "Tanggal Berakhir"), bukan tanggal yang
+// dipilih user. Terbukti dari API: prevDate=2026-08-31, 2026-08-15, dan
+// 2026-08-01 sama-sama mengembalikan previousTotal 1158965 -- filter tidak
+// pernah berefek.
+{
+  const rowsPeriode = [
+    { cabang: 'BANDUNG', tipe_customer: 'MST B', tanggal: '2026-08-31', jumlah: 100 },
+    { cabang: 'BANDUNG', tipe_customer: 'MST B', tanggal: '2026-09-10', jumlah: 5 },
+  ];
+
+  const sampai31 = await handle(fakeDb(rowsPeriode), '', '2026-09-30', '2026-08-31', '2026-09-30');
+  assert.equal(sampai31.data.kpis.previousTotal, 100,
+    'Periode Lalu = 31 Agt harus ikut menghitung transaksi 31 Agt');
+
+  const sampai15 = await handle(fakeDb(rowsPeriode), '', '2026-09-30', '2026-08-15', '2026-09-30');
+  assert.equal(sampai15.data.kpis.previousTotal, 0,
+    'Periode Lalu = 15 Agt harus memotong tepat di tanggal 15');
+}
+
+// Tanggal yang melebihi panjang bulan harus di-clamp, bukan melompat ke bulan berikutnya.
+{
+  const r = await handle(fakeDb([]), '', '2026-03-15', '2026-02-31', '2026-03-15');
+  assert.equal(r.status, 'success');
+  assert.equal(r.data.previousMonth.label, '2/2026', '31 Feb harus tetap di Februari');
+}
+
+// Perbandingan harian harus menutupi kedua sisi. Kalau bulan lalu lebih panjang
+// dari bulan berjalan, hari-harine tidak boleh hilang hanya karena sisi bulan
+// berjalan belum sampai.
+{
+  const rowsBanding = [
+    { cabang: 'BANDUNG', tipe_customer: 'MST B', tanggal: '2026-08-31', jumlah: 7 },
+    { cabang: 'BANDUNG', tipe_customer: 'MST B', tanggal: '2026-09-10', jumlah: 3 },
+  ];
+  const r = await handle(fakeDb(rowsBanding), '', '2026-09-10', '2026-08-31', '2026-09-10');
+  const tgl31 = r.data.dailyComparison.find(d => d.date === '31/09');
+  assert.ok(tgl31, 'hari ke-31 harus tampil walau bulan berjalan baru sampai tanggal 10');
+  assert.equal(tgl31.previous, 7, 'sisi bulan lalu harus ikut terisi');
+}
+
 console.log('OK: tes sales-hub backend lolos');
