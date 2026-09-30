@@ -45,6 +45,16 @@ export function hitungTanggalSalesHub(endValue) {
   };
 }
 
+// "Periode Lalu" boleh diedit user, jadi nilai turunan otomatis hanya boleh
+// menimpa kolom itu selama isinya masih sama dengan hasil turunan. Begitu user
+// memilih periode sendiri, pilihan itu dihormati dan tidak ditimpa diam-diam
+// saat "Tanggal Berakhir" berubah. Kosong = belum pernah diisi -> isi otomatis.
+export function prevDateOtomatis(endValue, prevValueSekarang) {
+  var otomatis = hitungTanggalSalesHub(endValue).prev;
+  if (!prevValueSekarang || prevValueSekarang === otomatis) return otomatis;
+  return prevValueSekarang;
+}
+
 export function syncPrevDate() {
   var endInput = document.getElementById('sh-end-date');
   var prevInput = document.getElementById('sh-prev-date');
@@ -52,7 +62,7 @@ export function syncPrevDate() {
   if (!endInput || !prevInput) return;
   if (!endInput.value) return;
   var t = hitungTanggalSalesHub(endInput.value);
-  prevInput.value = t.prev;
+  prevInput.value = prevDateOtomatis(endInput.value, prevInput.value);
   if (backdateInput) backdateInput.value = t.back;
   loadSalesHubData();
 }

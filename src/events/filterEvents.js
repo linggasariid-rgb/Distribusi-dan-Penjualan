@@ -27,6 +27,9 @@ export function initFilterEvents() {
   const shEndDate = document.getElementById('sh-end-date');
   if (shEndDate) shEndDate.addEventListener('change', syncPrevDate);
 
+  const shPrevDate = document.getElementById('sh-prev-date');
+  if (shPrevDate) shPrevDate.addEventListener('change', loadSalesHubData);
+
   const shBackdate = document.getElementById('sh-backdate');
   if (shBackdate) shBackdate.addEventListener('change', loadSalesHubData);
 
