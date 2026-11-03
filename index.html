@@ -155,6 +155,12 @@
           <div id="menu-bandingkan-belanja" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
             <i class="fas fa-right-left w-4 text-center"></i><span>Bandingkan Belanja</span>
           </div>
+          <div id="menu-omzet-kecamatan" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-map-location-dot w-4 text-center"></i><span>Omzet per Kecamatan</span>
+          </div>
+          <div id="menu-biaya-omzet" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
+            <i class="fas fa-scale-balanced w-4 text-center"></i><span>Biaya vs Omzet</span>
+          </div>
           <div id="menu-kontak-mitra" class="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 hover:text-white rounded-xl font-medium transition-colors text-slate-400 cursor-pointer text-xs">
             <i class="fas fa-address-book w-4 text-center"></i><span>Kontak Mitra</span>
           </div>
@@ -547,6 +553,158 @@
             <tfoot id="banding-tfoot" class="bg-slate-50 font-bold text-slate-800 border-t border-slate-200">
             </tfoot>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="omzet-kecamatan-view" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bulan</label>
+          <input type="month" id="omzet-kec-bulan" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer whitespace-nowrap">
+            <input type="checkbox" id="omzet-kec-banding-aktif" checked class="w-4 h-4 accent-emerald-600 cursor-pointer"> Bandingkan
+          </label>
+          <input type="month" id="omzet-kec-banding" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono disabled:opacity-40">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cabang</label>
+          <select id="omzet-kec-cabang" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
+            <option value="ALL">Semua Cabang</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">Kota / Kab</label>
+          <select id="omzet-kec-kota" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
+            <option value="ALL">Semua Kota / Kab</option>
+          </select>
+        </div>
+        <button id="btn-omzet-kec-terapkan" class="h-10 px-4 rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2 whitespace-nowrap bg-slate-800 hover:bg-slate-900 text-white">
+          <i class="fas fa-sync-alt"></i> Terapkan
+        </button>
+        <div class="flex items-center gap-3 ml-auto">
+          <button id="btn-omzet-kec-upload" class="h-10 px-4 rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2 whitespace-nowrap bg-white hover:bg-slate-50 text-slate-700 border border-slate-200">
+            <i class="fas fa-upload"></i> Update Data Wilayah
+          </button>
+          <input type="file" id="omzet-kec-file" accept=".xlsx,.xls" class="hidden">
+          <button id="btn-omzet-kec-export" class="h-10 px-4 rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2 whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+            <i class="fas fa-file-excel"></i> Export Excel
+          </button>
+        </div>
+      </div>
+
+      <div id="omzet-kec-info" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600"></div>
+
+      <div id="omzet-kec-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Menghitung omzet per kecamatan...</p>
+      </div>
+
+      <div id="omzet-kec-content" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead id="omzet-kec-thead" class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
+            </thead>
+            <tbody id="omzet-kec-tbody" class="divide-y divide-slate-100">
+            </tbody>
+            <tfoot id="omzet-kec-tfoot" class="bg-slate-50 font-bold text-slate-800 border-t border-slate-200">
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button id="btn-omzet-kec-tb-toggle" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors">
+          <span class="font-bold text-slate-700 text-sm flex flex-wrap items-center gap-y-1">
+            <i class="fas fa-user-clock text-amber-500 mr-2"></i><span id="omzet-kec-tb-judul">MST / MSI Tidak Belanja</span>
+          </span>
+          <i id="omzet-kec-tb-ikon" class="fas fa-chevron-down text-slate-400"></i>
+        </button>
+        <div id="omzet-kec-tb-body" class="hidden border-t border-slate-200 overflow-x-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3 text-left whitespace-nowrap">Nama MST / MSI</th>
+                <th class="px-4 py-3 text-left whitespace-nowrap">Pemilik</th>
+                <th class="px-4 py-3 text-left whitespace-nowrap">HP / Telepon</th>
+                <th class="px-4 py-3 text-left whitespace-nowrap">Terakhir Belanja</th>
+                <th class="px-4 py-3 text-left whitespace-nowrap">Cabang Terakhir</th>
+              </tr>
+            </thead>
+            <tbody id="omzet-kec-tb-tbody" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="biaya-omzet-view" class="hidden space-y-6">
+      <div class="flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bulan</label>
+          <input type="month" id="biaya-bulan" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer whitespace-nowrap">
+            <input type="checkbox" id="biaya-banding-aktif" class="w-4 h-4 accent-emerald-600 cursor-pointer"> Bandingkan
+          </label>
+          <input type="month" id="biaya-banding" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono disabled:opacity-40">
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cabang</label>
+          <select id="biaya-cabang" class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
+            <option value="ALL">Semua Cabang</option>
+          </select>
+        </div>
+        <button id="btn-biaya-terapkan" class="h-10 px-4 rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2 whitespace-nowrap bg-slate-800 hover:bg-slate-900 text-white">
+          <i class="fas fa-sync-alt"></i> Terapkan
+        </button>
+        <div class="flex items-center gap-3 ml-auto">
+          <button id="btn-biaya-upload" class="h-10 px-4 rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2 whitespace-nowrap bg-white hover:bg-slate-50 text-slate-700 border border-slate-200" title="Pilih file Rekap Kas Kecil dan/atau rekap-pengeluaran (BBM & Tol). Bisa dua file sekaligus.">
+            <i class="fas fa-upload"></i> Upload Kas Kecil / E-toll / Flazz
+          </button>
+          <input type="file" id="biaya-file" accept=".xlsx,.xls,.xlsm" multiple class="hidden">
+          <button id="btn-biaya-export" class="h-10 px-4 rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2 whitespace-nowrap bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+            <i class="fas fa-file-excel"></i> Export Excel
+          </button>
+        </div>
+      </div>
+
+      <div id="biaya-info" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600"></div>
+
+      <div id="biaya-loader" class="hidden flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mb-4"></div>
+        <p class="text-slate-500 font-semibold animate-pulse">Menghitung biaya dan omzet...</p>
+      </div>
+
+      <div id="biaya-content" class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-4 py-3 border-b border-slate-200 font-bold text-slate-700 text-sm">
+            <i class="fas fa-store text-emerald-600 mr-2"></i>Cabang (WHO) — Biaya vs Omzet
+            <span class="ml-2 text-xs font-normal text-slate-500">klik cabang untuk melihat rincian jenis biaya</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead id="biaya-who-thead" class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200"></thead>
+              <tbody id="biaya-who-tbody" class="divide-y divide-slate-100"></tbody>
+              <tfoot id="biaya-who-tfoot" class="bg-slate-50 font-bold text-slate-800 border-t border-slate-200"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div id="biaya-whp-wrap" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-4 py-3 border-b border-slate-200 font-bold text-slate-700 text-sm">
+            <i class="fas fa-warehouse text-slate-500 mr-2"></i>Gudang (WHP) — Rekap Pengeluaran
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead id="biaya-whp-thead" class="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200"></thead>
+              <tbody id="biaya-whp-tbody" class="divide-y divide-slate-100"></tbody>
+              <tfoot id="biaya-whp-tfoot" class="bg-slate-50 font-bold text-slate-800 border-t border-slate-200"></tfoot>
+            </table>
+          </div>
         </div>
       </div>
     </div>

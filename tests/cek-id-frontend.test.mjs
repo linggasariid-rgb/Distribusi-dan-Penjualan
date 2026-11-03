@@ -31,6 +31,8 @@ function cekModul(path, label, adaIdLolos) {
 
 const kontak = cekModul(p('src/modules/kontakMitra/kontakMitra.js'), 'kontakMitra.js');
 cekModul(p('src/modules/reports/bandingkanBelanja.js'), 'bandingkanBelanja.js');
+cekModul(p('src/modules/reports/omzetKecamatan.js'), 'omzetKecamatan.js');
+cekModul(p('src/modules/reports/biayaOmzet.js'), 'biayaOmzet.js');
 cekModul(p('src/modules/input/inputWho.js'), 'inputWho.js');
 
 // Id yang sengaja dibaca lewat helper (bukan getElementById langsung) tetap
@@ -44,7 +46,7 @@ for (const id of [...new Set([...banding.matchAll(/state\.(\w+)\s*=\s*document\.
 // Menu dan view yang dirujuk router
 console.log('--- menu/view di router ---');
 const router = fs.readFileSync(p('src/router.js'), 'utf8');
-for (const id of [...new Set([...router.matchAll(/getElementById\('(menu-[^']+|kontak-mitra-view|bandingkan-belanja-view|rekap-belanja-view)'\)/g)].map(m => m[1]))]) {
+for (const id of [...new Set([...router.matchAll(/getElementById\('(menu-[^']+|kontak-mitra-view|bandingkan-belanja-view|rekap-belanja-view|omzet-kecamatan-view|biaya-omzet-view)'\)/g)].map(m => m[1]))]) {
   cek('router #' + id, htmlIds.has(id));
 }
 

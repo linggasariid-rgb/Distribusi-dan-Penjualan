@@ -25,6 +25,9 @@ import * as prices from './routes/prices.js';
 import * as reportBelanjaStokis from './routes/report-belanja-stokis.js';
 import * as kontakMitra from './routes/kontak-mitra.js';
 import * as reportBelanjaBanding from './routes/report-belanja-banding.js';
+import * as wilayahMitra from './routes/wilayah-mitra.js';
+import * as omzetKecamatan from './routes/omzet-kecamatan.js';
+import * as biayaCabang from './routes/biaya-cabang.js';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -138,6 +141,26 @@ export default {
         const monthFilter = url.searchParams.get('month') || '';
         const bandingFilter = url.searchParams.get('banding') || '';
         return json(await reportBelanjaBanding.handle(db, monthFilter, bandingFilter));
+      }
+
+      if (path === '/api/wilayah-mitra') {
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return json(await wilayahMitra.handle(db, body));
+        }
+        return json(await wilayahMitra.handleSummary(db));
+      }
+
+      if (path === '/api/biaya-cabang') {
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return json(await biayaCabang.handleUpload(db, body));
+        }
+        return json(await biayaCabang.handleReport(db, url.searchParams.get('month') || ''));
+      }
+
+      if (path === '/api/omzet-kecamatan') {
+        return json(await omzetKecamatan.handle(db, url.searchParams.get('month') || ''));
       }
 
       // ──── USER MANAGEMENT ──────────────────────────────────────────

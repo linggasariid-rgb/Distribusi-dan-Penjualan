@@ -12,8 +12,12 @@ assert.equal(detectTipe('MST M. Naufal Haidar'), 'MST');
 assert.equal(detectTipe('MSI Independen 12'), 'MSI');
 assert.equal(detectTipe('STK BIR ALI'), 'STK');
 assert.equal(detectTipe('msi independen 12'), 'MSI', 'case-insensitive');
-assert.equal(detectTipe('ORE STOKIS ONLINE'), '', 'karyawan dibuang');
-assert.equal(detectTipe('ORM STOKIS ONLINE'), '', 'apps dibuang');
+assert.equal(detectTipe('ORE STOKIS ONLINE'), 'ORE');
+assert.equal(detectTipe('ORM Hari Suharto 10.48.09'), 'ORM');
+assert.equal(detectTipe('KARYAWAN'), 'ORE');
+assert.equal(detectTipe('TSIEMPLOYEE'), 'ORE');
+assert.equal(detectTipe('TSIAPPS'), 'ORM');
+assert.equal(detectTipe('APPS'), 'ORM');
 assert.equal(detectTipe('PELANGGAN'), '');
 assert.equal(detectTipe(''), '');
 assert.equal(detectTipe(null), '');
@@ -35,7 +39,9 @@ const rows = [
   { tanggal: '2026-09-10', cabang: 'BANDUNG', tipe_customer: 'ORE STOKIS',  products: { 'SPS TSI': 88 } },
 ];
 const sep = aggregateBulan(rows, '2026-09');
-assert.equal(sep.size, 2, 'baris ORE dibuang');
+assert.equal(sep.size, 3, 'baris ORE ikut dihitung');
+assert.equal(sep.get('BANDUNG||ORE STOKIS').tipe, 'ORE');
+assert.equal(sep.get('BANDUNG||ORE STOKIS').total, 88);
 assert.equal(sep.get('BANDUNG||MST B').total, 15, 'HU tidak ikut, bulan lain terfilter');
 assert.equal(sep.get('BANDUNG||MST B').tipe, 'MST');
 assert.equal(sep.get('BANDUNG||MST B').cabang, 'BANDUNG');
@@ -77,7 +83,7 @@ const kontakMap = new Map([
 ]);
 const merged = mergeRows(sep, agu, kontakMap);
 const byName = Object.fromEntries(merged.map(r => [r.nama_customer, r]));
-assert.equal(merged.length, 2, 'union: 2 dari Sep + 1 dari Agu, tumpang tindih 1');
+assert.equal(merged.length, 3, 'union: 3 dari Sep (termasuk ORE) + 1 dari Agu, tumpang tindih 1');
 assert.equal(byName['MST B'].ini_bungkus, 15);
 assert.equal(byName['MST B'].banding_bungkus, 99);
 assert.equal(byName['STK A'].ini_bungkus, 7);
@@ -150,3 +156,15 @@ function fakeDb(rows) {
 }
 
 console.log('OK: semua tes backend bandingkan belanja lolos');
+
+// --- mergeRows: dalam satu cabang urut MST, MSI, STK, ORE, ORM ---
+{
+  const g = (cab, nama, tipe) => [`${cab}||${nama}`, { cabang: cab, nama_customer: nama, tipe, total: 1 }];
+  const m = new Map([
+    g('BOGOR', 'ORM A', 'ORM'), g('BOGOR', 'ORE A', 'ORE'), g('BOGOR', 'STK A', 'STK'),
+    g('BOGOR', 'MSI A', 'MSI'), g('BOGOR', 'MST Z', 'MST'), g('ANYER', 'ORM B', 'ORM'),
+  ]);
+  const urut = mergeRows(m, new Map(), new Map()).map(r => r.cabang + ':' + r.tipe);
+  assert.deepEqual(urut, ['ANYER:ORM', 'BOGOR:MST', 'BOGOR:MSI', 'BOGOR:STK', 'BOGOR:ORE', 'BOGOR:ORM']);
+}
+console.log('urutan tipe OK');

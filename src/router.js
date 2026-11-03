@@ -87,6 +87,8 @@ const rekapBelanjaView = document.getElementById('rekap-belanja-view');
 const formOrderView = document.getElementById('form-order-view');
 const kontakMitraView = document.getElementById('kontak-mitra-view');
 const bandingkanBelanjaView = document.getElementById('bandingkan-belanja-view');
+const omzetKecamatanView = document.getElementById('omzet-kecamatan-view');
+const biayaOmzetView = document.getElementById('biaya-omzet-view');
   const riwayatTransaksiView = document.getElementById('riwayat-transaksi-view');
 
   const menuDist = document.getElementById('menu-distribusi');
@@ -109,6 +111,8 @@ const menuRekapBelanja = document.getElementById('menu-rekap-belanja');
 const menuFormOrder = document.getElementById('menu-form-order');
 const menuKontakMitra = document.getElementById('menu-kontak-mitra');
 const menuBandingkanBelanja = document.getElementById('menu-bandingkan-belanja');
+const menuOmzetKecamatan = document.getElementById('menu-omzet-kecamatan');
+const menuBiayaOmzet = document.getElementById('menu-biaya-omzet');
 
   const pageTitle = document.getElementById('page-title');
   const pageIcon = document.getElementById('page-icon');
@@ -143,6 +147,8 @@ const menuBandingkanBelanja = document.getElementById('menu-bandingkan-belanja')
   if (formOrderView) formOrderView.classList.add('hidden');
   if (kontakMitraView) kontakMitraView.classList.add('hidden');
   if (bandingkanBelanjaView) bandingkanBelanjaView.classList.add('hidden');
+  if (omzetKecamatanView) omzetKecamatanView.classList.add('hidden');
+  if (biayaOmzetView) biayaOmzetView.classList.add('hidden');
 
   branchFilter.classList.add('hidden');
   if (summarySection) {
@@ -161,7 +167,7 @@ const menuBandingkanBelanja = document.getElementById('menu-bandingkan-belanja')
     menuControlPoint, menuChatAi, menuInputStokBiz, menuInputStokExcel,
     menuSalesHub, menuInputDistribusi, menuBeranda, menuPengaturan, 
     menuRekapBelanja, menuFormOrder, menuPenerimaanCabang, menuMutasi, menuRetur, menuRiwayatTransaksi,
-    menuKontakMitra, menuBandingkanBelanja];
+    menuKontakMitra, menuBandingkanBelanja, menuOmzetKecamatan, menuBiayaOmzet];
 
   allMenus.forEach(function(m) {
     if (!m) return;
@@ -368,6 +374,20 @@ const menuBandingkanBelanja = document.getElementById('menu-bandingkan-belanja')
     if (!bbBody || bbBody.innerHTML.trim() === '') {
       import('./modules/reports/bandingkanBelanja.js').then(m => m.initBandingkanBelanja());
     }
+  }
+  else if (menuName === 'omzet-kecamatan') {
+    if (omzetKecamatanView) omzetKecamatanView.classList.remove('hidden');
+    pageTitle.innerText = "Omzet per Kecamatan";
+    pageIcon.className = "fas fa-map-location-dot";
+    setActiveMenu(menuOmzetKecamatan);
+    import('./modules/reports/omzetKecamatan.js').then(m => m.initOmzetKecamatan());
+  }
+  else if (menuName === 'biaya-omzet') {
+    if (biayaOmzetView) biayaOmzetView.classList.remove('hidden');
+    pageTitle.innerText = "Biaya vs Omzet";
+    pageIcon.className = "fas fa-scale-balanced";
+    setActiveMenu(menuBiayaOmzet);
+    import('./modules/reports/biayaOmzet.js').then(m => m.initBiayaOmzet());
   }
   else { // 'distribusi'
     distView.style.display = 'block';

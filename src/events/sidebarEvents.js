@@ -7,7 +7,7 @@ const MENU_IDS = [
   'penerimaan-cabang', 'mutasi', 'retur', 'riwayat-transaksi',
   'input-stok-excel', 'input-stok-biz', 'penjualan-who', 'sales-dashboard',
   'sales-hub', 'daily-report', 'sales-per-date', 'stok', 'form-order', 'control-point',
-  'best-products', 'rekap-belanja', 'kontak-mitra', 'bandingkan-belanja',
+  'best-products', 'rekap-belanja', 'kontak-mitra', 'bandingkan-belanja', 'omzet-kecamatan', 'biaya-omzet',
   'pengaturan', 'chat-ai'
 ];
 

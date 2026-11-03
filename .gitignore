@@ -5,3 +5,7 @@ migrate_retry.js
 seed_cabang.js
 migrate_biz.js
 backups/
+
+# Excel sumber berisi data pribadi mitra (nama KTP, alamat, HP) -- jangan di-commit
+docs/*.xlsx
+docs/*.xls

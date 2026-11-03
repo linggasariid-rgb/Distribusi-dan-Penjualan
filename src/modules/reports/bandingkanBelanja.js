@@ -60,6 +60,14 @@ function nilaiSort(item, key) {
   return hitungSelisih(item).selisih;
 }
 
+// Di dalam tiap cabang: MST, MSI, STK, ORE, ORM -- baru diurutkan per kolom sort.
+const URUTAN_TIPE = ['MST', 'MSI', 'STK', 'ORE', 'ORM'];
+
+function rankTipe(tipe) {
+  const i = URUTAN_TIPE.indexOf(String(tipe || '').toUpperCase());
+  return i === -1 ? URUTAN_TIPE.length : i;
+}
+
 export function groupPerCabang(items, sortKey) {
   const map = {};
   for (const r of items) {
@@ -71,6 +79,8 @@ export function groupPerCabang(items, sortKey) {
   return Object.keys(map).sort().map(cab => ({
     cabang: cab,
     items: map[cab].sort((a, b) => {
+      const t = rankTipe(a.tipe) - rankTipe(b.tipe);
+      if (t !== 0) return t;
       const d = nilaiSort(a, sortKey) - nilaiSort(b, sortKey);
       if (d !== 0) return d * dir;
       return String(a.nama_customer).localeCompare(String(b.nama_customer));
@@ -165,6 +175,8 @@ function renderBanding() {
     const up = String(t || '').toUpperCase();
     const cls = up === 'MST' ? 'bg-amber-100 text-amber-700'
       : up === 'MSI' ? 'bg-purple-100 text-purple-700'
+      : up === 'ORE' ? 'bg-rose-100 text-rose-700'
+      : up === 'ORM' ? 'bg-emerald-100 text-emerald-700'
       : 'bg-blue-100 text-blue-700';
     return `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${cls}">${esc(up)}</span>`;
   };

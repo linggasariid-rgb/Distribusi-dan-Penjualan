@@ -14,6 +14,9 @@ export const READ = {
   getRekapBelanja: { url: '/api/report-belanja-stokis', params: ['month'] },
   getBandingkanBelanja: { url: '/api/report-belanja-banding', params: ['month', 'banding'] },
   getKontakMitra: { url: '/api/kontak-mitra', params: [] },
+  getOmzetKecamatan: { url: '/api/omzet-kecamatan', params: ['month'] },
+  getWilayahMitraSummary: { url: '/api/wilayah-mitra', params: [] },
+  getBiayaCabang: { url: '/api/biaya-cabang', params: ['month'] },
   getTransactionHistory: { url: '/api/transaction-history', params: ['table', 'page', 'limit', 'startDate', 'endDate'] }
 };
 
@@ -32,7 +35,9 @@ export const WRITE = {
   deleteRow: { url: '/api/delete-row', params: ['table', 'id'] },
   savePrices: { url: '/api/prices', params: ['prices'] },
   simpanKontakMitra: { url: '/api/kontak-mitra', params: ['rows'] },
-  hapusKontakMitra: { url: '/api/kontak-mitra', params: ['clear'] }
+  hapusKontakMitra: { url: '/api/kontak-mitra', params: ['clear'] },
+  simpanWilayahMitra: { url: '/api/wilayah-mitra', params: ['rows', 'grup', 'dihapus'] },
+  simpanBiayaCabang: { url: '/api/biaya-cabang', params: ['rows', 'sumber'] }
 };
 
 export const BERANDA = ['getBerandaData', 'getSalesDashboardData'];

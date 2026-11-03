@@ -18,7 +18,18 @@ export function detectTipe(tipeCustomer) {
   if (u.startsWith('MSI')) return 'MSI';
   if (u.startsWith('MST')) return 'MST';
   if (u.startsWith('STK') || u === 'STOKIS') return 'STK';
+  // Pengelompokan ORE/ORM sama dengan kategori Karyawan/Apps di report-belanja-stokis.js.
+  if (u.startsWith('ORE') || u.startsWith('KARYAWAN') || u === 'TSIEMPLOYEE') return 'ORE';
+  if (u.startsWith('ORM') || u.startsWith('APPS') || u === 'TSIAPPS') return 'ORM';
   return '';
+}
+
+// Urutan tipe di dalam tiap cabang.
+export const URUTAN_TIPE = ['MST', 'MSI', 'STK', 'ORE', 'ORM'];
+
+export function rankTipe(tipe) {
+  const i = URUTAN_TIPE.indexOf(String(tipe || '').toUpperCase());
+  return i === -1 ? URUTAN_TIPE.length : i;
 }
 
 export function computeBungkus(products) {
@@ -94,6 +105,8 @@ export function mergeRows(mapIni, mapBanding, kontakMap) {
   return rows.sort((x, y) => {
     const cx = x.cabang || '', cy = y.cabang || '';
     if (cx !== cy) return cx.localeCompare(cy);
+    const tx = rankTipe(x.tipe) - rankTipe(y.tipe);
+    if (tx !== 0) return tx;
     return String(x.nama_customer).localeCompare(String(y.nama_customer));
   });
 }
